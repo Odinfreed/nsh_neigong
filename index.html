@@ -1,990 +1,588 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<!--
-                 _ooOoo_
-                o8888888o
-                88" . "88
-                (| -_- |)
-                O\  =  /O
-             ____/`---'\____
-           .'  \\|     |//  `.
-          /  \\|||  :  |||//  \
-         /  _||||| -:- |||||-  \
-         |   | \\\  -  /// |   |
-         | \_|  ''\---/''  |   |
-         \  .-\__  `-`  ___/-. /
-       ___`. .'  /--.--\  `. . __
-    ."" '<  `.___\_<|>_/___.'  >'"".
-   | | :  `- \`.;`\ _ /`;.`/ - ` : | |
-   \  \ `-.   \_ __\ /__ _/   .-` /  /
-======`-.____`-.___\_____/___.-`____.-'======
-                   `=---='
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-         佛祖保佑  永无BUG  法力无边
--->
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>逆水寒内功评分计算器 · 手动/自动组合</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>逆水寒 · 战斗分析系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Exo+2:wght@300;400;600&display=swap');
+        
+        :root {
+            --primary: #00f2ff;
+            --secondary: #a200ff;
+            --accent: #ff00e6;
+            --dark: #0a0a0f;
+            --glass: rgba(20, 20, 35, 0.7);
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-            background: #f0f2f5;
-            margin: 0;
-            padding: 20px;
-            color: #1e293b;
+            font-family: 'Exo 2', sans-serif;
+            background: var(--dark);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
         }
-        .container { max-width: 1400px; margin: 0 auto; }
-        .card {
-            background: white;
-            border-radius: 24px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-            padding: 20px 24px;
-            margin-bottom: 24px;
-        }
-        h1 { font-size: 1.8rem; font-weight: 600; margin-top: 0; margin-bottom: 0.5rem; }
-        h2 { font-size: 1.4rem; font-weight: 600; margin-top: 0; margin-bottom: 16px; border-left: 4px solid #3b82f6; padding-left: 12px; }
-        .flex-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
-            align-items: flex-end;
-            margin-bottom: 20px;
-        }
-        .form-group {
-            flex: 1;
-            min-width: 160px;
-        }
-        label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 6px;
-            font-size: 0.9rem;
-        }
-        select, textarea, input[type="file"], input[type="number"] {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            background: white;
-        }
-        .checkbox-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-top: 4px;
-        }
-        .checkbox-group label {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-weight: normal;
-        }
-        button {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            border-radius: 40px;
-            padding: 8px 20px;
-            font-weight: 500;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-        button:hover { background: #2563eb; }
-        button.secondary { background: #64748b; }
-        .table-wrapper {
-            overflow-x: auto;
-            border-radius: 16px;
-            border: 1px solid #e2e8f0;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.8rem;
-        }
-        th, td {
-            padding: 10px 12px;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
-            vertical-align: top;
-        }
-        th {
-            background: #f8fafc;
-            font-weight: 600;
-        }
-        .badge {
-            background: #e2e8f0;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            display: inline-block;
-        }
-        .badge-lingyun {
-            background: #facc15;
-            color: #422006;
-        }
-        .badge-rare {
-            background: #ffd966;
-            color: #663c00;
-        }
-        .attr-list {
-            font-size: 0.7rem;
-            line-height: 1.4;
-            color: #334155;
-            max-width: 200px;
-        }
-        .summary {
-            background: #e6f7e6;
-            padding: 12px 16px;
-            border-radius: 20px;
-            margin-bottom: 20px;
-        }
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            font-size: 0.75rem;
-            color: #64748b;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 20px;
-        }
-        .panel-row {
-            background: #f8fafc;
-            padding: 12px;
-            border-radius: 16px;
-            margin-bottom: 12px;
-        }
-        .remarks {
-            background: #fef9e3;
-            padding: 12px;
-            border-radius: 16px;
-            font-size: 0.75rem;
-            color: #854d0e;
-            margin-top: 20px;
-        }
-        .coeff-debug {
-            background: #eef2ff;
-            padding: 8px 12px;
-            border-radius: 16px;
-            font-family: monospace;
-            font-size: 0.8rem;
-            margin-top: 12px;
-        }
-        .select-col {
-            width: 40px;
-            text-align: center;
-        }
-        .select-col input {
-            transform: scale(1.2);
-            cursor: pointer;
-        }
-        .manual-actions {
-            margin: 16px 0;
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .manual-result {
-            background: #f8fafc;
-            padding: 12px;
-            border-radius: 16px;
-            margin-top: 12px;
-        }
-        .modal {
-            display: none;
+        
+        /* 动态背景 */
+        .bg-animation {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
+            z-index: -1;
+            opacity: 0.6;
         }
-        .modal-content {
-            background: white;
-            padding: 24px;
-            border-radius: 24px;
-            max-width: 90%;
-            width: 550px;
-            max-height: 80%;
-            overflow-y: auto;
+        
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(162, 0, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(0, 242, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 40% 80%, rgba(255, 0, 230, 0.1) 0%, transparent 40%);
+            animation: bgPulse 15s ease-in-out infinite;
+        }
+        
+        @keyframes bgPulse {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            33% { transform: scale(1.1) rotate(1deg); }
+            66% { transform: scale(1.05) rotate(-1deg); }
+        }
+        
+        /* 粒子效果 */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: float 20s linear infinite;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% { opacity: 0.5; }
+            90% { opacity: 0.5; }
+            100% {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+        
+        /* 主标题样式 */
+        .main-title {
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary), var(--accent), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            background-size: 300% 300%;
+            animation: gradientShift 3s ease infinite;
+            letter-spacing: 2px;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .subtitle {
+            font-family: 'Orbitron', monospace;
+            font-weight: 400;
+            letter-spacing: 1px;
+            opacity: 0.9;
+        }
+        
+        /* 霓虹光效 */
+        .neon-glow {
+            box-shadow: 
+                0 0 20px var(--primary),
+                0 0 40px var(--primary),
+                inset 0 0 20px rgba(0, 242, 255, 0.1);
+            border: 1px solid var(--primary);
+        }
+        
+        .neon-glow:hover {
+            box-shadow: 
+                0 0 30px var(--primary),
+                0 0 60px var(--primary),
+                inset 0 0 30px rgba(0, 242, 255, 0.2);
+        }
+        
+        .neon-glow.purple {
+            box-shadow: 
+                0 0 20px var(--secondary),
+                0 0 40px var(--secondary),
+                inset 0 0 20px rgba(162, 0, 255, 0.1);
+            border: 1px solid var(--secondary);
+        }
+        
+        .neon-glow.purple:hover {
+            box-shadow: 
+                0 0 30px var(--secondary),
+                0 0 60px var(--secondary),
+                inset 0 0 30px rgba(162, 0, 255, 0.2);
+        }
+        
+        .neon-glow.orange {
+            box-shadow: 
+                0 0 20px #ff6b00,
+                0 0 40px #ff6b00,
+                inset 0 0 20px rgba(255, 107, 0, 0.1);
+            border: 1px solid #ff6b00;
+        }
+        
+        .neon-glow.orange:hover {
+            box-shadow: 
+                0 0 30px #ff6b00,
+                0 0 60px #ff6b00,
+                inset 0 0 30px rgba(255, 107, 0, 0.2);
+        }
+        
+        .neon-glow.green {
+            box-shadow: 
+                0 0 20px #00ff9d,
+                0 0 40px #00ff9d,
+                inset 0 0 20px rgba(0, 255, 157, 0.1);
+            border: 1px solid #00ff9d;
+        }
+        
+        .neon-glow.green:hover {
+            box-shadow: 
+                0 0 30px #00ff9d,
+                0 0 60px #00ff9d,
+                inset 0 0 30px rgba(0, 255, 157, 0.2);
+        }
+        
+        /* 卡片样式 */
+        .system-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
             position: relative;
+            overflow: hidden;
         }
-        .modal-header {
-            font-size: 1.4rem;
-            font-weight: 600;
-            margin-bottom: 16px;
+        
+        .system-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 242, 255, 0.1) 0%, transparent 70%);
+            transform: rotate(45deg);
+            transition: all 0.6s ease;
+            opacity: 0;
         }
-        .modal-body {
-            font-size: 0.9rem;
-            line-height: 1.5;
+        
+        .system-card:hover::before {
+            opacity: 1;
         }
-        .modal-footer {
-            margin-top: 20px;
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
+        
+        .system-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 242, 255, 0.2);
         }
-        .copy-btn {
-            background: #e2e8f0;
-            color: #1e293b;
+        
+        /* 图标动画 */
+        .icon-wrapper {
+            display: inline-block;
+            animation: iconPulse 2s ease-in-out infinite;
         }
-        .close-modal {
-            background: #3b82f6;
+        
+        .system-card:hover .icon-wrapper {
+            animation: iconRotate 0.6s ease;
         }
-        pre {
-            background: #f1f5f9;
-            padding: 12px;
-            border-radius: 12px;
-            overflow-x: auto;
-            font-size: 0.8rem;
-            white-space: pre-wrap;
-            word-break: break-all;
+        
+        @keyframes iconPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
         }
-        .prompt-section {
-            margin: 16px 0;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 12px;
+        
+        @keyframes iconRotate {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
         }
-        .prompt-title {
-            font-weight: 600;
-            margin-bottom: 8px;
+        
+        /* 按钮样式 */
+        .cyber-button {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            font-family: 'Orbitron', monospace;
+            letter-spacing: 1px;
+            font-weight: 500;
         }
-        @media (max-width: 640px) {
-            .card { padding: 16px; }
-            th, td { padding: 8px; }
+        
+        .cyber-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .cyber-button:hover::before {
+            left: 100%;
+        }
+        
+        .cyber-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* 信息面板 */
+        .info-panel {
+            background: linear-gradient(135deg, rgba(20, 20, 35, 0.8) 0%, rgba(30, 30, 50, 0.6) 100%);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(0, 242, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 2.5rem;
+            }
+            
+            .system-card {
+                padding: 1.5rem;
+            }
+        }
+        
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--dark);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border-radius: 4px;
         }
     </style>
 </head>
-<body>
-<div class="container">
-    <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-            <div>
-                <h1>⚔️ 逆水寒 · 内功评分计算器</h1>
+<body class="p-4 md:p-8">
+    <!-- 动态背景 -->
+    <div class="bg-animation"></div>
+    
+    <!-- 粒子效果 -->
+    <div class="particles" id="particles"></div>
+    
+    <div class="max-w-7xl mx-auto relative z-10">
+        <!-- 头部 -->
+        <div class="text-center mb-16 md:mb-20">
+            <div class="mb-6">
+                <div class="text-8xl md:text-9xl mb-4 bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+                    <i class="fas fa-chess-king"></i>
+                </div>
+                <h1 class="main-title text-4xl md:text-6xl mb-4">
+                    逆水寒
+                </h1>
+                <h2 class="main-title text-3xl md:text-5xl mb-6">
+                    战斗分析系统
+                </h2>
             </div>
-            <button id="showHelpBtn" style="background:#64748b;">📖 使用说明</button>
+            <p class="subtitle text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                帮派战数据分析 · 联赛智能分团管理 · 内功优化计算
+            </p>
+            <div class="mt-8 flex justify-center">
+                <div class="w-32 h-1 bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 rounded-full"></div>
+            </div>
+        </div>
+
+        <!-- 系统选择面板 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-8 mb-12">
+            <!-- 帮战分析系统 -->
+            <div class="system-card neon-glow">
+                <div class="text-center relative z-10">
+                    <div class="icon-wrapper text-7xl mb-6 bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-white" style="font-family: 'Orbitron', monospace;">
+                        帮战分析系统
+                    </h3>
+                    <p class="text-gray-300 mb-8 text-sm leading-relaxed h-16">
+                        完整的帮会战斗数据分析平台，支持CSV数据导入、多维度对比分析、可视化图表展示。
+                    </p>
+                    <div class="space-y-4">
+                        <a href="xg_nsh_battle_system/xg_data_import/index.html" 
+                           class="cyber-button block w-full bg-gradient-to-r from-blue-500 via-purple-600 to-cyan-500 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:shadow-lg transition-all">
+                            <i class="fas fa-play mr-3"></i>启动系统
+                        </a>
+                        <div class="flex flex-wrap gap-2 justify-center text-xs">
+                            <span class="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full border border-blue-500/30">
+                                <i class="fas fa-database mr-1"></i>数据导入
+                            </span>
+                            <span class="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full border border-purple-500/30">
+                                <i class="fas fa-chart-bar mr-1"></i>可视化
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 联赛智能分团系统（管理） -->
+            <div class="system-card neon-glow purple">
+                <div class="text-center relative z-10">
+                    <div class="icon-wrapper text-7xl mb-6 bg-gradient-to-r from-purple-400 to-pink-300 bg-clip-text text-transparent">
+                        <i class="fas fa-users-cog"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-white" style="font-family: 'Orbitron', monospace;">
+                        联赛智能分团
+                    </h3>
+                    <p class="text-gray-300 mb-8 text-sm leading-relaxed h-16">
+                        完整的联赛数据管理与智能分团平台，集成接龙名单管理、一线牵配对、数据管理中心。
+                    </p>
+                    <div class="space-y-4">
+                        <a href="xg_nsh_battle_system/xg_guild_analysis/xg_guild_analysis_backup.html" 
+                           class="cyber-button block w-full bg-gradient-to-r from-purple-500 via-pink-600 to-red-500 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:shadow-lg transition-all">
+                            <i class="fas fa-cogs mr-3"></i>启动系统
+                        </a>
+                        <div class="flex flex-wrap gap-2 justify-center text-xs">
+                            <span class="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full border border-purple-500/30">
+                                <i class="fas fa-list-ol mr-1"></i>接龙管理
+                            </span>
+                            <span class="px-3 py-1 bg-pink-500/20 text-pink-300 rounded-full border border-pink-500/30">
+                                <i class="fas fa-link mr-1"></i>一线牵
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 内功计算器 -->
+            <div class="system-card neon-glow orange">
+                <div class="text-center relative z-10">
+                    <div class="icon-wrapper text-7xl mb-6 bg-gradient-to-r from-orange-400 to-red-300 bg-clip-text text-transparent">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-white" style="font-family: 'Orbitron', monospace;">
+                        内功评分计算器
+                    </h3>
+                    <p class="text-gray-300 mb-8 text-sm leading-relaxed h-16">
+                        专业的逆水寒内功评分计算工具，支持手动/自动组合，帮助优化内功配置。
+                    </p>
+                    <div class="space-y-4">
+                        <a href="xg_nsh_battle_system/sg_calculator/sg_calculator_main.html" 
+                           class="cyber-button block w-full bg-gradient-to-r from-orange-500 via-red-600 to-pink-500 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:shadow-lg transition-all">
+                            <i class="fas fa-play mr-3"></i>启动计算器
+                        </a>
+                        <div class="flex flex-wrap gap-2 justify-center text-xs">
+                            <span class="px-3 py-1 bg-orange-500/20 text-orange-300 rounded-full border border-orange-500/30">
+                                <i class="fas fa-magic mr-1"></i>自动组合
+                            </span>
+                            <span class="px-3 py-1 bg-red-500/20 text-red-300 rounded-full border border-red-500/30">
+                                <i class="fas fa-star mr-1"></i>评分优化
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 文档说明 -->
+            <div class="system-card neon-glow green">
+                <div class="text-center relative z-10">
+                    <div class="icon-wrapper text-7xl mb-6 bg-gradient-to-r from-green-400 to-cyan-300 bg-clip-text text-transparent">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-white" style="font-family: 'Orbitron', monospace;">
+                        文档说明
+                    </h3>
+                    <p class="text-gray-300 mb-8 text-sm leading-relaxed h-16">
+                        查看系统使用说明、数据管理中心和智能分团系统文档，快速上手所有功能。
+                    </p>
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            <a href="xg_nsh_battle_system/README_数据管理中心.md" 
+                               class="cyber-button block w-full bg-gradient-to-r from-green-500 to-teal-600 text-white py-3 px-4 rounded-lg font-semibold text-sm hover:shadow-lg transition-all">
+                                <i class="fas fa-book-open mr-2"></i>数据管理
+                            </a>
+                            <a href="xg_nsh_battle_system/README_自动分团系统.md" 
+                               class="cyber-button block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-lg font-semibold text-sm hover:shadow-lg transition-all">
+                                <i class="fas fa-robot mr-2"></i>智能分团
+                            </a>
+                        </div>
+                        <div class="flex flex-wrap gap-2 justify-center text-xs">
+                            <span class="px-3 py-1 bg-green-500/20 text-green-300 rounded-full border border-green-500/30">
+                                <i class="fas fa-lightbulb mr-1"></i>使用指南
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 系统特色展示 -->
+        <div class="info-panel mb-12">
+            <h2 class="text-3xl font-bold mb-8 text-center text-white" style="font-family: 'Orbitron', monospace;">
+                <i class="fas fa-star mr-3 text-yellow-400"></i>系统特色
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="text-center p-6 bg-white/5 rounded-xl border border-white/10 hover:border-cyan-400/30 transition-all">
+                    <div class="text-4xl mb-4 text-cyan-400">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <h4 class="font-bold text-white mb-2">极速处理</h4>
+                    <p class="text-gray-400 text-sm">CSV数据秒级导入，智能算法快速分团</p>
+                </div>
+                <div class="text-center p-6 bg-white/5 rounded-xl border border-white/10 hover:border-purple-400/30 transition-all">
+                    <div class="text-4xl mb-4 text-purple-400">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h4 class="font-bold text-white mb-2">AI智能</h4>
+                    <p class="text-gray-400 text-sm">4种算法智能分团，自动优化队伍配置</p>
+                </div>
+                <div class="text-center p-6 bg-white/5 rounded-xl border border-white/10 hover:border-pink-400/30 transition-all">
+                    <div class="text-4xl mb-4 text-pink-400">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4 class="font-bold text-white mb-2">数据安全</h4>
+                    <p class="text-gray-400 text-sm">本地存储，数据不上传，保护隐私</p>
+                </div>
+                <div class="text-center p-6 bg-white/5 rounded-xl border border-white/10 hover:border-green-400/30 transition-all">
+                    <div class="text-4xl mb-4 text-green-400">
+                        <i class="fas fa-infinity"></i>
+                    </div>
+                    <h4 class="font-bold text-white mb-2">全能平台</h4>
+                    <p class="text-gray-400 text-sm">分析、分团、计算器一站式解决方案</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 技术栈展示 -->
+        <div class="info-panel">
+            <h2 class="text-2xl font-bold mb-6 text-center text-white" style="font-family: 'Orbitron', monospace;">
+                <i class="fas fa-code mr-3 text-cyan-400"></i>技术架构
+            </h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="text-center p-4 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-lg border border-blue-500/30">
+                    <i class="fab fa-html5 text-3xl text-orange-500 mb-2"></i>
+                    <div class="font-semibold text-white">HTML5</div>
+                </div>
+                <div class="text-center p-4 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-lg border border-blue-500/30">
+                    <i class="fab fa-css3-alt text-3xl text-blue-500 mb-2"></i>
+                    <div class="font-semibold text-white">CSS3</div>
+                </div>
+                <div class="text-center p-4 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-lg border border-yellow-500/30">
+                    <i class="fab fa-js text-3xl text-yellow-500 mb-2"></i>
+                    <div class="font-semibold text-white">JavaScript</div>
+                </div>
+                <div class="text-center p-4 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-lg border border-cyan-500/30">
+                    <i class="fas fa-robot text-3xl text-cyan-500 mb-2"></i>
+                    <div class="font-semibold text-white">AI算法</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <div class="text-center mt-16 pt-8 border-t border-white/10">
+            <p class="text-gray-400 text-sm">
+                <i class="fas fa-copyright mr-1"></i>
+                2026 逆水寒战斗分析系统 · 专为帮派战设计的数据智能平台
+            </p>
+            <div class="mt-4 flex justify-center space-x-6 text-2xl">
+                <i class="fas fa-sword text-gray-600"></i>
+                <i class="fas fa-shield text-gray-600"></i>
+                <i class="fas fa-heart text-gray-600"></i>
+                <i class="fas fa-fire text-gray-600"></i>
+            </div>
         </div>
     </div>
 
-    <div class="card">
-        <div class="flex-row">
-            <div class="form-group">
-                <label>📌 职业选择</label>
-                <select id="profession">
-                    <option value="玄机" selected>玄机</option>
-                    <option value="神相">神相</option>
-                    <option value="血河">血河</option>
-                    <option value="碎梦">碎梦</option>
-                    <option value="龙吟">龙吟</option>
-                    <option value="九灵">九灵</option>
-                    <option value="鸿音">鸿音</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>🔧 模式选择</label>
-                <select id="mode">
-                    <option value="保镖" selected>保镖模式</option>
-                    <option value="防守">防守模式</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>🛡️ 打造：凝霜（金）</label>
-                <select id="ningShuang">
-                    <option value="false">否</option>
-                    <option value="true">是</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>✨ 特质携带（多选）</label>
-            <div class="checkbox-group">
-                <label><input type="checkbox" id="iceFlame"> 冰焰鸣决</label>
-                <label><input type="checkbox" id="cloudPierce" checked> 穿云灭</label>
-                <label><input type="checkbox" id="skySong"> 向天歌</label>
-                <label><input type="checkbox" id="bladeWill"> 刀意</label>
-                <label><input type="checkbox" id="frostBlade"> 寒光凌刃</label>
-                <label><input type="checkbox" id="oneThread" checked> 一线牵</label>
-            </div>
-        </div>
-
-        <div class="panel-row" id="panelAttrRow"></div>
-
-        <div class="flex-row">
-            <div class="form-group">
-                <label>📂 导入JSON (内功列表)</label>
-                <input type="file" id="jsonFile" accept=".json">
-            </div>
-            <div>
-                <button id="calcBtn">✨ 开始评分</button>
-            </div>
-        </div>
-        <div class="form-group">
-            <label>📋 或直接粘贴JSON数据</label>
-            <textarea id="jsonText" rows="5" placeholder='{"neigong_list":[{"name":"昆吾断玉","elements":"1金1木3火","attributes":{"气血上限":"+47834","破盾":"+649","昆吾.灵":"+1","<灵韵>特性效果等级":"+1",...}}]}'></textarea>
-        </div>
-        <div id="coeffDisplay" class="coeff-debug"></div>
-    </div>
-
-    <div class="card">
-        <h2>📊 内功总分排行榜（可勾选，最多6个，同名不可重复）</h2>
-        <div class="table-wrapper">
-            <table id="rankTable">
-                <thead>
-                    <tr><th>选</th><th>排名</th><th>内功名称</th><th>元素</th><th>稀有</th><th>灵韵</th><th>主要属性</th><th>词条分</th><th>特性分</th><th>总分</th>  \x
-                </thead>
-                <tbody></tbody>
-            </div>
-        </div>
-        <div class="manual-actions">
-            <button id="manualCalcBtn" class="secondary">📊 计算勾选组合收益</button>
-            <button id="clearSelectionBtn">🗑️ 清空勾选</button>
-        </div>
-        <div id="manualResultArea" class="manual-result"></div>
-    </div>
-
-    <div class="card">
-        <h2>🔥 自动推荐搭配 (三火三金一木 + 稀有≤3)</h2>
-        <div id="bestCombinationArea"></div>
-        <button id="exportJsonBtn" class="secondary">📎 导出组合JSON</button>
-    </div>
-
-    <footer>
-        <div class="remarks">
-            <strong>备注：</strong>3/9日防守团内功计算器 | 新增了新版本内功收益 | 修改了少数词条的系数<br>
-            1400为一攻 内功特性基础判定为35%<br>
-            由曦光制作 无偿分享<br>
-            计算公式来源于月望舒（逆水寒手游）无偿分享制作的内功计算器<br>
-            注：原内功计算器备注：感谢 杰哥 阿娟 看海 提供帮助 计算公式来源于 折字愿为安
-        </div>
-    </footer>
-</div>
-
-<div id="helpModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">📖 使用说明</div>
-        <div class="modal-body">
-            <p><strong>1. 数据导入：</strong> 可通过“导入JSON文件”或直接粘贴JSON数据。建议使用以下提示词让豆包生成JSON格式内功数据：</p>
-
-            <div class="prompt-section">
-                <div class="prompt-title">📌 单批识别提示词（发给豆包，用于识别单个内功）</div>
-                <pre id="singlePrompt">我将给你发一些图片，请把它按照Json格式去生成文字。主要内容要求如下：
-内功名称
-蕴含元素（例如图中是 4 金 1 火）
-属性加成
-（特别注意，五韵谣不用统计蕴含元素）
-具体格式如下（示例）：
-{
-  "neigong_list": [
-    {
-      "name": "灼锋净域",
-      "elements": "1木4火",
-      "attributes": {
-        "气血上限": "+47834",
-        "破盾": "+945",
-        "破防": "+1500",
-        "身法": "+213"
-      }
-    },
-    {
-      "name": "五韵谣",
-      "elements": null,
-      "attributes": {
-        "气血上限": "+47834",
-        "命中": "+429"
-      }
-    }
-  ]
-}</pre>
-                <button class="copy-btn" data-copy="singlePrompt">📋 复制此提示词</button>
-            </div>
-
-            <div class="prompt-section">
-                <div class="prompt-title">🔗 汇总提示词（所有内功识别完毕后发送）</div>
-                <pre id="mergePrompt">综上所述 将所有内功进行统计，确保所有统计的是同一个Json文件</pre>
-                <button class="copy-btn" data-copy="mergePrompt">📋 复制此提示词</button>
-            </div>
-
-            <p style="margin-top: 16px;"><strong>2. 手动勾选组合：</strong> 在排行榜中勾选内功（最多6个，同名不可重复），点击“计算勾选组合收益”即可查看总收益及元素校验。</p>
-            <p><strong>3. 自动推荐搭配：</strong> 点击“开始评分”后，系统会自动计算所有内功分数，并给出尽可能满足三火三金一木（火≥12、金≥12、木≥4）且稀有内功≤3的最高总分组合。</p>
-            <p><strong>4. 手机适配：</strong> 页面已适配手机，可横屏查看表格，所有按钮均支持触屏。</p>
-        </div>
-        <div class="modal-footer">
-            <button id="closeModalBtn" class="close-modal">知道了</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    (function() {
-        // ------------------- 佛祖保佑 -------------------
-        let panelScoreValue = 0;
-        let currentScoredList = [];
-        let selectedIndices = new Set();
-
-        const modal = document.getElementById('helpModal');
-        function showModal() {
-            modal.style.display = 'flex';
+    <script>
+        // 创建粒子
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                
+                // 随机颜色
+                const colors = ['#00f2ff', '#a200ff', '#ff00e6', '#ff6b00'];
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                
+                container.appendChild(particle);
+            }
         }
-        function hideModal() {
-            modal.style.display = 'none';
-        }
-        window.addEventListener('load', () => {
-            showModal();
-        });
-        document.getElementById('showHelpBtn').addEventListener('click', showModal);
-        document.getElementById('closeModalBtn').addEventListener('click', hideModal);
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) hideModal();
-        });
-
-
-        document.querySelectorAll('.copy-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const targetId = btn.getAttribute('data-copy');
-                const textElem = document.getElementById(targetId);
-                if (textElem) {
-                    navigator.clipboard.writeText(textElem.innerText).then(() => {
-                        alert('提示词已复制到剪贴板');
-                    }).catch(() => {
-                        alert('复制失败，请手动复制');
-                    });
-                }
-            });
-        });
-
-
-        const RARE_NEIGONG_NAMES = [
-            "俯仰太虚", "不动明王", "万化冥合", "荡剑扬波", 
-            "日月两仪", "绝电飞光", "昆吾断玉", "灼锋净域", 
-            "破霄摧星", "鸣镝裂风", "绝电惊沙"
-        ];
-        function isRareNeigong(name) {
-            return RARE_NEIGONG_NAMES.some(rare => name.includes(rare));
-        }
-
-
-        function getProfession() { return document.getElementById('profession').value; }
-        function getMode() { return document.getElementById('mode').value; }
-        function getNingShuang() { return document.getElementById('ningShuang').value === 'true'; }
-        function getTalents() {
-            return {
-                iceFlame: document.getElementById('iceFlame').checked,
-                cloudPierce: document.getElementById('cloudPierce').checked,
-                skySong: document.getElementById('skySong').checked,
-                bladeWill: document.getElementById('bladeWill').checked,
-                frostBlade: document.getElementById('frostBlade').checked,
-                oneThread: document.getElementById('oneThread').checked
-            };
-        }
-
-
-        function computeCoefficients(profession, talents, ningShuang) {
-            const isShenxiang = profession === '神相';
-            const isXuehe = profession === '血河';
-            const isSuimeng = profession === '碎梦';
-            const isFukua = false;
-            const ice = talents.iceFlame ? 1 : 0;
-            const cloud = talents.cloudPierce ? 1 : 0;
-            const sky = talents.skySong ? 1 : 0;
-            const blade = talents.bladeWill ? 1 : 0;
-            const frost = talents.frostBlade ? 1 : 0;
-            const one = talents.oneThread ? 1 : 0;
-            const v4 = isShenxiang ? 1 : 0;
-            const w4 = isXuehe ? 1 : 0;
-            const x4 = isSuimeng ? 1 : 0;
-            const y4 = isFukua ? 1 : 0;
-            const G7 = 1.03 + ice*0.06 + one*0.07 + v4*0.08 + x4*0.02 + w4*0.03;
-            const G8 = 1.24 * (1 + frost*0.06 + ice*0.06 + v4*0.08 + x4*0.02 + sky*0.04 + w4*0.03);
-            const s73 = ningShuang ? 1 : 0;
-            const G9 = 1.65 * (1 + cloud*0.06 + v4*0.05 + blade*0.06 + 0.015) * (1 + 0.056 * s73);
-            const G10 = 1400;
-            const G11 = 1.15;
-            const G12 = 0.66;
-            return { G7, G8, G9, G10, G11, G12, isShenxiang, isXuanji: profession === '玄机' };
-        }
-
-        function parseValue(str) {
-            if (!str) return 0;
-            return parseInt(String(str).replace(/[^0-9-]/g, ''), 10) || 0;
-        }
-
-        function getTraitBenefit(name, coeff, mode, profession) {
-            const { G7, G8, G9, G10, G11 } = coeff;
-            let base = 0;
-            if (name.includes('鸣镝裂风') || name.includes('鸣谪裂风')) {
-                base = (G7*1920 + 1200*G8)/G10 + (profession === '神相' ? 2.7 : 3.41);
-            } else if (name.includes('鸣沙诀')) {
-                base = 1800*G9/G10 + 3.4;
-            } else if (name.includes('贯山月')) {
-                base = 6.275;
-            } else if (name.includes('昆吾断玉')) {
-                base = 6.6;
-            } else if (name.includes('灼锋净域')) {
-                base = 1200*G7/G10 + 4;
-            } else if (name.includes('绝电惊沙')) {
-                base = 4.72;
-            } else if (name.includes('灭阵')) {
-                base = (profession === '神相') ? 6 : 0;
-            } else if (name.includes('断金戈')) {
-                if (profession === '鸿音' || profession === '九灵') base = 5;
-                else if (profession === '玄机' || profession === '碎梦') base = 5.87;
-                else base = 0;
-            } else if (name.includes('五韵谣')) {
-                base = (mode === '防守') ? (2000*G7+1280*G8)/G10 + 1.92 : (2000*G7+1280*G8)/G10 + 2.44;
-            } else if (name.includes('啸金乌')) {
-                base = (mode === '防守') ? (4800*G11/G10 + 2.3)*0.8 : (4800*G11/G10 + 2.9)*0.7;
-            } else if (name.includes('日月两仪')) {
-                base = (mode === '防守') ? 3.85 : 4.9;
-            } else if (name.includes('破霄摧星')) {
-                base = 1200*G9/G10 + 2.742;
-            }
-            return base;
-        }
-
-        function isLingyunNeigong(neigong) {
-            return neigong.is_lingyun === true || 
-                   neigong.灵韵 === true || 
-                   (neigong.attributes && neigong.attributes["<灵韵>特性效果等级"] !== undefined);
-        }
-
-        function calcWordScore(neigong, coeff, mode, profession, isXuanji) {
-            const attrs = neigong.attributes || {};
-            let total = 0;
-            if (attrs['破盾']) total += 2 * parseValue(attrs['破盾']);
-            if (attrs['攻击']) total += parseValue(attrs['攻击']) * coeff.G7;
-            if (attrs['力量']) total += parseValue(attrs['力量']) * (4.65*coeff.G7 + 2*coeff.G11);
-            if (attrs['气海']) total += parseValue(attrs['气海']) * (4.65*coeff.G7 + 2*coeff.G11);
-            if (attrs['破防']) total += parseValue(attrs['破防']) * coeff.G11;
-            if (attrs['最大攻击']) total += parseValue(attrs['最大攻击']) * (coeff.G7 / 2);
-            if (attrs['最小攻击']) total += parseValue(attrs['最小攻击']) * (coeff.G7 / 2);
-            if (attrs['全元素攻击']) total += parseValue(attrs['全元素攻击']) * coeff.G8;
-            if (attrs['会心']) total += coeff.G9 * parseValue(attrs['会心']);
-            if (attrs['内功克制']) total += parseValue(attrs['内功克制']) * 0.5;
-            if (attrs['外功克制']) total += parseValue(attrs['外功克制']) * 0.5;
-            if (attrs['身法']) total += parseValue(attrs['身法']) * 1.15 * 1.67;
-            if (attrs['流派元素']) {
-                const i73 = getTalents().oneThread ? 1 : 0;
-                total += parseValue(attrs['流派元素']) * 0.8 * coeff.G8 * (1 + i73*0.04);
-            }
-
-            if (attrs['绝电.灵']) total += coeff.G10 * 4.72 * parseValue(attrs['绝电.灵']) * 0.3926;
-            if (attrs['灼峰.灵']) {
-                const p8 = 1200 * coeff.G7 / coeff.G10 + 4;
-                total += parseValue(attrs['灼峰.灵']) * p8 * 0.5 * coeff.G10;
-            }
-            if (attrs['鸣镝.灵']) {
-                const c18 = parseValue(attrs['鸣镝.灵']);
-                total += c18 * (isXuanji ? (400*coeff.G8 + 640*coeff.G7 + 1.1*coeff.G10) : (400*coeff.G8 + 640*coeff.G7 + 1.42*coeff.G10));
-            }
-            if (attrs['昆吾.灵']) total += parseValue(attrs['昆吾.灵']) * 6.6 * 0.33 * coeff.G10;
-            if (attrs['破宵.灵']) {
-                const p19 = 1200 * coeff.G9 / coeff.G10 + 2.742;
-                total += parseValue(attrs['破宵.灵']) * p19 * 0.5 * coeff.G10;
-            }
-            if (attrs['日月.灵']) {
-                const p = (getMode() === '防守') ? 3.85 : 4.9;
-                total += parseValue(attrs['日月.灵']) * 0.5 * p * coeff.G10;
-            }
-            if (attrs['鸣沙决.灵']) total += (coeff.G9*600 + 0.85*coeff.G10) * parseValue(attrs['鸣沙决.灵']);
-            if (attrs['啸金乌.灵']) {
-                const modeStr = getMode();
-                total += parseValue(attrs['啸金乌.灵']) * ((modeStr === '防守') ? (0.75*coeff.G10 + 1200*coeff.G11)*0.8 : (0.9*coeff.G10 + 1200*coeff.G11)*0.7);
-            }
-            if (attrs['五韵谣.灵']) {
-                const modeStr = getMode();
-                total += parseValue(attrs['五韵谣.灵']) * ((modeStr === '防守') ? (500*coeff.G7 + 320*coeff.G8 + 0.75*coeff.G10) : (500*coeff.G7 + 320*coeff.G8 + 0.97*coeff.G10));
-            }
-            if (attrs['贯山月.灵']) total += parseValue(attrs['贯山月.灵']) * 0.3 * coeff.G10 * 6.275;
-            if (attrs['灭阵.灵']) {
-                const p10 = (profession === '神相') ? 6 : 0;
-                total += parseValue(attrs['灭阵.灵']) * 0.25 * p10 * coeff.G10;
-            }
-            if (attrs['断金戈.灵（鸿九）']) {
-                const p11 = (profession === '鸿音' || profession === '九灵') ? 5 : 0;
-                total += parseValue(attrs['断金戈.灵（鸿九）']) * 0.25 * p11 * coeff.G10;
-            }
-            if (attrs['断金戈.灵（玄碎）']) {
-                const p12 = (profession === '玄机' || profession === '碎梦') ? 5.87 : 0;
-                total += parseValue(attrs['断金戈.灵（玄碎）']) * 0.25 * p12 * coeff.G10;
-            }
-            return total;
-        }
-
-        function calcTotalScore(neigong, coeff, mode, profession, isXuanji) {
-            const wordScore = calcWordScore(neigong, coeff, mode, profession, isXuanji);
-            const traitBenefit = getTraitBenefit(neigong.name, coeff, mode, profession);
-            const traitScore = traitBenefit * coeff.G10;
-            const total = wordScore + traitScore;
-            const isLingyun = isLingyunNeigong(neigong);
-            const isRare = isRareNeigong(neigong.name);
-            return { wordScore, traitScore, total, isLingyun, isRare };
-        }
-
-        function parseElements(elemStr) {
-            const res = { fire:0, gold:0, wood:0, water:0, earth:0 };
-            if (!elemStr) return res;
-            const regex = /(\d+)([火金木水土])/g;
-            let m;
-            while ((m = regex.exec(elemStr)) !== null) {
-                const cnt = parseInt(m[1],10);
-                const type = m[2];
-                if (type === '火') res.fire += cnt;
-                if (type === '金') res.gold += cnt;
-                if (type === '木') res.wood += cnt;
-                if (type === '水') res.water += cnt;
-                if (type === '土') res.earth += cnt;
-            }
-            return res;
-        }
-
-        function getDisplayAttrs(attrs) {
-            const priority = ['攻击', '破防', '全元素攻击', '会心', '最大攻击', '最小攻击', '破盾', '力量', '身法', '内功克制', '外功克制'];
-            const items = [];
-            for (let key of priority) {
-                if (attrs[key]) {
-                    items.push(`${key}${attrs[key]}`);
-                    if (items.length >= 4) break;
-                }
-            }
-            return items.join(' · ');
-        }
-
-        function computeManualSelection(selectedItems) {
-            if (selectedItems.length !== 6) {
-                return { valid: false, msg: `请勾选6个内功，当前选了${selectedItems.length}个。` };
-            }
-            const names = selectedItems.map(s => s.name);
-            const nameSet = new Set(names);
-            if (nameSet.size !== 6) {
-                return { valid: false, msg: `存在同名内功，请确保每个内功名称唯一。` };
-            }
-            const rareCount = selectedItems.filter(s => s.isRare).length;
-            if (rareCount > 3) {
-                return { valid: false, msg: `稀有内功数量不能超过3，当前稀有数量：${rareCount}` };
-            }
-            let sumFire=0, sumGold=0, sumWood=0;
-            selectedItems.forEach(s => {
-                sumFire += s.elemCounts.fire;
-                sumGold += s.elemCounts.gold;
-                sumWood += s.elemCounts.wood;
-            });
-            const totalScore = selectedItems.reduce((a,c)=>a+c.total,0) + panelScoreValue;
-            const benefit = totalScore / 1400 * 0.01 * 100;
-            let elementMsg = `火元素: ${sumFire} (需≥12) | 金元素: ${sumGold} (需≥12) | 木元素: ${sumWood} (需≥4)`;
-            if (sumFire >= 12 && sumGold >= 12 && sumWood >= 4) {
-                elementMsg += ` ✅ 满足三火三金一木`;
-            } else {
-                elementMsg += ` ❌ 不满足周天条件`;
-            }
-            return { valid: true, totalScore, benefit, elementMsg, rareCount };
-        }
-
-        function renderRankTable(list) {
-
-            const sortedList = [...list].sort((a,b) => b.total - a.total);
-            const tbody = document.querySelector('#rankTable tbody');
-            tbody.innerHTML = '';
-            sortedList.forEach((item, idx) => {
-                const row = tbody.insertRow();
-                const selectCell = row.insertCell(0);
-                selectCell.className = 'select-col';
-                const cb = document.createElement('input');
-                cb.type = 'checkbox';
-
-                const isChecked = Array.from(selectedIndices).some(origIdx => currentScoredList[origIdx].name === item.name);
-                cb.checked = isChecked;
-                cb.addEventListener('change', (e) => {
-                    if (e.target.checked) {
-                        if (selectedIndices.size >= 6) {
-                            alert('最多只能选择6个内功');
-                            e.target.checked = false;
-                            return;
-                        }
-
-                        const selectedNames = Array.from(selectedIndices).map(i => currentScoredList[i].name);
-                        if (selectedNames.includes(item.name)) {
-                            alert('同名内功只能选择一个');
-                            e.target.checked = false;
-                            return;
-                        }
-
-                        const origIdx = currentScoredList.findIndex(orig => orig.name === item.name);
-                        if (origIdx !== -1) selectedIndices.add(origIdx);
-                    } else {
-                        const origIdx = currentScoredList.findIndex(orig => orig.name === item.name);
-                        if (origIdx !== -1) selectedIndices.delete(origIdx);
-                    }
+        
+        // 鼠标跟随效果
+        function addMouseEffect() {
+            document.addEventListener('mousemove', (e) => {
+                const cards = document.querySelectorAll('.system-card');
+                const x = e.clientX / window.innerWidth;
+                const y = e.clientY / window.innerHeight;
+                
+                cards.forEach((card, index) => {
+                    const speed = (index + 1) * 0.5;
+                    const xOffset = (x - 0.5) * speed * 10;
+                    const yOffset = (y - 0.5) * speed * 10;
+                    
+                    card.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
                 });
-                selectCell.appendChild(cb);
-                row.insertCell(1).innerText = idx+1;
-                row.insertCell(2).innerText = item.name;
-                row.insertCell(3).innerHTML = `<span class="badge">${item.elements || '—'}</span>`;
-                row.insertCell(4).innerHTML = item.isRare ? '<span class="badge badge-rare">稀有</span>' : '—';
-                row.insertCell(5).innerHTML = item.isLingyun ? '<span class="badge badge-lingyun">灵韵</span>' : '—';
-                row.insertCell(6).innerHTML = `<div class="attr-list">${item.displayAttrs || '—'}</div>`;
-                row.insertCell(7).innerText = item.wordScore;
-                row.insertCell(8).innerText = item.traitScore;
-                row.insertCell(9).innerText = item.total;
             });
         }
-
-
-        function findBestCombination(allScores, panelScore, coeff, profession, isXuanji) {
-            const wuyunList = allScores.filter(s => s.name.includes('五韵谣'));
-            if (wuyunList.length === 0) return null;
-            const wuyun = wuyunList.reduce((a,b) => a.total > b.total ? a : b);
-            const others = allScores.filter(s => !s.name.includes('五韵谣'));
-            const sortedOthers = [...others].sort((a,b) => b.total - a.total);
-            const topN = Math.min(sortedOthers.length, 80);
-            let bestScore = -Infinity;
-            let bestCombo = null;
-            for (let i=0; i<topN; i++) {
-                for (let j=i+1; j<topN; j++) {
-                    for (let k=j+1; k<topN; k++) {
-                        for (let l=k+1; l<topN; l++) {
-                            for (let m=l+1; m<topN; m++) {
-                                const cand = [sortedOthers[i], sortedOthers[j], sortedOthers[k], sortedOthers[l], sortedOthers[m]];
-                                const names = new Set(cand.map(c => c.name));
-                                if (names.size !== 5) continue;
-                                const rareCount = cand.filter(c => c.isRare).length;
-                                if (rareCount > 3) continue;
-                                let sumFire=0, sumGold=0, sumWood=0;
-                                cand.forEach(c => {
-                                    sumFire += c.elemCounts.fire;
-                                    sumGold += c.elemCounts.gold;
-                                    sumWood += c.elemCounts.wood;
-                                });
-                                const needFire = Math.max(0, 12 - sumFire);
-                                const needWood = Math.max(0, 4 - sumWood);
-                                const needGold = Math.max(0, 12 - sumGold);
-                                if (needFire + needWood + needGold > 6) continue;
-                                const totalScore = cand.reduce((a,c)=>a+c.total,0) + wuyun.total + panelScore;
-                                if (totalScore > bestScore) {
-                                    bestScore = totalScore;
-                                    bestCombo = { combo: [...cand, wuyun], allocated: { needFire, needWood, needGold } };
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if (!bestCombo) return null;
-            const totalBenefit = bestScore / coeff.G10 * 0.01 * 100;
-            return { ...bestCombo, totalScore: bestScore, totalBenefit };
-        }
-
-
-        function updatePanelAttr() {
-            const prof = getProfession();
-            const container = document.getElementById('panelAttrRow');
-            if (!container) return;
-            let labelText = '';
-            let placeholder = '';
-            let id = 'panel_attr_value';
-            if (prof === '玄机') {
-                labelText = '身法·玄机·藏巧';
-                placeholder = '输入身法数值';
-            } else if (prof === '血河') {
-                labelText = '根骨·血河·灵根';
-                placeholder = '输入根骨数值';
-            } else if (prof === '龙吟') {
-                labelText = '根骨·龙吟·剑骨';
-                placeholder = '输入根骨数值';
-            } else if (prof === '九灵') {
-                labelText = '耐力·九灵·雪魄';
-                placeholder = '输入耐力数值';
-            } else if (prof === '鸿音') {
-                labelText = '身法·鸿音·易弦';
-                placeholder = '输入身法数值';
-            } else {
-                labelText = '无面板词条';
-                placeholder = '当前职业无特殊面板词条';
-            }
-            let html = `<div class="form-group"><label>📊 ${labelText}</label>`;
-            if (prof === '神相' || prof === '碎梦') {
-                html += `<input type="number" id="${id}" value="0" step="1" disabled placeholder="${placeholder}" style="width:100%">`;
-            } else {
-                html += `<input type="number" id="${id}" value="0" step="1" placeholder="${placeholder}" style="width:100%">`;
-            }
-            html += `</div>`;
-            container.innerHTML = html;
-            const input = document.getElementById(id);
-            if (input && !input.disabled) {
-                input.addEventListener('input', () => {
-                    const val = parseFloat(input.value) || 0;
-                    const talents = getTalents();
-                    const ningShuang = getNingShuang();
-                    const coeff = computeCoefficients(prof, talents, ningShuang);
-                    if (prof === '玄机') {
-                        panelScoreValue = val * 2 * coeff.G11;
-                    } else if (prof === '血河') {
-                        panelScoreValue = val * 1.65 * coeff.G7;
-                    } else if (prof === '龙吟') {
-                        panelScoreValue = val * 2 * coeff.G11;
-                    } else if (prof === '九灵') {
-                        panelScoreValue = val * 1.65 * coeff.G7;
-                    } else if (prof === '鸿音') {
-                        panelScoreValue = val * (1*coeff.G7 + 0.64*coeff.G8);
-                    } else {
-                        panelScoreValue = 0;
-                    }
-                });
-                input.dispatchEvent(new Event('input'));
-            } else {
-                panelScoreValue = 0;
-            }
-        }
-
-
-        async function run() {
-            const profession = getProfession();
-            const mode = getMode();
-            const ningShuang = getNingShuang();
-            const talents = getTalents();
-            const coeff = computeCoefficients(profession, talents, ningShuang);
-            const isXuanji = profession === '玄机';
-            document.getElementById('coeffDisplay').innerHTML = `
-                攻击系数 = ${coeff.G7.toFixed(4)}<br>
-                元素系数 = ${coeff.G8.toFixed(4)}<br>
-                会心系数 = ${coeff.G9.toFixed(4)}<br>
-                1伤害提升 = 1400<br>
-                1破防 = 1.15<br>
-                攻克占比 = 0.66
-            `;
-            let jsonStr = document.getElementById('jsonText').value;
-            const file = document.getElementById('jsonFile').files[0];
-            if (file) {
-                jsonStr = await file.text();
-                document.getElementById('jsonText').value = jsonStr;
-            }
-            if (!jsonStr.trim()) { alert("请导入JSON数据"); return; }
-            let data;
-            try { data = JSON.parse(jsonStr); } catch(e) { alert("JSON格式错误"); return; }
-            const neigongList = data.neigong_list || [];
-            if (!neigongList.length) { alert("未找到 neigong_list"); return; }
-            const scored = neigongList.map(ng => {
-                const elemStr = ng.elements || "";
-                const elemCounts = parseElements(elemStr);
-                const { wordScore, traitScore, total, isLingyun, isRare } = calcTotalScore(ng, coeff, mode, profession, isXuanji);
-                const displayAttrs = getDisplayAttrs(ng.attributes || {});
-                return {
-                    name: ng.name,
-                    elements: elemStr,
-                    isLingyun,
-                    isRare,
-                    wordScore: Math.round(wordScore),
-                    traitScore: Math.round(traitScore),
-                    total: Math.round(total),
-                    elemCounts,
-                    displayAttrs
-                };
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            addMouseEffect();
+            
+            // 添加页面加载动画
+            const cards = document.querySelectorAll('.system-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(50px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 200);
             });
-            currentScoredList = scored;
-            selectedIndices.clear();
-            renderRankTable(scored);
-
-            const bestRes = findBestCombination(scored, panelScoreValue, coeff, profession, isXuanji);
-            const area = document.getElementById('bestCombinationArea');
-            if (bestRes) {
-                const combo = bestRes.combo;
-                const benefitPercent = bestRes.totalBenefit.toFixed(4);
-                let html = `<div class="summary">🔥 总收益 = ${benefitPercent}% (总分 ${bestRes.totalScore}) | 五韵谣补火 ${bestRes.allocated.needFire} 木 ${bestRes.allocated.needWood} 金 ${bestRes.allocated.needGold}</div>`;
-                html += `<div class="table-wrapper">\n<table>\n<thead>\n<tr><th>内功</th><th>元素</th><th>稀有</th><th>灵韵</th><th>主要属性</th><th>词条分</th><th>特性分</th><th>总分(含面板)</th></tr>\n</thead>\n<tbody>`;
-                combo.forEach(c => {
-                    const finalTotal = c.total + (c.name.includes('五韵谣') ? panelScoreValue : 0);
-                    html += `<tr>
-                        <td>${c.name}</td>
-                        <td><span class="badge">${c.elements || '五韵谣(补元素)'}</span></td>
-                        <td>${c.isRare ? '稀有' : '—'}</td>
-                        <td>${c.isLingyun ? '灵韵' : '—'}</td>
-                        <td class="attr-list">${c.displayAttrs || '—'}</td>
-                        <td>${c.wordScore}</td>
-                        <td>${c.traitScore}</td>
-                        <td>${Math.round(finalTotal)}</td>
-                    </tr>`;
-                });
-                html += `</tbody>\n</table>\n</div>`;
-                area.innerHTML = html;
-                window.bestComboData = bestRes;
-            } else {
-                area.innerHTML = '<p class="summary">⚠️ 未找到满足三火三金一木的组合</p>';
-            }
-        }
-
-
-        function onManualCalc() {
-            if (!currentScoredList.length) {
-                alert('请先导入数据并点击“开始评分”');
-                return;
-            }
-            const selectedItems = Array.from(selectedIndices).map(idx => currentScoredList[idx]);
-            const result = computeManualSelection(selectedItems);
-            const area = document.getElementById('manualResultArea');
-            if (!result.valid) {
-                area.innerHTML = `<div class="summary" style="background:#fee2e2;">⚠️ ${result.msg}</div>`;
-                return;
-            }
-            const benefitPercent = result.benefit.toFixed(4);
-            area.innerHTML = `<div class="summary">
-                ✅ 总收益 = ${benefitPercent}% (总分 ${result.totalScore})<br>
-                ${result.elementMsg}<br>
-                稀有内功数量: ${result.rareCount} (≤3满足)
-            </div>`;
-        }
-
-
-        function clearSelection() {
-            selectedIndices.clear();
-            if (currentScoredList.length) {
-                renderRankTable(currentScoredList);
-            }
-            document.getElementById('manualResultArea').innerHTML = '';
-        }
-
-
-        document.getElementById('profession').addEventListener('change', updatePanelAttr);
-        document.getElementById('calcBtn').addEventListener('click', run);
-        document.getElementById('manualCalcBtn').addEventListener('click', onManualCalc);
-        document.getElementById('clearSelectionBtn').addEventListener('click', clearSelection);
-        document.getElementById('exportJsonBtn').addEventListener('click', () => {
-            if (window.bestComboData) {
-                const exportObj = {
-                    profession: getProfession(),
-                    mode: getMode(),
-                    ningShuang: getNingShuang(),
-                    panelScore: panelScoreValue,
-                    totalScore: window.bestComboData.totalScore,
-                    totalBenefitPercent: window.bestComboData.totalBenefit,
-                    combination: window.bestComboData.combo.map(c => ({
-                        name: c.name,
-                        elements: c.elements,
-                        is_rare: c.isRare,
-                        is_lingyun: c.isLingyun,
-                        wordScore: c.wordScore,
-                        traitScore: c.traitScore,
-                        totalScore: c.total + (c.name.includes('五韵谣') ? panelScoreValue : 0)
-                    }))
-                };
-                const jsonStr = JSON.stringify(exportObj, null, 2);
-                const blob = new Blob([jsonStr], {type: 'application/json'});
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = 'best_neigong_combo.json';
-                a.click();
-                URL.revokeObjectURL(a.href);
-            } else {
-                alert("暂无最优组合数据，请先计算");
-            }
         });
-
-        updatePanelAttr();
-    })();
-</script>
+    </script>
 </body>
 </html>
