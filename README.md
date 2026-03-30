@@ -358,7 +358,7 @@ Copyright (c) 2026 Odinfreed
 
 ## 📞 联系方式
 **技术支持和反馈**
-- 💬 emain:3135267085@qq.com
+- 💬 e-main:3135267085@qq.com
 - 🌟 欢迎Star和Fork本项目！
 
 ---
