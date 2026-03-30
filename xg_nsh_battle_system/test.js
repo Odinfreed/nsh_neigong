@@ -1,2 +1,0 @@
-
-chart.umd.min.js
