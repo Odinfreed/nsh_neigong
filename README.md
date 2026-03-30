@@ -1,9 +1,9 @@
 # 逆水寒 · 战斗分析系统
-<div align="center">
 ![逆水寒战斗分析系统](https://img.shields.io/badge/%E9%80%86%E6%B0%B4%E5%AF%92-%E6%88%98%E6%96%97%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F-blue?style=for-the-badge)
 ![Version](https://img.shields.io/badge/version-v2.0.0-brightgreen?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Web-blueviolet?style=flat-square)
+
 **专为《逆水寒》帮会打造的战斗数据智能分析与管理平台**
 [功能介绍](#🎮-功能模块) • [快速开始](#🚀-快速开始) • [文档中心](#📖-文档中心) • [技术架构](#🛠️-技术架构) • [贡献指南](#🤝-贡献指南)
 </div>
