@@ -222,11 +222,7 @@
                         let currentGuild = null;
                         let headers = null;
                         let guildData = [];
-
-                        // 字段名映射：CSV表头 -> 内部字段名
-                        const fieldMapping = {
-                            '击败': '击败/清泉',
-                        };
+                        let guildIndex = 0;  // 帮会序号，用于自动生成名称
 
                         for (let i = 0; i < lines.length; i++) {
                             const line = lines[i].trim();
@@ -235,11 +231,28 @@
                             const values = parseCSVLine(line);
                             console.log(`第${i+1}行，字段数：${values.length}，前2个字段：${values.slice(0,2)}`);
 
-                            // 检查是否是帮会标识行（格式："帮会名","人数"）
+                            // 检查是否是帮会标识行（格式："帮会名","人数"）或分隔符
                             if (values.length === 2) {
                                 const guildName = values[0].replace(/"/g, '').trim();
                                 const memberCount = values[1].replace(/"/g, '').trim();
                                 const isNumber = /^\d+$/.test(memberCount);
+                                
+                                // 处理 "nil","nil" 分隔符（保存当前帮会，准备解析新帮会）
+                                if (guildName === 'nil' && memberCount === 'nil') {
+                                    console.log('检测到帮会分隔符');
+                                    if (currentGuild && guildData.length > 0) {
+                                        console.log(`保存帮会 ${currentGuild}，成员数：${guildData.length}`);
+                                        result[currentGuild] = guildData;
+                                    }
+                                    
+                                    // 生成下一个帮会名称
+                                    guildIndex++;
+                                    currentGuild = `帮会${guildIndex}`;
+                                    console.log(`创建新帮会：${currentGuild}`);
+                                    guildData = [];
+                                    headers = null;  // 重置表头，允许识别新表头
+                                    continue;
+                                }
                                 
                                 if (isNumber && guildName.length > 0 && guildName.length < 20) {
                                     console.log(`检测到帮会标识行：${guildName}，人数：${memberCount}`);
@@ -259,7 +272,6 @@
                             if (!headers && values.length >= 2 && 
                                 (values[0].includes('玩家') || values[1].includes('职业'))) {
                                 headers = values.map(v => v.replace(/"/g, '').trim());
-                                headers = headers.map(h => fieldMapping[h] || h);
                                 console.log('检测到表头行:', headers);
                                 continue;
                             }
@@ -340,10 +352,11 @@
                             }
                         }
 
-                        // 保存最后一个帮会的数据
-                        if (currentGuild && guildData.length > 0) {
-                            console.log(`保存最后一个帮会 ${currentGuild}，成员数：${guildData.length}`);
-                            result[currentGuild] = guildData;
+                        // 保存最后一个帮会的数据（即使没有分隔符结尾）
+                        if (guildData.length > 0) {
+                            const saveGuildName = currentGuild || `帮会${guildIndex || 1}`;
+                            console.log(`保存最后一个帮会 ${saveGuildName}，成员数：${guildData.length}`);
+                            result[saveGuildName] = guildData;
                         }
 
                         console.log(`文件 ${file.name} 解析结果：`, result);
