@@ -149,25 +149,11 @@
                     </button>
                 </div>
 
-                <!-- 快速提示 -->
                 <div class="mt-8 pt-6 border-t border-gray-200">
-                    <h3 class="font-bold text-lg mb-3">📋 支持的文件格式</h3>
-                    <ul class="text-left inline-block text-gray-600">
-                        <li class="mb-1"><i class="fas fa-check text-success mr-2"></i>标准帮战CSV导出文件</li>
-                        <li class="mb-1"><i class="fas fa-check text-success mr-2"></i>包含两个帮会数据</li>
-                        <li class="mb-1"><i class="fas fa-check text-success mr-2"></i>自动识别帮会名称和人数</li>
-                        <li class="mb-1"><i class="fas fa-check text-success mr-2"></i>兼容系统所有历史数据格式</li>
-                    </ul>
-                    <div class="mt-6 p-4 bg-blue-50 rounded-lg">
-                        <h4 class="font-bold text-blue-800 mb-2"><i class="fas fa-info-circle mr-2"></i>数据处理后可跳转至：</h4>
-                        <div class="flex gap-3 flex-wrap">
-                            <a href="../xg_guild_analysis/xg_guild_analysis_main.html" class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition">
-                                <i class="fas fa-chart-line mr-2"></i>帮会对比分析
-                            </a>
-                            <a href="../xg_guild_analysis/xg_guild_analysis_backup.html" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
-                                <i class="fas fa-gamepad mr-2"></i>联赛数据分析
-                            </a>
-                        </div>
+                    <div class="flex gap-3 flex-wrap justify-center">
+                        <a href="../xg_guild_analysis/xg_guild_analysis_main.html" class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition">
+                            <i class="fas fa-chart-line mr-2"></i>帮会对比分析
+                        </a>
                     </div>
                 </div>
             </div>
@@ -514,26 +500,10 @@
                     <a href="../xg_guild_analysis/xg_guild_analysis_main.html" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition inline-flex items-center">
                         <i class="fas fa-chart-line mr-2"></i>帮会对比分析
                     </a>
-                    <a href="../xg_guild_analysis/xg_guild_analysis_backup.html" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition inline-flex items-center">
-                        <i class="fas fa-gamepad mr-2"></i>联赛数据分析
-                    </a>
-                    <button onclick="alert('分团系统将在数据加载完成后可用')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition inline-flex items-center" disabled>
-                        <i class="fas fa-users-cog mr-2"></i>智能分团系统
-                    </button>
                 `;
                 
                 // 将按钮组添加到状态指示器下方
                 statusIndicator.parentNode.insertBefore(jumpButtons, statusIndicator.nextSibling);
-                
-                    // 启用分团系统按钮
-                    setTimeout(() => {
-                        const squadBtn = jumpButtons.querySelector('button');
-                        squadBtn.disabled = false;
-                        squadBtn.onclick = function() {
-                            window.location.href = '../xg_team_system/xg_team_system.html';
-                        };
-                        squadBtn.className = squadBtn.className.replace('opacity-50', '');
-                    }, 100);
 
                 return true;
             } catch (error) {
