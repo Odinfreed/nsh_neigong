@@ -7,8 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
     <!-- Chart.js 和插件 -->
-    <script src="../../xg_libs/chart.umd.min.js"></script>
-    <script src="../../xg_libs/chartjs-plugin-datalabels.min.js"></script>
+    <script src="../xg_libs/chart.umd.min.js"></script>
+    <script src="../xg_libs/chartjs-plugin-datalabels.min.js"></script>
     <script>
         // 注册 Chart.js 插件
         if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
@@ -917,163 +917,8 @@
                                     </div>
                 </div>
                 
-                <!-- 成员池卡片 -->
-                <div class="card" id="memberPoolCard" style="display: none;">
-                    <div class="card-header">
-                        <h2 class="text-lg font-bold flex items-center justify-between">
-                            <span class="flex items-center">
-                                <i class="fas fa-users mr-2"></i>
-                                成员池
-                                <span class="ml-2 text-xs text-gray-400">(拖拽到右侧分组)</span>
-                            </span>
-                            <div class="flex items-center gap-2">
-                                <!-- 数据侧重颜色提示 -->
-                                <div class="relative">
-                                    <i class="fas fa-chart-bar text-gray-400 hover:text-blue-400 cursor-pointer transition-colors"
-                                       onmouseenter="document.getElementById('dataLegendTooltip').classList.remove('hidden')"
-                                       onmouseleave="document.getElementById('dataLegendTooltip').classList.add('hidden')"></i>
-                                    <div id="dataLegendTooltip" class="hidden absolute right-0 top-6 w-64 bg-gray-800 border border-gray-600 rounded-lg p-3 text-xs text-gray-300 shadow-xl z-50">
-                                        <p class="font-bold text-blue-400 mb-2">数据侧重颜色：</p>
-                                        <div class="space-y-1">
-                                            <div class="flex items-center gap-2">
-                                                <span class="w-3 h-3 rounded-full bg-red-500"></span>
-                                                <span>人伤型 - 对玩家伤害高</span>
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <span class="w-3 h-3 rounded-full bg-blue-500"></span>
-                                                <span>塔伤型 - 对建筑伤害高</span>
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <span class="w-3 h-3 rounded-full bg-pink-500"></span>
-                                                <span>辅助型 - 治疗量高</span>
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <span class="w-3 h-3 rounded-full bg-green-500"></span>
-                                                <span>资源型 - 资源获取高</span>
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <span class="w-3 h-3 rounded-full bg-red-900"></span>
-                                                <span>重伤高 - 负面指标</span>
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <span class="w-3 h-3 rounded-full bg-gray-500"></span>
-                                                <span>综合型 - 无明显侧重</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- 职业颜色提示 -->
-                                <div class="relative">
-                                    <i class="fas fa-palette text-gray-400 hover:text-purple-400 cursor-pointer transition-colors"
-                                       onmouseenter="document.getElementById('professionLegendTooltip').classList.remove('hidden')"
-                                       onmouseleave="document.getElementById('professionLegendTooltip').classList.add('hidden')"></i>
-                                    <div id="professionLegendTooltip" class="hidden absolute right-0 top-6 w-56 bg-gray-800 border border-gray-600 rounded-lg p-3 text-xs text-gray-300 shadow-xl z-50">
-                                        <p class="font-bold text-purple-400 mb-2">职业颜色标识：</p>
-                                        <div class="grid grid-cols-2 gap-2">
-                                            <div class="flex items-center gap-2">
-                                                <span class="w-4 h-4 rounded" style="background: #FF8C00"></span>
-                                                <span>铁衣</span>
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <span class="w-4 h-4 rounded" style="background: #F44336"></span>
-                                                <span>血河</span>
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <span class="w-4 h-4 rounded" style="background: #FF69B4"></span>
-                                                <span>素问</span>
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <span class="w-4 h-4 rounded" style="background: #9C27B0"></span>
-                                                <span>九灵</span>
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <span class="w-4 h-4 rounded" style="background: #00C853"></span>
-                                                <span>龙吟</span>
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <span class="w-4 h-4 rounded" style="background: #00CED1"></span>
-                                                <span>碎梦</span>
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <span class="w-4 h-4 rounded" style="background: #1E88E5"></span>
-                                                <span>神相</span>
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <span class="w-4 h-4 rounded" style="background: #FFD700"></span>
-                                                <span>玄机</span>
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <span class="w-4 h-4 rounded" style="background: #4FC3F7"></span>
-                                                <span>潮光</span>
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <span class="w-4 h-4 rounded" style="background: #1565C0"></span>
-                                                <span>沧澜</span>
-                                            </div>
-                                            <div class="flex items-center gap-2 col-span-2">
-                                                <span class="w-4 h-4 rounded" style="background: linear-gradient(135deg, #FFD700, #FF8C00)"></span>
-                                                <span>鸿音（黄橙渐变）</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </h2>
-                        <input type="text" id="squadMemberSearch" placeholder="搜索成员..." class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white mb-2" oninput="filterSquadMemberPool()">
-                        <div id="squadMemberPool" class="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto p-2 bg-gray-800 rounded-lg">
-                            <div class="text-center text-gray-400 text-sm py-4">请先加载帮会数据</div>
-                        </div>
-                    </div>
-                </div>
+                <!-- 快速操作卡片 -->
 
-                <!-- 添加新组卡片 -->
-                <div class="card" id="addGroupCard" style="display: none;">
-                    <div class="card-header">
-                        <h2 class="text-lg font-bold flex items-center">
-                            <i class="fas fa-plus-circle mr-2"></i>
-                            添加新组
-                        </h2>
-                    </div>
-                    <div class="space-y-3">
-                        <!-- 选择要操作的团 -->
-                        <div>
-                            <label class="block text-sm font-semibold mb-1">选择团队</label>
-                            <select id="targetTeamSelect" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm">
-                                <option value="">选择团队...</option>
-                                <option value="大团">大团</option>
-                                <option value="防守团">防守团</option>
-                                <option value="机动团">机动团</option>
-                            </select>
-                        </div>
-                        
-                        <!-- 新组名称 -->
-                        <div>
-                            <label class="block text-sm font-semibold mb-1">组名称</label>
-                            <select id="newGroupNameSelect" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm mb-2" onchange="onGroupNameSelectChange()">
-                                <option value="">选择预设组...</option>
-                                <option value="拆塔">拆塔</option>
-                                <option value="保镖">保镖</option>
-                                <option value="防守">防守</option>
-                                <option value="机防">机防</option>
-                                <option value="机拆">机拆</option>
-                                <option value="other">+ 添加其他分组</option>
-                            </select>
-                            <div id="customGroupNameInput" class="hidden">
-                                <input type="text" id="customGroupName" placeholder="输入自定义组名" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm">
-                            </div>
-                        </div>
-                        
-                        <!-- 人数上限 -->
-                        <div>
-                            <label class="block text-sm font-semibold mb-1">人数上限</label>
-                            <input type="number" id="newGroupLimit" value="6" min="1" max="12" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm">
-                        </div>
-                        
-                        <button onclick="addNewGroup()" class="w-full px-4 py-2 rounded-lg text-white font-medium text-sm" style="background: linear-gradient(135deg, #165DFF 0%, #722ED1 100%);">
-                            <i class="fas fa-plus mr-2"></i>添加组
-                        </button>
-                    </div>
-                </div>
                 
                 <!-- 快速操作卡片 -->
                 <div class="card">
@@ -1139,7 +984,6 @@
                             <div class="tab" onclick="switchTab('player', this)">个人分析</div>
                             <div class="tab" onclick="switchTab('profession', this)">职业对比</div>
                             <div class="tab" onclick="switchTab('category', this)">分类数据</div>
-                            <div class="tab" onclick="switchTab('team', this)">智能分团</div>
                         </div>
                     </div>
                     <div class="flex-1 p-4">
@@ -6012,12 +5856,7 @@
             `).join('');
         }
 
-        // ==================== 智能分团模块 ====================
 
-        function initTeamModule() {
-            // 团队模块初始化 - 等待数据加载后自动初始化
-            console.log('团队模块初始化完成');
-        }
 
         function addNewPlayer() {
             const playerIdInput = document.getElementById('newPlayerId');
@@ -6450,9 +6289,8 @@
             // 初始化标签页
             switchTab('stats');
 
-            // 初始化个人分析和智能分团
+            // 初始化个人分析
             initPlayerAnalysis();
-            initTeamModule();
             
             // 初始化数据源管理器
             initDataSourceManager();
