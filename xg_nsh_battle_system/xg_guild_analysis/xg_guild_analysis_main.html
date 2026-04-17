@@ -1538,47 +1538,71 @@
                         <!-- 个人分析视图 -->
                         <div id="playerView" class="hidden">
                             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                <!-- 左侧：玩家选择 -->
-                                <div class="card">
-                                    <h3 class="card-title"><i class="fas fa-users mr-2"></i>选择玩家</h3>
-                                    
-                                    <!-- 帮会筛选 -->
-                                    <div class="mb-3">
-                                        <p class="text-xs text-gray-500 mb-2">帮会筛选</p>
-                                        <div class="flex gap-2">
-                                            <button id="filterGuildAll" onclick="filterPlayerByGuild('all')" class="flex-1 px-3 py-2 text-xs bg-gradient-to-r from-red-600 to-blue-600 text-white rounded transition-colors font-medium">全部</button>
-                                            <button id="filterGuild1" onclick="filterPlayerByGuild('guild1')" class="flex-1 px-3 py-2 text-xs bg-red-600/30 hover:bg-red-600/50 text-red-300 rounded transition-colors" title="">帮会1</button>
-                                            <button id="filterGuild2" onclick="filterPlayerByGuild('guild2')" class="flex-1 px-3 py-2 text-xs bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 rounded transition-colors" title="">帮会2</button>
+                                <!-- 左侧：玩家选择（可折叠） -->
+                                <div class="card" id="playerSelectorCard">
+                                    <!-- 折叠状态：紧凑头部 -->
+                                    <div id="playerSelectorCompact" class="hidden cursor-pointer hover:bg-gray-800/50 transition-colors rounded p-2" onclick="expandPlayerSelector()">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center">
+                                                    <i class="fas fa-user text-white"></i>
+                                                </div>
+                                                <div>
+                                                    <p class="font-bold text-sm" id="compactPlayerName">未选择玩家</p>
+                                                    <p class="text-xs text-gray-500" id="compactPlayerInfo">点击展开选择面板</p>
+                                                </div>
+                                            </div>
+                                            <i class="fas fa-chevron-down text-gray-500"></i>
                                         </div>
                                     </div>
-                                    
-                                    <!-- 搜索框 -->
-                                    <div class="relative mb-2">
-                                        <input type="text" id="playerSearchInput" placeholder="搜索玩家名称..." 
-                                               class="w-full p-3 pl-10 bg-dark border border-gray-600 rounded-none text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent"
-                                               oninput="filterPlayerSelect()">
-                                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
-                                    </div>
-                                    
-                                    <!-- 快捷筛选按钮 -->
-                                    <div class="flex gap-2 mb-3 flex-wrap">
-                                        <button onclick="filterPlayerByProfession('')" class="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 rounded transition-colors">全部</button>
-                                        <button onclick="filterPlayerByProfession('铁衣')" class="px-2 py-1 text-xs bg-orange-600/30 hover:bg-orange-600/50 text-orange-300 rounded transition-colors">铁衣</button>
-                                        <button onclick="filterPlayerByProfession('血河')" class="px-2 py-1 text-xs bg-red-600/30 hover:bg-red-600/50 text-red-300 rounded transition-colors">血河</button>
-                                        <button onclick="filterPlayerByProfession('素问')" class="px-2 py-1 text-xs bg-pink-600/30 hover:bg-pink-600/50 text-pink-300 rounded transition-colors">素问</button>
-                                        <button onclick="filterPlayerByProfession('九灵')" class="px-2 py-1 text-xs bg-purple-600/30 hover:bg-purple-600/50 text-purple-300 rounded transition-colors">九灵</button>
-                                        <button onclick="filterPlayerByProfession('龙吟')" class="px-2 py-1 text-xs bg-green-600/30 hover:bg-green-600/50 text-green-300 rounded transition-colors">龙吟</button>
-                                        <button onclick="filterPlayerByProfession('碎梦')" class="px-2 py-1 text-xs bg-cyan-600/30 hover:bg-cyan-600/50 text-cyan-300 rounded transition-colors">碎梦</button>
-                                        <button onclick="filterPlayerByProfession('神相')" class="px-2 py-1 text-xs bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 rounded transition-colors">神相</button>
-                                        <button onclick="filterPlayerByProfession('玄机')" class="px-2 py-1 text-xs bg-yellow-600/30 hover:bg-yellow-600/50 text-yellow-300 rounded transition-colors">玄机</button>
-                                        <button onclick="filterPlayerByProfession('潮光')" class="px-2 py-1 text-xs bg-sky-600/30 hover:bg-sky-600/50 text-sky-300 rounded transition-colors">潮光</button>
-                                        <button onclick="filterPlayerByProfession('沧澜')" class="px-2 py-1 text-xs bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 rounded transition-colors">沧澜</button>
-                                        <button onclick="filterPlayerByProfession('鸿音')" class="px-2 py-1 text-xs bg-gradient-to-r from-yellow-600/30 to-orange-600/30 hover:from-yellow-600/50 hover:to-orange-600/50 text-yellow-200 rounded transition-colors">鸿音</button>
-                                    </div>
 
-                                    <select id="playerSelect" class="w-full p-3 bg-dark border border-gray-600 rounded-none mb-4 text-gray-100 focus:ring-2 focus:ring-primary cursor-pointer" onchange="onPlayerSelectChange(this.value)">
-                                        <option value="">请先加载数据...</option>
-                                    </select>
+                                    <!-- 展开状态：完整选择面板 -->
+                                    <div id="playerSelectorFull">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h3 class="card-title mb-0"><i class="fas fa-users mr-2"></i>选择玩家</h3>
+                                            <button onclick="collapsePlayerSelector()" class="text-gray-500 hover:text-gray-300 transition-colors p-1" title="折叠面板">
+                                                <i class="fas fa-chevron-up"></i>
+                                            </button>
+                                        </div>
+                                    
+                                        <!-- 帮会筛选 -->
+                                        <div class="mb-3">
+                                            <p class="text-xs text-gray-500 mb-2">帮会筛选</p>
+                                            <div class="flex gap-2">
+                                                <button id="filterGuildAll" onclick="filterPlayerByGuild('all')" class="flex-1 px-3 py-2 text-xs bg-gradient-to-r from-red-600 to-blue-600 text-white rounded transition-colors font-medium">全部</button>
+                                                <button id="filterGuild1" onclick="filterPlayerByGuild('guild1')" class="flex-1 px-3 py-2 text-xs bg-red-600/30 hover:bg-red-600/50 text-red-300 rounded transition-colors" title="">帮会1</button>
+                                                <button id="filterGuild2" onclick="filterPlayerByGuild('guild2')" class="flex-1 px-3 py-2 text-xs bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 rounded transition-colors" title="">帮会2</button>
+                                            </div>
+                                        </div>
+                                    
+                                        <!-- 搜索框 -->
+                                        <div class="relative mb-2">
+                                            <input type="text" id="playerSearchInput" placeholder="搜索玩家名称..." 
+                                                   class="w-full p-3 pl-10 bg-dark border border-gray-600 rounded-none text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent"
+                                                   oninput="filterPlayerSelect()">
+                                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                                        </div>
+                                    
+                                        <!-- 快捷筛选按钮 -->
+                                        <div class="flex gap-2 mb-3 flex-wrap">
+                                            <button onclick="filterPlayerByProfession('')" class="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 rounded transition-colors">全部</button>
+                                            <button onclick="filterPlayerByProfession('铁衣')" class="px-2 py-1 text-xs bg-orange-600/30 hover:bg-orange-600/50 text-orange-300 rounded transition-colors">铁衣</button>
+                                            <button onclick="filterPlayerByProfession('血河')" class="px-2 py-1 text-xs bg-red-600/30 hover:bg-red-600/50 text-red-300 rounded transition-colors">血河</button>
+                                            <button onclick="filterPlayerByProfession('素问')" class="px-2 py-1 text-xs bg-pink-600/30 hover:bg-pink-600/50 text-pink-300 rounded transition-colors">素问</button>
+                                            <button onclick="filterPlayerByProfession('九灵')" class="px-2 py-1 text-xs bg-purple-600/30 hover:bg-purple-600/50 text-purple-300 rounded transition-colors">九灵</button>
+                                            <button onclick="filterPlayerByProfession('龙吟')" class="px-2 py-1 text-xs bg-green-600/30 hover:bg-green-600/50 text-green-300 rounded transition-colors">龙吟</button>
+                                            <button onclick="filterPlayerByProfession('碎梦')" class="px-2 py-1 text-xs bg-cyan-600/30 hover:bg-cyan-600/50 text-cyan-300 rounded transition-colors">碎梦</button>
+                                            <button onclick="filterPlayerByProfession('神相')" class="px-2 py-1 text-xs bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 rounded transition-colors">神相</button>
+                                            <button onclick="filterPlayerByProfession('玄机')" class="px-2 py-1 text-xs bg-yellow-600/30 hover:bg-yellow-600/50 text-yellow-300 rounded transition-colors">玄机</button>
+                                            <button onclick="filterPlayerByProfession('潮光')" class="px-2 py-1 text-xs bg-sky-600/30 hover:bg-sky-600/50 text-sky-300 rounded transition-colors">潮光</button>
+                                            <button onclick="filterPlayerByProfession('沧澜')" class="px-2 py-1 text-xs bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 rounded transition-colors">沧澜</button>
+                                            <button onclick="filterPlayerByProfession('鸿音')" class="px-2 py-1 text-xs bg-gradient-to-r from-yellow-600/30 to-orange-600/30 hover:from-yellow-600/50 hover:to-orange-600/50 text-yellow-200 rounded transition-colors">鸿音</button>
+                                        </div>
+
+                                        <select id="playerSelect" class="w-full p-3 bg-dark border border-gray-600 rounded-none mb-4 text-gray-100 focus:ring-2 focus:ring-primary cursor-pointer" onchange="onPlayerSelectChange(this.value)">
+                                            <option value="">请先加载数据...</option>
+                                        </select>
+                                    </div>
 
                                     <div id="playerInfo" class="bg-dark rounded-none p-4" style="display: none;">
                                         <div class="text-center mb-4">
@@ -1591,49 +1615,82 @@
                                         </div>
 
                                         <div class="grid grid-cols-2 gap-2 text-sm">
-                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700">
-                                                <p class="text-gray-500">击败</p>
-                                                <p class="font-bold text-primary" id="statKills">-</p>
+                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700 hover:bg-gray-800/70 transition-colors">
+                                                <div class="flex items-center justify-center gap-1 text-gray-500 mb-1">
+                                                    <i class="fas fa-skull text-xs"></i>
+                                                    <span>击败</span>
+                                                </div>
+                                                <p class="font-bold text-primary text-lg" id="statKills">-</p>
                                             </div>
-                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700">
-                                                <p class="text-gray-500">破泉</p>
-                                                <p class="font-bold text-warning" id="statPoquan">-</p>
+                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700 hover:bg-gray-800/70 transition-colors">
+                                                <div class="flex items-center justify-center gap-1 text-gray-500 mb-1">
+                                                    <i class="fas fa-water text-xs"></i>
+                                                    <span>破泉</span>
+                                                </div>
+                                                <p class="font-bold text-warning text-lg" id="statPoquan">-</p>
                                             </div>
-                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700">
-                                                <p class="text-gray-500">化羽</p>
-                                                <p class="font-bold text-success" id="statHuayu">-</p>
+                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700 hover:bg-gray-800/70 transition-colors">
+                                                <div class="flex items-center justify-center gap-1 text-gray-500 mb-1">
+                                                    <i class="fas fa-feather-alt text-xs"></i>
+                                                    <span>化羽</span>
+                                                </div>
+                                                <p class="font-bold text-success text-lg" id="statHuayu">-</p>
                                             </div>
-                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700">
-                                                <p class="text-gray-500">清泉</p>
-                                                <p class="font-bold text-accent" id="statQingquan">-</p>
+                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700 hover:bg-gray-800/70 transition-colors">
+                                                <div class="flex items-center justify-center gap-1 text-gray-500 mb-1">
+                                                    <i class="fas fa-tint text-xs"></i>
+                                                    <span>清泉</span>
+                                                </div>
+                                                <p class="font-bold text-accent text-lg" id="statQingquan">-</p>
                                             </div>
-                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700">
-                                                <p class="text-gray-500">助攻</p>
-                                                <p class="font-bold text-primary" id="statAssists">-</p>
+                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700 hover:bg-gray-800/70 transition-colors">
+                                                <div class="flex items-center justify-center gap-1 text-gray-500 mb-1">
+                                                    <i class="fas fa-hands-helping text-xs"></i>
+                                                    <span>助攻</span>
+                                                </div>
+                                                <p class="font-bold text-primary text-lg" id="statAssists">-</p>
                                             </div>
-                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700">
-                                                <p class="text-gray-500">焚骨</p>
-                                                <p class="font-bold text-danger" id="statFengu">-</p>
+                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700 hover:bg-gray-800/70 transition-colors">
+                                                <div class="flex items-center justify-center gap-1 text-gray-500 mb-1">
+                                                    <i class="fas fa-fire text-xs"></i>
+                                                    <span>焚骨</span>
+                                                </div>
+                                                <p class="font-bold text-danger text-lg" id="statFengu">-</p>
                                             </div>
-                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700">
-                                                <p class="text-gray-500">对玩家伤害</p>
-                                                <p class="font-bold text-primary" id="statPlayerDamage">-</p>
+                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700 hover:bg-gray-800/70 transition-colors">
+                                                <div class="flex items-center justify-center gap-1 text-gray-500 mb-1">
+                                                    <i class="fas fa-user-slash text-xs"></i>
+                                                    <span>对玩家伤害</span>
+                                                </div>
+                                                <p class="font-bold text-primary text-lg" id="statPlayerDamage">-</p>
                                             </div>
-                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700">
-                                                <p class="text-gray-500">对建筑伤害</p>
-                                                <p class="font-bold text-primary" id="statBuildingDamage">-</p>
+                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700 hover:bg-gray-800/70 transition-colors">
+                                                <div class="flex items-center justify-center gap-1 text-gray-500 mb-1">
+                                                    <i class="fas fa-building text-xs"></i>
+                                                    <span>对建筑伤害</span>
+                                                </div>
+                                                <p class="font-bold text-primary text-lg" id="statBuildingDamage">-</p>
                                             </div>
-                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700">
-                                                <p class="text-gray-500">人伤卸甲</p>
-                                                <p class="font-bold text-warning" id="statPlayerArmorBreak">-</p>
+                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700 hover:bg-gray-800/70 transition-colors">
+                                                <div class="flex items-center justify-center gap-1 text-gray-500 mb-1">
+                                                    <i class="fas fa-shield-alt text-xs"></i>
+                                                    <span>人伤卸甲</span>
+                                                </div>
+                                                <p class="font-bold text-warning text-lg" id="statPlayerArmorBreak">-</p>
                                             </div>
-                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700">
-                                                <p class="text-gray-500">破塔卸甲</p>
-                                                <p class="font-bold text-warning" id="statBuildingArmorBreak">-</p>
+                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700 hover:bg-gray-800/70 transition-colors">
+                                                <div class="flex items-center justify-center gap-1 text-gray-500 mb-1">
+                                                    <i class="fas fa-hammer text-xs"></i>
+                                                    <span>破塔卸甲</span>
+                                                </div>
+                                                <p class="font-bold text-warning text-lg" id="statBuildingArmorBreak">-</p>
                                             </div>
-                                            <div class="bg-dark-700 rounded-none p-2 text-center col-span-2">
-                                                <p class="text-gray-500">治疗值</p>
-                                                <p class="font-bold text-success" id="statHealing">-</p>
+                                            <div class="bg-dark-700 rounded-none p-2 text-center col-span-2 border border-gray-700 hover:bg-gray-800/70 transition-colors">
+                                                <div class="flex items-center justify-center gap-1 text-gray-500 mb-1">
+                                                    <i class="fas fa-heart text-xs"></i>
+                                                    <span>治疗值</span>
+                                                </div>
+                                                <p class="font-bold text-success text-lg" id="statHealing">-</p>
                                             </div>
                                         </div>
                                     </div>
@@ -1656,9 +1713,25 @@
                                         </div>
                                     </div>
 
-                                    <!-- 本职业排名 -->
+                                    <!-- 本职业排名/详细数据切换 -->
                                     <div class="card mt-6">
-                                        <h3 class="card-title"><i class="fas fa-trophy mr-2 text-yellow-500"></i>本帮会本职业排名</h3>
+                                        <div class="flex items-center justify-between mb-4">
+                                            <h3 class="card-title mb-0">
+                                                <i class="fas fa-trophy mr-2 text-yellow-500" id="rankingIcon"></i>
+                                                <span id="rankingTitle">本帮会本职业排名</span>
+                                            </h3>
+                                            <div class="flex gap-2">
+                                                <button onclick="switchRankingView('rank')" id="btnRankView" class="px-3 py-1 text-xs rounded bg-primary/20 text-primary border border-primary/50 hover:bg-primary/30 transition-colors active">
+                                                    <i class="fas fa-trophy mr-1"></i>排名
+                                                </button>
+                                                <button onclick="switchRankingView('detail')" id="btnDetailView" class="px-3 py-1 text-xs rounded bg-gray-700 text-gray-400 border border-gray-600 hover:bg-gray-600 transition-colors">
+                                                    <i class="fas fa-chart-bar mr-1"></i>详细
+                                                </button>
+                                                <button onclick="openFullscreenAnalysis()" id="btnFullscreen" class="px-3 py-1 text-xs rounded bg-purple-600/30 text-purple-300 border border-purple-500/50 hover:bg-purple-600/50 transition-colors" title="全屏详细分析">
+                                                    <i class="fas fa-expand mr-1"></i>全屏
+                                                </button>
+                                            </div>
+                                        </div>
                                         <div id="professionRankings" class="space-y-2 text-sm">
                                             <p class="text-gray-400 text-center py-4">请选择玩家查看排名</p>
                                         </div>
@@ -4189,12 +4262,50 @@
             applyPlayerFilters();
         }
         
+        // 玩家选择面板折叠状态
+        let isPlayerSelectorCollapsed = false;
+
+        // 折叠玩家选择面板
+        function collapsePlayerSelector() {
+            isPlayerSelectorCollapsed = true;
+            document.getElementById('playerSelectorFull').classList.add('hidden');
+            document.getElementById('playerSelectorCompact').classList.remove('hidden');
+            
+            // 更新紧凑面板信息
+            updateCompactPlayerInfo();
+        }
+
+        // 展开玩家选择面板
+        function expandPlayerSelector() {
+            isPlayerSelectorCollapsed = false;
+            document.getElementById('playerSelectorFull').classList.remove('hidden');
+            document.getElementById('playerSelectorCompact').classList.add('hidden');
+        }
+
+        // 更新紧凑面板显示信息
+        function updateCompactPlayerInfo() {
+            const compactName = document.getElementById('compactPlayerName');
+            const compactInfo = document.getElementById('compactPlayerInfo');
+            
+            if (currentPlayer) {
+                compactName.textContent = currentPlayer['玩家名字'];
+                const guildName = getPlayerGuildName(currentPlayer['玩家名字']);
+                compactInfo.textContent = `${currentPlayer['职业']} | ${guildName}`;
+                compactInfo.className = 'text-xs ' + (guildName === guild1Name ? 'text-red-400' : 'text-blue-400');
+            } else {
+                compactName.textContent = '未选择玩家';
+                compactInfo.textContent = '点击展开选择面板';
+                compactInfo.className = 'text-xs text-gray-500';
+            }
+        }
+
         // 玩家选择变化处理
         function onPlayerSelectChange(playerName) {
             if (!playerName) {
                 document.getElementById('playerInfo').style.display = 'none';
                 document.getElementById('analysisSection').style.display = 'none';
                 currentPlayer = null;
+                updateCompactPlayerInfo();
                 return;
             }
             
@@ -4203,6 +4314,8 @@
                 updatePlayerInfo();
                 updatePlayerCharts();
                 updatePlayerAnalysis();
+                // 选择玩家后自动折叠面板
+                collapsePlayerSelector();
             }
         }
 
@@ -4237,6 +4350,86 @@
             updateProfessionRankings();
         }
 
+        // 当前排名视图模式
+        let currentRankingView = 'rank';
+
+        // 切换排名/详细数据视图
+        function switchRankingView(view) {
+            currentRankingView = view;
+            
+            // 更新按钮样式
+            const btnRank = document.getElementById('btnRankView');
+            const btnDetail = document.getElementById('btnDetailView');
+            const title = document.getElementById('rankingTitle');
+            const icon = document.getElementById('rankingIcon');
+            
+            if (view === 'rank') {
+                btnRank.className = 'px-3 py-1 text-xs rounded bg-primary/20 text-primary border border-primary/50 hover:bg-primary/30 transition-colors';
+                btnDetail.className = 'px-3 py-1 text-xs rounded bg-gray-700 text-gray-400 border border-gray-600 hover:bg-gray-600 transition-colors';
+                title.textContent = '本帮会本职业排名';
+                icon.className = 'fas fa-trophy mr-2 text-yellow-500';
+            } else {
+                btnRank.className = 'px-3 py-1 text-xs rounded bg-gray-700 text-gray-400 border border-gray-600 hover:bg-gray-600 transition-colors';
+                btnDetail.className = 'px-3 py-1 text-xs rounded bg-primary/20 text-primary border border-primary/50 hover:bg-primary/30 transition-colors';
+                title.textContent = '详细数据分析';
+                icon.className = 'fas fa-chart-bar mr-2 text-blue-500';
+            }
+            
+            // 刷新显示
+            if (currentPlayer) {
+                updateProfessionRankings();
+            }
+        }
+
+        // 计算详细数据指标
+        function calculateDetailedMetrics(metric, playerValue, allPlayers, sameProfessionPlayers) {
+            const totalPlayers = allPlayers.length;
+            const professionCount = sameProfessionPlayers.length;
+            
+            // 全职业排名
+            const allSorted = [...allPlayers].sort((a, b) => {
+                const valA = parseFloat(a[metric.key]) || 0;
+                const valB = parseFloat(b[metric.key]) || 0;
+                return metric.higherIsBetter ? valB - valA : valA - valB;
+            });
+            const overallRank = allSorted.findIndex(p => p['玩家名字'] === currentPlayer['玩家名字']) + 1;
+            
+            // 职业内排名
+            const profSorted = [...sameProfessionPlayers].sort((a, b) => {
+                const valA = parseFloat(a[metric.key]) || 0;
+                const valB = parseFloat(b[metric.key]) || 0;
+                return metric.higherIsBetter ? valB - valA : valA - valB;
+            });
+            const profRank = profSorted.findIndex(p => p['玩家名字'] === currentPlayer['玩家名字']) + 1;
+            
+            // 职业最高数据
+            const profMax = profSorted[0] ? (parseFloat(profSorted[0][metric.key]) || 0) : 0;
+            
+            // 全职业总和（用于计算占比）
+            const totalValue = allPlayers.reduce((sum, p) => sum + (parseFloat(p[metric.key]) || 0), 0);
+            
+            // 同职业总和
+            const profTotalValue = sameProfessionPlayers.reduce((sum, p) => sum + (parseFloat(p[metric.key]) || 0), 0);
+            
+            // 占比计算
+            const overallPercent = totalValue > 0 ? (playerValue / totalValue * 100) : 0;
+            const profPercent = profTotalValue > 0 ? (playerValue / profTotalValue * 100) : 0;
+            
+            // 与最高值的比率
+            const vsMaxPercent = profMax > 0 ? (playerValue / profMax * 100) : 0;
+            
+            return {
+                overallRank,
+                overallTotal: totalPlayers,
+                profRank,
+                profTotal: professionCount,
+                profMax,
+                overallPercent,
+                profPercent,
+                vsMaxPercent
+            };
+        }
+
         // 计算并显示本职业排名
         function updateProfessionRankings() {
             const rankingsContainer = document.getElementById('professionRankings');
@@ -4257,58 +4450,137 @@
                 return;
             }
 
-            // 定义要排名的指标
-            const metrics = [
-                { key: '对玩家伤害', label: '对玩家伤害', higherIsBetter: true },
-                { key: '对建筑伤害', label: '对建筑伤害', higherIsBetter: true },
-                { key: '击败', label: '击败', higherIsBetter: true },
-                { key: '助攻', label: '助攻', higherIsBetter: true },
-                { key: '治疗值', label: '治疗值', higherIsBetter: true },
-                { key: '承受伤害', label: '承受伤害', higherIsBetter: true },
-                { key: '人伤卸甲', label: '人伤卸甲', higherIsBetter: true },
-                { key: '破塔卸甲', label: '破塔卸甲', higherIsBetter: true },
-                { key: '重伤', label: '重伤', higherIsBetter: false }
+            // 基础指标（所有职业都有）
+            let metrics = [
+                { key: '对玩家伤害', label: '对玩家伤害', icon: 'fa-user-slash', higherIsBetter: true },
+                { key: '对建筑伤害', label: '对建筑伤害', icon: 'fa-building', higherIsBetter: true },
+                { key: '击败', label: '击败', icon: 'fa-skull', higherIsBetter: true },
+                { key: '助攻', label: '助攻', icon: 'fa-hands-helping', higherIsBetter: true },
+                { key: '治疗值', label: '治疗值', icon: 'fa-heart', higherIsBetter: true },
+                { key: '承受伤害', label: '承受伤害', icon: 'fa-shield-alt', higherIsBetter: true },
+                { key: '人伤卸甲', label: '人伤卸甲', icon: 'fa-shield-virus', higherIsBetter: true },
+                { key: '破塔卸甲', label: '破塔卸甲', icon: 'fa-hammer', higherIsBetter: true },
+                { key: '破泉', label: '破泉', icon: 'fa-water', higherIsBetter: true },
+                { key: '清泉', label: '清泉', icon: 'fa-tint', higherIsBetter: true },
+                { key: '资源', label: '资源', icon: 'fa-coins', higherIsBetter: true },
+                { key: '重伤', label: '重伤', icon: 'fa-procedures', higherIsBetter: false }
             ];
 
-            let html = `<p class="text-gray-400 text-xs mb-3">${playerProfession}职业共${totalCount}人，该玩家排名：</p>`;
-            html += '<div class="grid grid-cols-3 gap-2">';
+            // 九灵职业显示焚骨，其他职业显示化羽
+            if (playerProfession === '九灵') {
+                metrics.push({ key: '焚骨', label: '焚骨', icon: 'fa-fire', higherIsBetter: true });
+            } else {
+                metrics.push({ key: '化羽', label: '化羽', icon: 'fa-feather-alt', higherIsBetter: true });
+            }
 
-            metrics.forEach(metric => {
-                const playerValue = parseFloat(currentPlayer[metric.key]) || 0;
-                
-                // 排序获取排名
-                const sorted = [...sameProfessionPlayers].sort((a, b) => {
-                    const valA = parseFloat(a[metric.key]) || 0;
-                    const valB = parseFloat(b[metric.key]) || 0;
-                    return metric.higherIsBetter ? valB - valA : valA - valB;
-                });
-                
-                const rank = sorted.findIndex(p => p['玩家名字'] === playerName) + 1;
-                
-                // 根据排名设置颜色
-                let colorClass = 'text-gray-400';
-                if (rank === 1) colorClass = 'text-yellow-400 font-bold';
-                else if (rank === 2) colorClass = 'text-gray-300 font-bold';
-                else if (rank === 3) colorClass = 'text-orange-400 font-bold';
-                else if (rank <= totalCount * 0.3) colorClass = 'text-green-400';
-                else if (rank <= totalCount * 0.6) colorClass = 'text-blue-400';
-                else colorClass = 'text-red-400';
-
-                const displayValue = metric.key === '治疗值' || metric.key === '对玩家伤害' || metric.key === '对建筑伤害' || metric.key === '承受伤害' 
-                    ? formatNumber(playerValue) 
-                    : playerValue;
-
-                html += `
-                    <div class="bg-gray-800/50 rounded p-2 text-center">
-                        <div class="text-xs text-gray-500 mb-1">${metric.label}</div>
-                        <div class="text-lg ${colorClass}">第${rank}名</div>
-                        <div class="text-xs text-gray-400">${displayValue}</div>
-                    </div>
-                `;
+            // 过滤掉该职业所有玩家数据都为0的指标
+            metrics = metrics.filter(metric => {
+                const hasNonZeroData = sameProfessionPlayers.some(p => (parseFloat(p[metric.key]) || 0) > 0);
+                return hasNonZeroData;
             });
 
-            html += '</div>';
-            rankingsContainer.innerHTML = html;
+            if (currentRankingView === 'rank') {
+                // 排名视图
+                let html = `<p class="text-gray-400 text-xs mb-3">${playerProfession}职业共${totalCount}人，该玩家排名：</p>`;
+                html += '<div class="grid grid-cols-3 gap-2">';
+
+                metrics.forEach(metric => {
+                    const playerValue = parseFloat(currentPlayer[metric.key]) || 0;
+                    
+                    // 排序获取排名
+                    const sorted = [...sameProfessionPlayers].sort((a, b) => {
+                        const valA = parseFloat(a[metric.key]) || 0;
+                        const valB = parseFloat(b[metric.key]) || 0;
+                        return metric.higherIsBetter ? valB - valA : valA - valB;
+                    });
+                    
+                    const rank = sorted.findIndex(p => p['玩家名字'] === playerName) + 1;
+                    
+                    // 根据排名设置颜色
+                    let colorClass = 'text-gray-400';
+                    if (rank === 1) colorClass = 'text-yellow-400 font-bold';
+                    else if (rank === 2) colorClass = 'text-gray-300 font-bold';
+                    else if (rank === 3) colorClass = 'text-orange-400 font-bold';
+                    else if (rank <= totalCount * 0.3) colorClass = 'text-green-400';
+                    else if (rank <= totalCount * 0.6) colorClass = 'text-blue-400';
+                    else colorClass = 'text-red-400';
+
+                    const displayValue = metric.key === '治疗值' || metric.key === '对玩家伤害' || metric.key === '对建筑伤害' || metric.key === '承受伤害' 
+                        ? formatNumber(playerValue) 
+                        : playerValue;
+
+                    html += `
+                        <div class="bg-gray-800/50 rounded p-2 text-center hover:bg-gray-800/70 transition-colors">
+                            <div class="text-xs text-gray-500 mb-1"><i class="fas ${metric.icon} mr-1"></i>${metric.label}</div>
+                            <div class="text-lg ${colorClass}">第${rank}名</div>
+                            <div class="text-xs text-gray-400">${displayValue}</div>
+                        </div>
+                    `;
+                });
+
+                html += '</div>';
+                rankingsContainer.innerHTML = html;
+            } else {
+                // 详细数据视图
+                let html = `<p class="text-gray-400 text-xs mb-3">${playerProfession}职业详细数据分析：</p>`;
+                html += '<div class="space-y-2 max-h-96 overflow-y-auto">';
+
+                metrics.forEach(metric => {
+                    const playerValue = parseFloat(currentPlayer[metric.key]) || 0;
+                    const data = calculateDetailedMetrics(metric, playerValue, allPlayers, sameProfessionPlayers);
+                    
+                    const displayValue = metric.key === '治疗值' || metric.key === '对玩家伤害' || metric.key === '对建筑伤害' || metric.key === '承受伤害' 
+                        ? formatNumber(playerValue) 
+                        : playerValue;
+                    
+                    const maxValue = metric.key === '治疗值' || metric.key === '对玩家伤害' || metric.key === '对建筑伤害' || metric.key === '承受伤害' 
+                        ? formatNumber(data.profMax) 
+                        : data.profMax;
+
+                    html += `
+                        <div class="bg-gray-800/50 rounded p-3 hover:bg-gray-800/70 transition-colors">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas ${metric.icon} text-gray-500 text-xs"></i>
+                                    <span class="text-sm font-medium text-gray-300">${metric.label}</span>
+                                </div>
+                                <span class="text-lg font-bold text-primary">${displayValue}</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-[10px]">
+                                <div class="bg-gray-900/50 rounded p-1.5">
+                                    <span class="text-gray-500">全职业排名:</span>
+                                    <span class="text-blue-400 ml-1">${data.overallRank}/${data.overallTotal}</span>
+                                    <span class="text-gray-600">(${((data.overallTotal - data.overallRank + 1) / data.overallTotal * 100).toFixed(1)}%)</span>
+                                </div>
+                                <div class="bg-gray-900/50 rounded p-1.5">
+                                    <span class="text-gray-500">职业排名:</span>
+                                    <span class="text-green-400 ml-1">${data.profRank}/${data.profTotal}</span>
+                                    <span class="text-gray-600">(${((data.profTotal - data.profRank + 1) / data.profTotal * 100).toFixed(1)}%)</span>
+                                </div>
+                                <div class="bg-gray-900/50 rounded p-1.5">
+                                    <span class="text-gray-500">职业最高:</span>
+                                    <span class="text-yellow-400 ml-1">${maxValue}</span>
+                                    <span class="text-gray-600">(${data.vsMaxPercent.toFixed(1)}%)</span>
+                                </div>
+                                <div class="bg-gray-900/50 rounded p-1.5">
+                                    <span class="text-gray-500">全职业占比:</span>
+                                    <span class="text-purple-400 ml-1">${data.overallPercent.toFixed(2)}%</span>
+                                </div>
+                                <div class="bg-gray-900/50 rounded p-1.5 col-span-2">
+                                    <span class="text-gray-500">本职业占比:</span>
+                                    <span class="text-orange-400 ml-1">${data.profPercent.toFixed(2)}%</span>
+                                    <div class="w-full bg-gray-700 rounded-full h-1 mt-1">
+                                        <div class="bg-gradient-to-r from-orange-400 to-red-500 h-1 rounded-full" style="width: ${Math.min(data.profPercent, 100)}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += '</div>';
+                rankingsContainer.innerHTML = html;
+            }
             
             // 更新隶属帮会信息
             const guildInfoContainer = document.getElementById('playerGuildInfo');
@@ -4714,6 +4986,484 @@
                 return `表现优秀：${scores.join('、')}`;
             }
         }
+
+        // ==================== 全屏详细分析功能 ====================
+        
+        let fullscreenDamageChart = null;
+        let fullscreenCombatChart = null;
+
+        // 打开全屏详细分析
+        function openFullscreenAnalysis() {
+            if (!currentPlayer) {
+                alert('请先选择玩家');
+                return;
+            }
+
+            const modal = document.getElementById('fullscreenAnalysisModal');
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // 禁止背景滚动
+
+            // 填充玩家基本信息
+            document.getElementById('fullscreenPlayerName').textContent = currentPlayer['玩家名字'];
+            document.getElementById('fullscreenPlayerProfession').textContent = currentPlayer['职业'];
+            const guildName = getPlayerGuildName(currentPlayer['玩家名字']);
+            const guildElement = document.getElementById('fullscreenPlayerGuild');
+            guildElement.textContent = guildName;
+            guildElement.className = guildName === guild1Name ? 'text-red-400' : 'text-blue-400';
+
+            // 填充数据概览
+            document.getElementById('fullscreenKills').textContent = currentPlayer['击败'] || 0;
+            document.getElementById('fullscreenPoquan').textContent = currentPlayer['破泉'] || 0;
+            document.getElementById('fullscreenHuayu').textContent = currentPlayer['化羽'] || 0;
+            document.getElementById('fullscreenQingquan').textContent = currentPlayer['清泉'] || 0;
+            document.getElementById('fullscreenAssists').textContent = currentPlayer['助攻'] || 0;
+            document.getElementById('fullscreenFengu').textContent = currentPlayer['焚骨'] || 0;
+            document.getElementById('fullscreenPlayerDamage').textContent = formatNumber(parseInt(currentPlayer['对玩家伤害']) || 0);
+            document.getElementById('fullscreenBuildingDamage').textContent = formatNumber(parseInt(currentPlayer['对建筑伤害']) || 0);
+            document.getElementById('fullscreenPlayerArmorBreak').textContent = currentPlayer['人伤卸甲'] || 0;
+            document.getElementById('fullscreenBuildingArmorBreak').textContent = currentPlayer['破塔卸甲'] || 0;
+            document.getElementById('fullscreenHealing').textContent = formatNumber(parseInt(currentPlayer['治疗值']) || 0);
+
+            // 渲染雷达图和详细分析
+            setTimeout(() => {
+                renderFullscreenCharts();
+                renderFullscreenDetailedAnalysis();
+            }, 100);
+        }
+
+        // 关闭全屏详细分析
+        function closeFullscreenAnalysis() {
+            const modal = document.getElementById('fullscreenAnalysisModal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = ''; // 恢复背景滚动
+
+            // 销毁图表实例
+            if (fullscreenDamageChart) {
+                fullscreenDamageChart.destroy();
+                fullscreenDamageChart = null;
+            }
+            if (fullscreenCombatChart) {
+                fullscreenCombatChart.destroy();
+                fullscreenCombatChart = null;
+            }
+        }
+
+        // 渲染全屏雷达图
+        function renderFullscreenCharts() {
+            // 计算最大值用于归一化
+            const maxValues = {
+                buildingDmg: Math.max(...allPlayers.map(p => p['对建筑伤害'] || 0), 1),
+                playerDmg: Math.max(...allPlayers.map(p => p['对玩家伤害'] || 0), 1),
+                playerArmorBreak: Math.max(...allPlayers.map(p => p['人伤卸甲'] || 0), 1),
+                buildingArmorBreak: Math.max(...allPlayers.map(p => p['破塔卸甲'] || 0), 1),
+                healing: Math.max(...allPlayers.map(p => p['治疗值'] || 0), 1),
+                takenDmg: Math.max(...allPlayers.map(p => p['承受伤害'] || 0), 1),
+                kills: Math.max(...allPlayers.map(p => p['击败'] || 0), 1),
+                poquan: Math.max(...allPlayers.map(p => p['破泉'] || 0), 1),
+                huayu: Math.max(...allPlayers.map(p => p['化羽'] || 0), 1),
+                qingquan: Math.max(...allPlayers.map(p => p['清泉'] || 0), 1),
+                assists: Math.max(...allPlayers.map(p => p['助攻'] || 0), 1),
+                resource: Math.max(...allPlayers.map(p => p['资源'] || 0), 1),
+                fenGu: Math.max(...allPlayers.map(p => p['焚骨'] || 0), 1)
+            };
+
+            // 计算帮会前15/16平均值
+            const myGuildStats = {
+                对建筑伤害: calculateTopNAverage(guild1Data, '对建筑伤害', 15),
+                对玩家伤害: calculateTopNAverage(guild1Data, '对玩家伤害', 15),
+                人伤卸甲: calculateTopNAverage(guild1Data, '人伤卸甲', 15),
+                破塔卸甲: calculateTopNAverage(guild1Data, '破塔卸甲', 15),
+                治疗值: calculateTopNAverage(guild1Data.filter(p => p['职业'] === '素问'), '治疗值', 15),
+                承受伤害: calculateTopNAverage(guild1Data, '承受伤害', 15),
+                击败: calculateTopNAverage(guild1Data, '击败', 15),
+                破泉: calculateTopNAverage(guild1Data, '破泉', 15),
+                化羽: calculateTopNAverage(guild1Data, '化羽', 15),
+                清泉: calculateTopNAverage(guild1Data, '清泉', 15),
+                助攻: calculateTopNAverage(guild1Data, '助攻', 15),
+                资源: calculateTopNAverage(guild1Data.filter(p => (p['资源'] || 0) > 0), '资源', 15),
+                焚骨: calculateTopNAverage(guild1Data.filter(p => (p['焚骨'] || 0) > 0), '焚骨', 15)
+            };
+
+            const enemyGuildStats = {
+                对建筑伤害: calculateTopNAverage(guild2Data, '对建筑伤害', 16),
+                对玩家伤害: calculateTopNAverage(guild2Data, '对玩家伤害', 16),
+                人伤卸甲: calculateTopNAverage(guild2Data, '人伤卸甲', 16),
+                破塔卸甲: calculateTopNAverage(guild2Data, '破塔卸甲', 16),
+                治疗值: calculateTopNAverage(guild2Data.filter(p => p['职业'] === '素问'), '治疗值', 16),
+                承受伤害: calculateTopNAverage(guild2Data, '承受伤害', 16),
+                击败: calculateTopNAverage(guild2Data, '击败', 16),
+                破泉: calculateTopNAverage(guild2Data, '破泉', 16),
+                化羽: calculateTopNAverage(guild2Data, '化羽', 16),
+                清泉: calculateTopNAverage(guild2Data, '清泉', 16),
+                助攻: calculateTopNAverage(guild2Data, '助攻', 16),
+                资源: calculateTopNAverage(guild2Data.filter(p => (p['资源'] || 0) > 0), '资源', 16),
+                焚骨: calculateTopNAverage(guild2Data.filter(p => (p['焚骨'] || 0) > 0), '焚骨', 16)
+            };
+
+            // 伤害与治疗雷达图
+            if (fullscreenDamageChart) fullscreenDamageChart.destroy();
+            const damageCtx = document.getElementById('fullscreenDamageHealingChart');
+            if (damageCtx) {
+                fullscreenDamageChart = new Chart(damageCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['对塔输出', '对人伤害', '人伤卸甲', '破塔卸甲', '治疗量', '承受伤害'],
+                        datasets: [
+                            {
+                                label: '玩家数据',
+                                data: [
+                                    normalizeValue(currentPlayer['对建筑伤害'] || 0, maxValues.buildingDmg),
+                                    normalizeValue(currentPlayer['对玩家伤害'] || 0, maxValues.playerDmg),
+                                    normalizeValue(currentPlayer['人伤卸甲'] || 0, maxValues.playerArmorBreak),
+                                    normalizeValue(currentPlayer['破塔卸甲'] || 0, maxValues.buildingArmorBreak),
+                                    normalizeValue(currentPlayer['治疗值'] || 0, maxValues.healing),
+                                    normalizeValue(currentPlayer['承受伤害'] || 0, maxValues.takenDmg)
+                                ],
+                                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                                borderColor: '#3B82F6',
+                                pointBackgroundColor: '#3B82F6',
+                                pointBorderColor: '#fff',
+                                pointHoverBackgroundColor: '#fff',
+                                pointHoverBorderColor: '#3B82F6',
+                                borderWidth: 2
+                            },
+                            {
+                                label: guild1Name + '前15',
+                                data: [
+                                    normalizeValue(myGuildStats['对建筑伤害'] || 0, maxValues.buildingDmg),
+                                    normalizeValue(myGuildStats['对玩家伤害'] || 0, maxValues.playerDmg),
+                                    normalizeValue(myGuildStats['人伤卸甲'] || 0, maxValues.playerArmorBreak),
+                                    normalizeValue(myGuildStats['破塔卸甲'] || 0, maxValues.buildingArmorBreak),
+                                    normalizeValue(myGuildStats['治疗值'] || 0, maxValues.healing),
+                                    normalizeValue(myGuildStats['承受伤害'] || 0, maxValues.takenDmg)
+                                ],
+                                backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                                borderColor: '#EF4444',
+                                pointBackgroundColor: '#EF4444',
+                                pointBorderColor: '#fff',
+                                pointHoverBackgroundColor: '#fff',
+                                pointHoverBorderColor: '#EF4444',
+                                borderWidth: 2
+                            },
+                            {
+                                label: guild2Name + '前16',
+                                data: [
+                                    normalizeValue(enemyGuildStats['对建筑伤害'] || 0, maxValues.buildingDmg),
+                                    normalizeValue(enemyGuildStats['对玩家伤害'] || 0, maxValues.playerDmg),
+                                    normalizeValue(enemyGuildStats['人伤卸甲'] || 0, maxValues.playerArmorBreak),
+                                    normalizeValue(enemyGuildStats['破塔卸甲'] || 0, maxValues.buildingArmorBreak),
+                                    normalizeValue(enemyGuildStats['治疗值'] || 0, maxValues.healing),
+                                    normalizeValue(enemyGuildStats['承受伤害'] || 0, maxValues.takenDmg)
+                                ],
+                                backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                                borderColor: '#8B5CF6',
+                                pointBackgroundColor: '#8B5CF6',
+                                pointBorderColor: '#fff',
+                                pointHoverBackgroundColor: '#fff',
+                                pointHoverBorderColor: '#8B5CF6',
+                                borderWidth: 2
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 100,
+                                angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                pointLabels: { color: '#E5E7EB', font: { size: 12 } },
+                                ticks: { display: false }
+                            }
+                        },
+                        plugins: {
+                            legend: { 
+                                labels: { color: '#E5E7EB', font: { size: 12 } },
+                                position: 'top'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${Math.round(context.raw)}`;
+                                    }
+                                },
+                                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                titleColor: '#E5E7EB',
+                                bodyColor: '#E5E7EB',
+                                borderColor: 'rgba(255, 255, 255, 0.1)',
+                                borderWidth: 1
+                            },
+                            datalabels: {
+                                display: true,
+                                color: '#E5E7EB',
+                                font: { size: 10 },
+                                formatter: function(value) {
+                                    return Math.round(value);
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 战斗数据雷达图
+            if (fullscreenCombatChart) fullscreenCombatChart.destroy();
+            const combatCtx = document.getElementById('fullscreenCombatChart');
+            if (combatCtx) {
+                fullscreenCombatChart = new Chart(combatCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['击败', '破泉', '化羽', '清泉', '资源', '助攻', '焚骨'],
+                        datasets: [
+                            {
+                                label: '玩家数据',
+                                data: [
+                                    normalizeValue(currentPlayer['击败'] || 0, maxValues.kills),
+                                    normalizeValue(currentPlayer['破泉'] || 0, maxValues.poquan),
+                                    normalizeValue(currentPlayer['化羽'] || 0, maxValues.huayu),
+                                    normalizeValue(currentPlayer['清泉'] || 0, maxValues.qingquan),
+                                    normalizeValue(currentPlayer['资源'] || 0, maxValues.resource),
+                                    normalizeValue(currentPlayer['助攻'] || 0, maxValues.assists),
+                                    normalizeValue(currentPlayer['焚骨'] || 0, maxValues.fenGu)
+                                ],
+                                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                                borderColor: '#3B82F6',
+                                pointBackgroundColor: '#3B82F6',
+                                pointBorderColor: '#fff',
+                                pointHoverBackgroundColor: '#fff',
+                                pointHoverBorderColor: '#3B82F6',
+                                borderWidth: 2
+                            },
+                            {
+                                label: guild1Name + '前15',
+                                data: [
+                                    normalizeValue(myGuildStats['击败'] || 0, maxValues.kills),
+                                    normalizeValue(myGuildStats['破泉'] || 0, maxValues.poquan),
+                                    normalizeValue(myGuildStats['化羽'] || 0, maxValues.huayu),
+                                    normalizeValue(myGuildStats['清泉'] || 0, maxValues.qingquan),
+                                    normalizeValue(myGuildStats['资源'] || 0, maxValues.resource),
+                                    normalizeValue(myGuildStats['助攻'] || 0, maxValues.assists),
+                                    normalizeValue(myGuildStats['焚骨'] || 0, maxValues.fenGu)
+                                ],
+                                backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                                borderColor: '#EF4444',
+                                pointBackgroundColor: '#EF4444',
+                                pointBorderColor: '#fff',
+                                pointHoverBackgroundColor: '#fff',
+                                pointHoverBorderColor: '#EF4444',
+                                borderWidth: 2
+                            },
+                            {
+                                label: guild2Name + '前16',
+                                data: [
+                                    normalizeValue(enemyGuildStats['击败'] || 0, maxValues.kills),
+                                    normalizeValue(enemyGuildStats['破泉'] || 0, maxValues.poquan),
+                                    normalizeValue(enemyGuildStats['化羽'] || 0, maxValues.huayu),
+                                    normalizeValue(enemyGuildStats['清泉'] || 0, maxValues.qingquan),
+                                    normalizeValue(enemyGuildStats['资源'] || 0, maxValues.resource),
+                                    normalizeValue(enemyGuildStats['助攻'] || 0, maxValues.assists),
+                                    normalizeValue(enemyGuildStats['焚骨'] || 0, maxValues.fenGu)
+                                ],
+                                backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                                borderColor: '#8B5CF6',
+                                pointBackgroundColor: '#8B5CF6',
+                                pointBorderColor: '#fff',
+                                pointHoverBackgroundColor: '#fff',
+                                pointHoverBorderColor: '#8B5CF6',
+                                borderWidth: 2
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 100,
+                                angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                pointLabels: { color: '#E5E7EB', font: { size: 12 } },
+                                ticks: { display: false }
+                            }
+                        },
+                        plugins: {
+                            legend: { 
+                                labels: { color: '#E5E7EB', font: { size: 12 } },
+                                position: 'top'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${Math.round(context.raw)}`;
+                                    }
+                                },
+                                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                titleColor: '#E5E7EB',
+                                bodyColor: '#E5E7EB',
+                                borderColor: 'rgba(255, 255, 255, 0.1)',
+                                borderWidth: 1
+                            },
+                            datalabels: {
+                                display: true,
+                                color: '#E5E7EB',
+                                font: { size: 10 },
+                                formatter: function(value) {
+                                    return Math.round(value);
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // 渲染全屏详细数据分析
+        function renderFullscreenDetailedAnalysis() {
+            const container = document.getElementById('fullscreenDetailedAnalysis');
+            if (!currentPlayer || !allPlayers.length) {
+                container.innerHTML = '<p class="text-gray-400 text-center py-8">暂无数据</p>';
+                return;
+            }
+
+            const playerProfession = currentPlayer['职业'];
+            const sameProfessionPlayers = allPlayers.filter(p => p['职业'] === playerProfession);
+            
+            // 基础指标（所有职业都有）
+            let metrics = [
+                { key: '对玩家伤害', label: '对玩家伤害', icon: 'fa-user-slash', higherIsBetter: true },
+                { key: '对建筑伤害', label: '对建筑伤害', icon: 'fa-building', higherIsBetter: true },
+                { key: '击败', label: '击败', icon: 'fa-skull', higherIsBetter: true },
+                { key: '助攻', label: '助攻', icon: 'fa-hands-helping', higherIsBetter: true },
+                { key: '治疗值', label: '治疗值', icon: 'fa-heart', higherIsBetter: true },
+                { key: '承受伤害', label: '承受伤害', icon: 'fa-shield-alt', higherIsBetter: true },
+                { key: '人伤卸甲', label: '人伤卸甲', icon: 'fa-shield-virus', higherIsBetter: true },
+                { key: '破塔卸甲', label: '破塔卸甲', icon: 'fa-hammer', higherIsBetter: true },
+                { key: '破泉', label: '破泉', icon: 'fa-water', higherIsBetter: true },
+                { key: '清泉', label: '清泉', icon: 'fa-tint', higherIsBetter: true },
+                { key: '资源', label: '资源', icon: 'fa-coins', higherIsBetter: true },
+                { key: '重伤', label: '重伤', icon: 'fa-procedures', higherIsBetter: false }
+            ];
+
+            // 九灵职业显示焚骨，其他职业显示化羽
+            if (playerProfession === '九灵') {
+                metrics.push({ key: '焚骨', label: '焚骨', icon: 'fa-fire', higherIsBetter: true });
+            } else {
+                metrics.push({ key: '化羽', label: '化羽', icon: 'fa-feather-alt', higherIsBetter: true });
+            }
+
+            let html = `<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">`;
+
+            metrics.forEach(metric => {
+                const playerValue = parseFloat(currentPlayer[metric.key]) || 0;
+                const data = calculateDetailedMetrics(metric, playerValue, allPlayers, sameProfessionPlayers);
+                
+                const displayValue = metric.key === '治疗值' || metric.key === '对玩家伤害' || metric.key === '对建筑伤害' || metric.key === '承受伤害' 
+                    ? formatNumber(playerValue) 
+                    : playerValue;
+                
+                const maxValue = metric.key === '治疗值' || metric.key === '对玩家伤害' || metric.key === '对建筑伤害' || metric.key === '承受伤害' 
+                    ? formatNumber(data.profMax) 
+                    : data.profMax;
+
+                html += `
+                    <div class="bg-[#0d0d0d] border border-gray-700 rounded-lg p-4 hover:border-gray-600 transition-colors">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-2">
+                                <i class="fas ${metric.icon} text-gray-500"></i>
+                                <span class="font-medium text-gray-300">${metric.label}</span>
+                            </div>
+                            <span class="text-xl font-bold text-primary">${displayValue}</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <div class="bg-gray-800/50 rounded p-2">
+                                <span class="text-gray-500">全职业排名:</span>
+                                <span class="text-blue-400 ml-1 font-medium">${data.overallRank}/${data.overallTotal}</span>
+                                <div class="text-gray-600 mt-0.5">前${((data.overallTotal - data.overallRank + 1) / data.overallTotal * 100).toFixed(1)}%</div>
+                            </div>
+                            <div class="bg-gray-800/50 rounded p-2">
+                                <span class="text-gray-500">职业排名:</span>
+                                <span class="text-green-400 ml-1 font-medium">${data.profRank}/${data.profTotal}</span>
+                                <div class="text-gray-600 mt-0.5">前${((data.profTotal - data.profRank + 1) / data.profTotal * 100).toFixed(1)}%</div>
+                            </div>
+                            <div class="bg-gray-800/50 rounded p-2">
+                                <span class="text-gray-500">职业最高:</span>
+                                <span class="text-yellow-400 ml-1 font-medium">${maxValue}</span>
+                                <div class="text-gray-600 mt-0.5">占比 ${data.vsMaxPercent.toFixed(1)}%</div>
+                            </div>
+                            <div class="bg-gray-800/50 rounded p-2">
+                                <span class="text-gray-500">全职业占比:</span>
+                                <span class="text-purple-400 ml-1 font-medium">${data.overallPercent.toFixed(2)}%</span>
+                            </div>
+                        </div>
+                        <div class="mt-3 bg-gray-800/30 rounded p-2">
+                            <div class="flex items-center justify-between text-xs mb-1">
+                                <span class="text-gray-500">本职业占比</span>
+                                <span class="text-orange-400 font-medium">${data.profPercent.toFixed(2)}%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-orange-400 to-red-500 h-2 rounded-full transition-all duration-500" style="width: ${Math.min(data.profPercent, 100)}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // 保存全屏分析为图片
+        async function saveFullscreenAsImage() {
+            const content = document.getElementById('fullscreenContent');
+            const saveBtn = document.querySelector('#fullscreenAnalysisModal button[onclick="saveFullscreenAsImage()"]');
+            
+            // 显示加载状态
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>生成中...</span>';
+            saveBtn.disabled = true;
+
+            try {
+                // 等待图表渲染完成
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                const canvas = await html2canvas(content, {
+                    backgroundColor: '#0d0d0d',
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    logging: false,
+                    windowWidth: content.scrollWidth,
+                    windowHeight: content.scrollHeight
+                });
+
+                // 创建下载链接
+                const link = document.createElement('a');
+                link.download = `${currentPlayer['玩家名字']}_详细分析_${new Date().toLocaleDateString()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+            } catch (error) {
+                console.error('保存图片失败:', error);
+                alert('保存图片失败，请重试');
+            } finally {
+                // 恢复按钮状态
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            }
+        }
+
+        // ESC键关闭全屏
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('fullscreenAnalysisModal');
+                if (!modal.classList.contains('hidden')) {
+                    closeFullscreenAnalysis();
+                }
+            }
+        });
 
         function updatePlayerDetails(player) {
             document.getElementById('playerDetails').style.display = 'block';
@@ -8181,5 +8931,120 @@
             }
         });
     </script>
+
+    <!-- 全屏详细分析模态框 -->
+    <div id="fullscreenAnalysisModal" class="fixed inset-0 z-[9999] bg-[#0d0d0d] hidden overflow-y-auto">
+        <!-- 顶部导航栏 -->
+        <div class="sticky top-0 z-50 bg-[#1a1a1a]/95 backdrop-blur border-b border-gray-700 px-6 py-4">
+            <div class="flex items-center justify-between max-w-[1920px] mx-auto">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white" id="fullscreenPlayerName">玩家名称</h2>
+                        <p class="text-sm text-gray-400">
+                            <span id="fullscreenPlayerProfession">职业</span> | 
+                            <span id="fullscreenPlayerGuild">帮会</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="saveFullscreenAsImage()" class="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg transition-all flex items-center gap-2">
+                        <i class="fas fa-camera"></i>
+                        <span>保存为图片</span>
+                    </button>
+                    <button onclick="closeFullscreenAnalysis()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-all flex items-center gap-2">
+                        <i class="fas fa-times"></i>
+                        <span>关闭</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 全屏内容区 -->
+        <div id="fullscreenContent" class="p-6 max-w-[1920px] mx-auto">
+            <!-- 数据概览卡片 -->
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
+                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
+                    <div class="text-gray-500 text-sm mb-1"><i class="fas fa-skull mr-1"></i>击败</div>
+                    <div class="text-2xl font-bold text-primary" id="fullscreenKills">-</div>
+                </div>
+                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
+                    <div class="text-gray-500 text-sm mb-1"><i class="fas fa-water mr-1"></i>破泉</div>
+                    <div class="text-2xl font-bold text-warning" id="fullscreenPoquan">-</div>
+                </div>
+                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
+                    <div class="text-gray-500 text-sm mb-1"><i class="fas fa-feather-alt mr-1"></i>化羽</div>
+                    <div class="text-2xl font-bold text-success" id="fullscreenHuayu">-</div>
+                </div>
+                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
+                    <div class="text-gray-500 text-sm mb-1"><i class="fas fa-tint mr-1"></i>清泉</div>
+                    <div class="text-2xl font-bold text-accent" id="fullscreenQingquan">-</div>
+                </div>
+                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
+                    <div class="text-gray-500 text-sm mb-1"><i class="fas fa-hands-helping mr-1"></i>助攻</div>
+                    <div class="text-2xl font-bold text-primary" id="fullscreenAssists">-</div>
+                </div>
+                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
+                    <div class="text-gray-500 text-sm mb-1"><i class="fas fa-fire mr-1"></i>焚骨</div>
+                    <div class="text-2xl font-bold text-danger" id="fullscreenFengu">-</div>
+                </div>
+                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
+                    <div class="text-gray-500 text-sm mb-1"><i class="fas fa-user-slash mr-1"></i>对玩家伤害</div>
+                    <div class="text-2xl font-bold text-primary" id="fullscreenPlayerDamage">-</div>
+                </div>
+                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
+                    <div class="text-gray-500 text-sm mb-1"><i class="fas fa-building mr-1"></i>对建筑伤害</div>
+                    <div class="text-2xl font-bold text-primary" id="fullscreenBuildingDamage">-</div>
+                </div>
+                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
+                    <div class="text-gray-500 text-sm mb-1"><i class="fas fa-shield-alt mr-1"></i>人伤卸甲</div>
+                    <div class="text-2xl font-bold text-warning" id="fullscreenPlayerArmorBreak">-</div>
+                </div>
+                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
+                    <div class="text-gray-500 text-sm mb-1"><i class="fas fa-hammer mr-1"></i>破塔卸甲</div>
+                    <div class="text-2xl font-bold text-warning" id="fullscreenBuildingArmorBreak">-</div>
+                </div>
+                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center col-span-2">
+                    <div class="text-gray-500 text-sm mb-1"><i class="fas fa-heart mr-1"></i>治疗值</div>
+                    <div class="text-2xl font-bold text-success" id="fullscreenHealing">-</div>
+                </div>
+            </div>
+
+            <!-- 雷达图区域 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-6">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-chart-radar mr-2 text-primary"></i>伤害与治疗雷达图
+                    </h3>
+                    <div class="relative" style="height: 450px;">
+                        <canvas id="fullscreenDamageHealingChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-6">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-chart-radar mr-2 text-secondary"></i>战斗数据雷达图
+                    </h3>
+                    <div class="relative" style="height: 450px;">
+                        <canvas id="fullscreenCombatChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 详细数据分析 -->
+            <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-6">
+                <h3 class="text-lg font-bold mb-4 flex items-center">
+                    <i class="fas fa-chart-bar mr-2 text-purple-500"></i>详细数据分析
+                </h3>
+                <div id="fullscreenDetailedAnalysis" class="space-y-3">
+                    <!-- 动态填充 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- html2canvas 库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </body>
 </html>
