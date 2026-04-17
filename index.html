@@ -7,14 +7,18 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Exo+2:wght@300;400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
         
         :root {
-            --primary: #00f2ff;
-            --secondary: #a200ff;
-            --accent: #ff00e6;
-            --dark: #0a0a0f;
-            --glass: rgba(20, 20, 35, 0.7);
+            --ink-black: #0d0d0d;
+            --ink-dark: #1a1a1a;
+            --ink-gray: #2a2a2a;
+            --jade: #00d4aa;
+            --jade-dim: #00d4aa40;
+            --gold: #c9a227;
+            --gold-dim: #c9a22730;
+            --crimson: #8b2635;
+            --cyan: #00b4d8;
         }
         
         * {
@@ -22,567 +26,438 @@
         }
         
         body {
-            font-family: 'Exo 2', sans-serif;
-            background: var(--dark);
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--ink-black);
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
+            color: #e0e0e0;
         }
         
-        /* 动态背景 */
-        .bg-animation {
+        /* 水墨背景 */
+        .ink-bg {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1;
-            opacity: 0.6;
-        }
-        
-        .bg-animation::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            z-index: -2;
             background: 
-                radial-gradient(circle at 20% 30%, rgba(162, 0, 255, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 80% 70%, rgba(0, 242, 255, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 40% 80%, rgba(255, 0, 230, 0.1) 0%, transparent 40%);
-            animation: bgPulse 15s ease-in-out infinite;
+                radial-gradient(ellipse at 20% 80%, rgba(0, 180, 216, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 212, 170, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 40% 40%, rgba(201, 162, 39, 0.04) 0%, transparent 40%);
         }
         
-        @keyframes bgPulse {
-            0%, 100% { transform: scale(1) rotate(0deg); }
-            33% { transform: scale(1.1) rotate(1deg); }
-            66% { transform: scale(1.05) rotate(-1deg); }
-        }
-        
-        /* 粒子效果 */
-        .particles {
+        /* 网格线 */
+        .tech-grid {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: -1;
+            background-image: 
+                linear-gradient(rgba(0, 212, 170, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 170, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
         }
         
-        .particle {
+        /* 装饰角纹 */
+        .corner-decoration {
             position: absolute;
-            width: 2px;
-            height: 2px;
-            background: var(--primary);
-            border-radius: 50%;
-            opacity: 0.5;
-            animation: float 20s linear infinite;
+            width: 60px;
+            height: 60px;
+            border: 1px solid var(--jade-dim);
+        }
+        .corner-decoration.top-left {
+            top: -1px; left: -1px;
+            border-right: none; border-bottom: none;
+        }
+        .corner-decoration.top-right {
+            top: -1px; right: -1px;
+            border-left: none; border-bottom: none;
+        }
+        .corner-decoration.bottom-left {
+            bottom: -1px; left: -1px;
+            border-right: none; border-top: none;
+        }
+        .corner-decoration.bottom-right {
+            bottom: -1px; right: -1px;
+            border-left: none; border-top: none;
         }
         
-        @keyframes float {
-            0% {
-                transform: translateY(100vh) translateX(0);
-                opacity: 0;
-            }
-            10% { opacity: 0.5; }
-            90% { opacity: 0.5; }
-            100% {
-                transform: translateY(-100px) translateX(100px);
-                opacity: 0;
-            }
-        }
-        
-        /* 主标题样式 */
+        /* 主标题 */
         .main-title {
-            font-family: 'Orbitron', monospace;
+            font-family: 'Noto Serif SC', serif;
             font-weight: 700;
-            background: linear-gradient(45deg, var(--primary), var(--accent), var(--secondary));
+            letter-spacing: 0.3em;
+            background: linear-gradient(180deg, #f5f5f5 0%, #a0a0a0 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            background-size: 300% 300%;
-            animation: gradientShift 3s ease infinite;
-            letter-spacing: 2px;
-        }
-        
-        @keyframes gradientShift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
+            text-shadow: 0 0 40px rgba(0, 212, 170, 0.3);
         }
         
         .subtitle {
-            font-family: 'Orbitron', monospace;
+            font-family: 'Noto Serif SC', serif;
             font-weight: 400;
-            letter-spacing: 1px;
-            opacity: 0.9;
+            letter-spacing: 0.2em;
+            color: #888;
         }
         
-        /* 霓虹光效 */
-        .neon-glow {
-            box-shadow: 
-                0 0 20px var(--primary),
-                0 0 40px var(--primary),
-                inset 0 0 20px rgba(0, 242, 255, 0.1);
-            border: 1px solid var(--primary);
+        /* 分隔线 */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--jade);
+            opacity: 0.6;
+        }
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--jade-dim), transparent);
         }
         
-        .neon-glow:hover {
-            box-shadow: 
-                0 0 30px var(--primary),
-                0 0 60px var(--primary),
-                inset 0 0 30px rgba(0, 242, 255, 0.2);
-        }
-        
-        .neon-glow.purple {
-            box-shadow: 
-                0 0 20px var(--secondary),
-                0 0 40px var(--secondary),
-                inset 0 0 20px rgba(162, 0, 255, 0.1);
-            border: 1px solid var(--secondary);
-        }
-        
-        .neon-glow.purple:hover {
-            box-shadow: 
-                0 0 30px var(--secondary),
-                0 0 60px var(--secondary),
-                inset 0 0 30px rgba(162, 0, 255, 0.2);
-        }
-        
-        .neon-glow.orange {
-            box-shadow: 
-                0 0 20px #ff6b00,
-                0 0 40px #ff6b00,
-                inset 0 0 20px rgba(255, 107, 0, 0.1);
-            border: 1px solid #ff6b00;
-        }
-        
-        .neon-glow.orange:hover {
-            box-shadow: 
-                0 0 30px #ff6b00,
-                0 0 60px #ff6b00,
-                inset 0 0 30px rgba(255, 107, 0, 0.2);
-        }
-        
-        .neon-glow.green {
-            box-shadow: 
-                0 0 20px #00ff9d,
-                0 0 40px #00ff9d,
-                inset 0 0 20px rgba(0, 255, 157, 0.1);
-            border: 1px solid #00ff9d;
-        }
-        
-        .neon-glow.green:hover {
-            box-shadow: 
-                0 0 30px #00ff9d,
-                0 0 60px #00ff9d,
-                inset 0 0 30px rgba(0, 255, 157, 0.2);
-        }
-        
-        /* 卡片样式 */
+        /* 系统卡片 */
         .system-card {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 2rem;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer;
+            background: linear-gradient(145deg, rgba(26, 26, 26, 0.9) 0%, rgba(13, 13, 13, 0.95) 100%);
+            border: 1px solid var(--ink-gray);
             position: relative;
+            transition: all 0.4s ease;
             overflow: hidden;
         }
         
         .system-card::before {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(0, 242, 255, 0.1) 0%, transparent 70%);
-            transform: rotate(45deg);
-            transition: all 0.6s ease;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 40%, rgba(0, 212, 170, 0.05) 100%);
             opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        
+        .system-card:hover {
+            border-color: var(--jade-dim);
+            transform: translateY(-4px);
+            box-shadow: 
+                0 10px 40px rgba(0, 0, 0, 0.5),
+                0 0 30px rgba(0, 212, 170, 0.1);
         }
         
         .system-card:hover::before {
             opacity: 1;
         }
         
-        .system-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 20px 40px rgba(0, 242, 255, 0.2);
+        /* 卡片发光边框 */
+        .card-glow {
+            position: absolute;
+            inset: -1px;
+            background: linear-gradient(135deg, var(--jade-dim), transparent, var(--gold-dim));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: -1;
+        }
+        .system-card:hover .card-glow {
+            opacity: 1;
         }
         
-        /* 图标动画 */
-        .icon-wrapper {
-            display: inline-block;
-            animation: iconPulse 2s ease-in-out infinite;
-        }
-        
-        .system-card:hover .icon-wrapper {
-            animation: iconRotate 0.6s ease;
-        }
-        
-        @keyframes iconPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-        
-        @keyframes iconRotate {
-            0% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(180deg) scale(1.2); }
-            100% { transform: rotate(360deg) scale(1); }
-        }
-        
-        /* 按钮样式 */
-        .cyber-button {
+        /* 图标容器 */
+        .icon-container {
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--ink-gray);
             position: relative;
-            overflow: hidden;
             transition: all 0.3s ease;
-            font-family: 'Orbitron', monospace;
-            letter-spacing: 1px;
-            font-weight: 500;
         }
         
-        .cyber-button::before {
+        .system-card:hover .icon-container {
+            border-color: var(--jade-dim);
+            box-shadow: 0 0 20px rgba(0, 212, 170, 0.2);
+        }
+        
+        .icon-container::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: -100%;
+            inset: 4px;
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .system-card:hover .icon-container::before {
+            border-color: var(--jade-dim);
+        }
+        
+        /* 按钮 */
+        .action-btn {
+            position: relative;
+            background: transparent;
+            border: 1px solid var(--ink-gray);
+            color: #ccc;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            font-family: 'Noto Sans SC', sans-serif;
+            letter-spacing: 0.1em;
+        }
+        
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
             width: 100%;
+            height: 0;
+            background: linear-gradient(180deg, transparent, rgba(0, 212, 170, 0.1));
+            transition: height 0.3s ease;
+        }
+        
+        .action-btn:hover {
+            border-color: var(--jade);
+            color: var(--jade);
+        }
+        
+        .action-btn:hover::before {
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.5s;
         }
         
-        .cyber-button:hover::before {
-            left: 100%;
+        /* 标签 */
+        .tag {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border: 1px solid var(--ink-gray);
+            color: #666;
+            transition: all 0.3s ease;
         }
         
-        .cyber-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        .system-card:hover .tag {
+            border-color: var(--jade-dim);
+            color: var(--jade);
         }
         
-        /* 信息面板 */
-        .info-panel {
-            background: linear-gradient(135deg, rgba(20, 20, 35, 0.8) 0%, rgba(30, 30, 50, 0.6) 100%);
-            backdrop-filter: blur(30px);
-            border: 1px solid rgba(0, 242, 255, 0.2);
-            border-radius: 20px;
-            padding: 2rem;
+        /* 页脚 */
+        .footer-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--ink-gray), transparent);
         }
         
-        /* 响应式调整 */
+        /* 扫描线效果 */
+        .scan-line {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--jade-dim), transparent);
+            opacity: 0.3;
+            animation: scan 8s linear infinite;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        @keyframes scan {
+            0% { transform: translateY(-100vh); }
+            100% { transform: translateY(100vh); }
+        }
+        
+        /* 响应式 */
         @media (max-width: 768px) {
             .main-title {
-                font-size: 2.5rem;
+                font-size: 1.75rem;
+                letter-spacing: 0.2em;
             }
-            
-            .system-card {
-                padding: 1.5rem;
-            }
-        }
-        
-        /* 滚动条样式 */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: var(--dark);
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            border-radius: 4px;
         }
     </style>
 </head>
-<body class="p-4 md:p-8">
-    <!-- 动态背景 -->
-    <div class="bg-animation"></div>
+<body class="p-6 md:p-12">
+    <!-- 扫描线 -->
+    <div class="scan-line"></div>
     
-    <!-- 粒子效果 -->
-    <div class="particles" id="particles"></div>
+    <!-- 背景 -->
+    <div class="ink-bg"></div>
+    <div class="tech-grid"></div>
     
-    <div class="max-w-7xl mx-auto relative z-10">
+    <div class="max-w-6xl mx-auto relative">
         <!-- 头部 -->
-        <div class="text-center mb-16 md:mb-20">
-            <div class="mb-6">
-                <div class="text-8xl md:text-9xl mb-4 bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-                    <i class="fas fa-chess-king"></i>
-                </div>
-                <h1 class="main-title text-4xl md:text-6xl mb-4">
-                    逆水寒
-                </h1>
-                <h2 class="main-title text-3xl md:text-5xl mb-6">
-                    战斗分析系统
-                </h2>
+        <header class="text-center mb-16">
+            <!-- 装饰图案 -->
+            <div class="flex justify-center mb-6 opacity-40">
+                <svg width="120" height="24" viewBox="0 0 120 24" fill="none">
+                    <path d="M0 12h40M80 12h40" stroke="#00d4aa" stroke-width="0.5" opacity="0.5"/>
+                    <circle cx="60" cy="12" r="3" stroke="#00d4aa" stroke-width="0.5" fill="none"/>
+                    <path d="M50 12l5-3v6l-5-3zm20 0l-5-3v6l5-3z" fill="#00d4aa" opacity="0.5"/>
+                </svg>
             </div>
-            <p class="subtitle text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-                帮派战数据分析 · 联赛智能分团管理 · 内功优化计算
+            
+            <h1 class="main-title text-3xl md:text-5xl mb-3">
+                逆水寒
+            </h1>
+            <h2 class="main-title text-2xl md:text-4xl mb-6">
+                战斗分析系统
+            </h2>
+            
+            <div class="divider text-sm mb-6 max-w-md mx-auto">
+                <i class="fas fa-yin-yang"></i>
+            </div>
+            
+            <p class="subtitle text-sm md:text-base">
+                帮派战数据分析 · 联赛智能分团 · 内功优化计算
             </p>
-            <div class="mt-8 flex justify-center">
-                <div class="w-32 h-1 bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 rounded-full"></div>
-            </div>
-        </div>
+        </header>
 
-        <!-- 系统选择面板 -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-8 mb-12">
-            <!-- 帮战分析系统 -->
-            <div class="system-card neon-glow">
-                <div class="text-center relative z-10">
-                    <div class="icon-wrapper text-7xl mb-6 bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
-                        <i class="fas fa-chart-line"></i>
+        <!-- 系统卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-16">
+            <!-- 帮战分析 -->
+            <div class="system-card rounded-sm p-6">
+                <div class="card-glow rounded-sm"></div>
+                <div class="corner-decoration top-left"></div>
+                <div class="corner-decoration top-right"></div>
+                <div class="corner-decoration bottom-left"></div>
+                <div class="corner-decoration bottom-right"></div>
+                
+                <div class="relative flex items-start gap-5">
+                    <div class="icon-container rounded-sm flex-shrink-0">
+                        <i class="fas fa-chart-line text-2xl text-gray-400"></i>
                     </div>
-                    <h3 class="text-2xl font-bold mb-4 text-white" style="font-family: 'Orbitron', monospace;">
-                        帮战分析系统
-                    </h3>
-                    <p class="text-gray-300 mb-8 text-sm leading-relaxed h-16">
-                        完整的帮会战斗数据分析平台，支持CSV数据导入、多维度对比分析、可视化图表展示。
-                    </p>
-                    <div class="space-y-4">
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-lg font-medium text-gray-200 mb-2 tracking-wide">
+                            帮战分析系统
+                        </h3>
+                        <p class="text-gray-500 text-sm mb-4 leading-relaxed">
+                            CSV数据导入、多维度对比分析、可视化图表展示
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="tag">数据导入</span>
+                            <span class="tag">可视化</span>
+                        </div>
                         <a href="xg_nsh_battle_system/xg_data_import/index.html" 
-                           class="cyber-button block w-full bg-gradient-to-r from-blue-500 via-purple-600 to-cyan-500 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:shadow-lg transition-all">
-                            <i class="fas fa-play mr-3"></i>启动系统
+                           class="action-btn inline-flex items-center px-5 py-2 text-sm rounded-sm">
+                            <i class="fas fa-arrow-right mr-2 text-xs"></i>
+                            进入系统
                         </a>
-                        <div class="flex flex-wrap gap-2 justify-center text-xs">
-                            <span class="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full border border-blue-500/30">
-                                <i class="fas fa-database mr-1"></i>数据导入
-                            </span>
-                            <span class="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full border border-purple-500/30">
-                                <i class="fas fa-chart-bar mr-1"></i>可视化
-                            </span>
-                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 联赛智能分团系统（管理） -->
-            <div class="system-card neon-glow purple">
-                <div class="text-center relative z-10">
-                    <div class="icon-wrapper text-7xl mb-6 bg-gradient-to-r from-purple-400 to-pink-300 bg-clip-text text-transparent">
-                        <i class="fas fa-users-cog"></i>
+            <!-- 智能分团 -->
+            <div class="system-card rounded-sm p-6">
+                <div class="card-glow rounded-sm"></div>
+                <div class="corner-decoration top-left"></div>
+                <div class="corner-decoration top-right"></div>
+                <div class="corner-decoration bottom-left"></div>
+                <div class="corner-decoration bottom-right"></div>
+                
+                <div class="relative flex items-start gap-5">
+                    <div class="icon-container rounded-sm flex-shrink-0">
+                        <i class="fas fa-users-cog text-2xl text-gray-400"></i>
                     </div>
-                    <h3 class="text-2xl font-bold mb-4 text-white" style="font-family: 'Orbitron', monospace;">
-                        联赛智能分团
-                    </h3>
-                    <p class="text-gray-300 mb-8 text-sm leading-relaxed h-16">
-                        完整的联赛数据管理与智能分团平台，集成接龙名单管理、一线牵配对、数据管理中心。
-                    </p>
-                    <div class="space-y-4">
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-lg font-medium text-gray-200 mb-2 tracking-wide">
+                            联赛智能分团
+                        </h3>
+                        <p class="text-gray-500 text-sm mb-4 leading-relaxed">
+                            接龙名单管理、一线牵配对、多算法智能分团
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="tag">接龙管理</span>
+                            <span class="tag">一线牵</span>
+                            <span class="tag">智能分团</span>
+                        </div>
                         <a href="xg_nsh_battle_system/xg_guild_analysis/xg_guild_analysis_backup.html" 
-                           class="cyber-button block w-full bg-gradient-to-r from-purple-500 via-pink-600 to-red-500 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:shadow-lg transition-all">
-                            <i class="fas fa-cogs mr-3"></i>启动系统
+                           class="action-btn inline-flex items-center px-5 py-2 text-sm rounded-sm">
+                            <i class="fas fa-arrow-right mr-2 text-xs"></i>
+                            进入系统
                         </a>
-                        <div class="flex flex-wrap gap-2 justify-center text-xs">
-                            <span class="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full border border-purple-500/30">
-                                <i class="fas fa-list-ol mr-1"></i>接龙管理
-                            </span>
-                            <span class="px-3 py-1 bg-pink-500/20 text-pink-300 rounded-full border border-pink-500/30">
-                                <i class="fas fa-link mr-1"></i>一线牵
-                            </span>
-                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 内功计算器 -->
-            <div class="system-card neon-glow orange">
-                <div class="text-center relative z-10">
-                    <div class="icon-wrapper text-7xl mb-6 bg-gradient-to-r from-orange-400 to-red-300 bg-clip-text text-transparent">
-                        <i class="fas fa-calculator"></i>
+            <!-- 内功计算 -->
+            <div class="system-card rounded-sm p-6">
+                <div class="card-glow rounded-sm"></div>
+                <div class="corner-decoration top-left"></div>
+                <div class="corner-decoration top-right"></div>
+                <div class="corner-decoration bottom-left"></div>
+                <div class="corner-decoration bottom-right"></div>
+                
+                <div class="relative flex items-start gap-5">
+                    <div class="icon-container rounded-sm flex-shrink-0">
+                        <i class="fas fa-calculator text-2xl text-gray-400"></i>
                     </div>
-                    <h3 class="text-2xl font-bold mb-4 text-white" style="font-family: 'Orbitron', monospace;">
-                        内功评分计算器
-                    </h3>
-                    <p class="text-gray-300 mb-8 text-sm leading-relaxed h-16">
-                        专业的逆水寒内功评分计算工具，支持手动/自动组合，帮助优化内功配置。
-                    </p>
-                    <div class="space-y-4">
-                        <a href="xg_nsh_battle_system/sg_calculator/sg_calculator_main.html" 
-                           class="cyber-button block w-full bg-gradient-to-r from-orange-500 via-red-600 to-pink-500 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:shadow-lg transition-all">
-                            <i class="fas fa-play mr-3"></i>启动计算器
-                        </a>
-                        <div class="flex flex-wrap gap-2 justify-center text-xs">
-                            <span class="px-3 py-1 bg-orange-500/20 text-orange-300 rounded-full border border-orange-500/30">
-                                <i class="fas fa-magic mr-1"></i>自动组合
-                            </span>
-                            <span class="px-3 py-1 bg-red-500/20 text-red-300 rounded-full border border-red-500/30">
-                                <i class="fas fa-star mr-1"></i>评分优化
-                            </span>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-lg font-medium text-gray-200 mb-2 tracking-wide">
+                            内功评分计算器
+                        </h3>
+                        <p class="text-gray-500 text-sm mb-4 leading-relaxed">
+                            手动/自动组合计算，优化内功配置
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="tag">自动组合</span>
+                            <span class="tag">评分优化</span>
                         </div>
+                        <a href="xg_nsh_battle_system/sg_calculator/sg_calculator_main.html" 
+                           class="action-btn inline-flex items-center px-5 py-2 text-sm rounded-sm">
+                            <i class="fas fa-arrow-right mr-2 text-xs"></i>
+                            进入系统
+                        </a>
                     </div>
                 </div>
             </div>
 
             <!-- 文档说明 -->
-            <div class="system-card neon-glow green">
-                <div class="text-center relative z-10">
-                    <div class="icon-wrapper text-7xl mb-6 bg-gradient-to-r from-green-400 to-cyan-300 bg-clip-text text-transparent">
-                        <i class="fas fa-book"></i>
+            <div class="system-card rounded-sm p-6">
+                <div class="card-glow rounded-sm"></div>
+                <div class="corner-decoration top-left"></div>
+                <div class="corner-decoration top-right"></div>
+                <div class="corner-decoration bottom-left"></div>
+                <div class="corner-decoration bottom-right"></div>
+                
+                <div class="relative flex items-start gap-5">
+                    <div class="icon-container rounded-sm flex-shrink-0">
+                        <i class="fas fa-book text-2xl text-gray-400"></i>
                     </div>
-                    <h3 class="text-2xl font-bold mb-4 text-white" style="font-family: 'Orbitron', monospace;">
-                        文档说明
-                    </h3>
-                    <p class="text-gray-300 mb-8 text-sm leading-relaxed h-16">
-                        查看系统使用说明、数据管理中心和智能分团系统文档，快速上手所有功能。
-                    </p>
-                    <div class="space-y-4">
-                        <div class="grid grid-cols-2 gap-3">
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-lg font-medium text-gray-200 mb-2 tracking-wide">
+                            文档说明
+                        </h3>
+                        <p class="text-gray-500 text-sm mb-4 leading-relaxed">
+                            系统使用指南、数据管理中心文档
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="tag">使用指南</span>
+                            <span class="tag">技术文档</span>
+                        </div>
+                        <div class="flex gap-3">
                             <a href="xg_nsh_battle_system/README_数据管理中心.md" 
-                               class="cyber-button block w-full bg-gradient-to-r from-green-500 to-teal-600 text-white py-3 px-4 rounded-lg font-semibold text-sm hover:shadow-lg transition-all">
-                                <i class="fas fa-book-open mr-2"></i>数据管理
+                               class="action-btn inline-flex items-center px-4 py-2 text-xs rounded-sm">
+                                数据管理
                             </a>
                             <a href="xg_nsh_battle_system/README_自动分团系统.md" 
-                               class="cyber-button block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-lg font-semibold text-sm hover:shadow-lg transition-all">
-                                <i class="fas fa-robot mr-2"></i>智能分团
+                               class="action-btn inline-flex items-center px-4 py-2 text-xs rounded-sm">
+                                智能分团
                             </a>
                         </div>
-                        <div class="flex flex-wrap gap-2 justify-center text-xs">
-                            <span class="px-3 py-1 bg-green-500/20 text-green-300 rounded-full border border-green-500/30">
-                                <i class="fas fa-lightbulb mr-1"></i>使用指南
-                            </span>
-                        </div>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 系统特色展示 -->
-        <div class="info-panel mb-12">
-            <h2 class="text-3xl font-bold mb-8 text-center text-white" style="font-family: 'Orbitron', monospace;">
-                <i class="fas fa-star mr-3 text-yellow-400"></i>系统特色
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="text-center p-6 bg-white/5 rounded-xl border border-white/10 hover:border-cyan-400/30 transition-all">
-                    <div class="text-4xl mb-4 text-cyan-400">
-                        <i class="fas fa-rocket"></i>
-                    </div>
-                    <h4 class="font-bold text-white mb-2">极速处理</h4>
-                    <p class="text-gray-400 text-sm">CSV数据秒级导入，智能算法快速分团</p>
-                </div>
-                <div class="text-center p-6 bg-white/5 rounded-xl border border-white/10 hover:border-purple-400/30 transition-all">
-                    <div class="text-4xl mb-4 text-purple-400">
-                        <i class="fas fa-brain"></i>
-                    </div>
-                    <h4 class="font-bold text-white mb-2">AI智能</h4>
-                    <p class="text-gray-400 text-sm">4种算法智能分团，自动优化队伍配置</p>
-                </div>
-                <div class="text-center p-6 bg-white/5 rounded-xl border border-white/10 hover:border-pink-400/30 transition-all">
-                    <div class="text-4xl mb-4 text-pink-400">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <h4 class="font-bold text-white mb-2">数据安全</h4>
-                    <p class="text-gray-400 text-sm">本地存储，数据不上传，保护隐私</p>
-                </div>
-                <div class="text-center p-6 bg-white/5 rounded-xl border border-white/10 hover:border-green-400/30 transition-all">
-                    <div class="text-4xl mb-4 text-green-400">
-                        <i class="fas fa-infinity"></i>
-                    </div>
-                    <h4 class="font-bold text-white mb-2">全能平台</h4>
-                    <p class="text-gray-400 text-sm">分析、分团、计算器一站式解决方案</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- 技术栈展示 -->
-        <div class="info-panel">
-            <h2 class="text-2xl font-bold mb-6 text-center text-white" style="font-family: 'Orbitron', monospace;">
-                <i class="fas fa-code mr-3 text-cyan-400"></i>技术架构
-            </h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="text-center p-4 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-lg border border-blue-500/30">
-                    <i class="fab fa-html5 text-3xl text-orange-500 mb-2"></i>
-                    <div class="font-semibold text-white">HTML5</div>
-                </div>
-                <div class="text-center p-4 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-lg border border-blue-500/30">
-                    <i class="fab fa-css3-alt text-3xl text-blue-500 mb-2"></i>
-                    <div class="font-semibold text-white">CSS3</div>
-                </div>
-                <div class="text-center p-4 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-lg border border-yellow-500/30">
-                    <i class="fab fa-js text-3xl text-yellow-500 mb-2"></i>
-                    <div class="font-semibold text-white">JavaScript</div>
-                </div>
-                <div class="text-center p-4 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-lg border border-cyan-500/30">
-                    <i class="fas fa-robot text-3xl text-cyan-500 mb-2"></i>
-                    <div class="font-semibold text-white">AI算法</div>
                 </div>
             </div>
         </div>
 
         <!-- 页脚 -->
-        <div class="text-center mt-16 pt-8 border-t border-white/10">
-            <p class="text-gray-400 text-sm">
-                <i class="fas fa-copyright mr-1"></i>
-                2026 逆水寒战斗分析系统 · 专为帮派战设计的数据智能平台
-            </p>
-            <div class="mt-4 flex justify-center space-x-6 text-2xl">
-                <i class="fas fa-sword text-gray-600"></i>
-                <i class="fas fa-shield text-gray-600"></i>
-                <i class="fas fa-heart text-gray-600"></i>
-                <i class="fas fa-fire text-gray-600"></i>
+        <footer>
+            <div class="footer-divider mb-6"></div>
+            <div class="text-center text-gray-600 text-xs tracking-wider">
+                <p class="mb-2">逆水寒战斗分析系统·天下无双·逍遥之巅·曦光</p>
+                <div class="flex justify-center gap-4 opacity-50">
+                    <i class="fas fa-feather-alt"></i>
+                    <i class="fas fa-dragon"></i>
+                    <i class="fas fa-fan"></i>
+                </div>
             </div>
-        </div>
+        </footer>
     </div>
-
-    <script>
-        // 创建粒子
-        function createParticles() {
-            const container = document.getElementById('particles');
-            const particleCount = 50;
-            
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.animationDelay = Math.random() * 20 + 's';
-                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
-                
-                // 随机颜色
-                const colors = ['#00f2ff', '#a200ff', '#ff00e6', '#ff6b00'];
-                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
-                
-                container.appendChild(particle);
-            }
-        }
-        
-        // 鼠标跟随效果
-        function addMouseEffect() {
-            document.addEventListener('mousemove', (e) => {
-                const cards = document.querySelectorAll('.system-card');
-                const x = e.clientX / window.innerWidth;
-                const y = e.clientY / window.innerHeight;
-                
-                cards.forEach((card, index) => {
-                    const speed = (index + 1) * 0.5;
-                    const xOffset = (x - 0.5) * speed * 10;
-                    const yOffset = (y - 0.5) * speed * 10;
-                    
-                    card.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
-                });
-            });
-        }
-        
-        // 初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            createParticles();
-            addMouseEffect();
-            
-            // 添加页面加载动画
-            const cards = document.querySelectorAll('.system-card');
-            cards.forEach((card, index) => {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(50px)';
-                
-                setTimeout(() => {
-                    card.style.transition = 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-                    card.style.opacity = '1';
-                    card.style.transform = 'translateY(0)';
-                }, index * 200);
-            });
-        });
-    </script>
 </body>
 </html>
