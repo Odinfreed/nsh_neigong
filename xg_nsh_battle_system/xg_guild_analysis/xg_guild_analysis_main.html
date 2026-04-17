@@ -5581,20 +5581,36 @@
                 // 克隆节点，避免影响原页面
                 const clone = content.cloneNode(true);
                 
-                // 移除克隆节点中的所有 canvas 元素
+                // 获取原始页面中的 canvas 元素并转换为图片
+                const originalCanvases = content.querySelectorAll('canvas');
                 const canvasesInClone = clone.querySelectorAll('canvas');
                 console.log('克隆中找到canvas数量:', canvasesInClone.length);
-                canvasesInClone.forEach(canvas => {
-                    // 创建一个占位div
-                    const placeholder = document.createElement('div');
-                    placeholder.style.width = '100%';
-                    placeholder.style.height = '450px';
-                    placeholder.style.backgroundColor = '#1a1a1a';
-                    placeholder.style.display = 'flex';
-                    placeholder.style.alignItems = 'center';
-                    placeholder.style.justifyContent = 'center';
-                    placeholder.innerHTML = '<span style="color: #666;">[雷达图]</span>';
-                    canvas.parentNode.replaceChild(placeholder, canvas);
+                
+                canvasesInClone.forEach((canvas, index) => {
+                    const originalCanvas = originalCanvases[index];
+                    if (originalCanvas) {
+                        // 将 canvas 转换为图片
+                        try {
+                            const img = document.createElement('img');
+                            img.src = originalCanvas.toDataURL('image/png');
+                            img.style.width = '100%';
+                            img.style.height = 'auto';
+                            img.style.maxHeight = '450px';
+                            canvas.parentNode.replaceChild(img, canvas);
+                        } catch (e) {
+                            console.error('Canvas转图片失败:', e);
+                            // 失败时使用占位符
+                            const placeholder = document.createElement('div');
+                            placeholder.style.width = '100%';
+                            placeholder.style.height = '450px';
+                            placeholder.style.backgroundColor = '#1a1a1a';
+                            placeholder.style.display = 'flex';
+                            placeholder.style.alignItems = 'center';
+                            placeholder.style.justifyContent = 'center';
+                            placeholder.innerHTML = '<span style="color: #666;">[雷达图]</span>';
+                            canvas.parentNode.replaceChild(placeholder, canvas);
+                        }
+                    }
                 });
 
                 // 修复：移除可能导致html2canvas报错的背景图片和样式
@@ -5632,7 +5648,7 @@
                     imageTimeout: 0,
                     removeContainer: true,
                     onclone: function(clonedDoc) {
-                        // 在克隆文档中移除所有背景图片和Canvas
+                        // 在克隆文档中移除所有背景图片
                         const elements = clonedDoc.querySelectorAll('*');
                         elements.forEach(el => {
                             // 移除背景图片
@@ -5646,17 +5662,7 @@
                             el.style.removeProperty('--tw-gradient-to');
                             el.style.removeProperty('--tw-gradient-stops');
                         });
-                        // 移除所有canvas元素
-                        const canvases = clonedDoc.querySelectorAll('canvas');
-                        canvases.forEach(c => {
-                            const placeholder = document.createElement('div');
-                            placeholder.style.width = c.style.width || '100%';
-                            placeholder.style.height = c.style.height || '200px';
-                            placeholder.style.backgroundColor = '#1a1a1a';
-                            if (c.parentNode) {
-                                c.parentNode.replaceChild(placeholder, c);
-                            }
-                        });
+                        // Canvas已在前面转换为img，这里不需要额外处理
                     }
                 });
 
