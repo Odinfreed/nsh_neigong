@@ -9137,48 +9137,48 @@
             </div>
 
             <!-- 数据概览卡片 -->
-            <div class="flex flex-wrap justify-center gap-4 mb-8" id="fullscreenStatsContainer">
-                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" style="flex: 1 1 150px; max-width: 180px; min-width: 140px;">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-8" id="fullscreenStatsContainer">
+                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
                     <div class="text-gray-500 text-sm mb-1"><i class="fas fa-skull mr-1"></i>击败</div>
                     <div class="text-2xl font-bold text-primary" id="fullscreenKills">-</div>
                 </div>
-                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" style="flex: 1 1 150px; max-width: 180px; min-width: 140px;">
+                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
                     <div class="text-gray-500 text-sm mb-1"><i class="fas fa-water mr-1"></i>破泉</div>
                     <div class="text-2xl font-bold text-warning" id="fullscreenPoquan">-</div>
                 </div>
-                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" id="cardHuayu" style="flex: 1 1 150px; max-width: 180px; min-width: 140px; display: none;">
+                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" id="cardHuayu" style="display: none;">
                     <div class="text-gray-500 text-sm mb-1"><i class="fas fa-feather-alt mr-1"></i>化羽</div>
                     <div class="text-2xl font-bold text-success" id="fullscreenHuayu">-</div>
                 </div>
-                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" id="cardQingquan" style="flex: 1 1 150px; max-width: 180px; min-width: 140px; display: none;">
+                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" id="cardQingquan" style="display: none;">
                     <div class="text-gray-500 text-sm mb-1"><i class="fas fa-tint mr-1"></i>清泉</div>
                     <div class="text-2xl font-bold text-accent" id="fullscreenQingquan">-</div>
                 </div>
-                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" style="flex: 1 1 150px; max-width: 180px; min-width: 140px;">
+                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
                     <div class="text-gray-500 text-sm mb-1"><i class="fas fa-hands-helping mr-1"></i>助攻</div>
                     <div class="text-2xl font-bold text-primary" id="fullscreenAssists">-</div>
                 </div>
-                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" id="cardFengu" style="flex: 1 1 150px; max-width: 180px; min-width: 140px; display: none;">
+                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" id="cardFengu" style="display: none;">
                     <div class="text-gray-500 text-sm mb-1"><i class="fas fa-fire mr-1"></i>焚骨</div>
                     <div class="text-2xl font-bold text-danger" id="fullscreenFengu">-</div>
                 </div>
-                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" style="flex: 1 1 150px; max-width: 180px; min-width: 140px;">
+                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
                     <div class="text-gray-500 text-sm mb-1"><i class="fas fa-user-slash mr-1"></i>对玩家伤害</div>
                     <div class="text-2xl font-bold text-primary" id="fullscreenPlayerDamage">-</div>
                 </div>
-                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" style="flex: 1 1 150px; max-width: 180px; min-width: 140px;">
+                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
                     <div class="text-gray-500 text-sm mb-1"><i class="fas fa-building mr-1"></i>对建筑伤害</div>
                     <div class="text-2xl font-bold text-primary" id="fullscreenBuildingDamage">-</div>
                 </div>
-                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" id="cardPlayerArmorBreak" style="flex: 1 1 150px; max-width: 180px; min-width: 140px; display: none;">
+                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" id="cardPlayerArmorBreak" style="display: none;">
                     <div class="text-gray-500 text-sm mb-1"><i class="fas fa-shield-alt mr-1"></i>人伤卸甲</div>
                     <div class="text-2xl font-bold text-warning" id="fullscreenPlayerArmorBreak">-</div>
                 </div>
-                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" id="cardBuildingArmorBreak" style="flex: 1 1 150px; max-width: 180px; min-width: 140px; display: none;">
+                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" id="cardBuildingArmorBreak" style="display: none;">
                     <div class="text-gray-500 text-sm mb-1"><i class="fas fa-hammer mr-1"></i>破塔卸甲</div>
                     <div class="text-2xl font-bold text-warning" id="fullscreenBuildingArmorBreak">-</div>
                 </div>
-                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" style="flex: 2 1 300px; max-width: 370px; min-width: 280px;">
+                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center col-span-2 md:col-span-1">
                     <div class="text-gray-500 text-sm mb-1"><i class="fas fa-heart mr-1"></i>治疗值</div>
                     <div class="text-2xl font-bold text-success" id="fullscreenHealing">-</div>
                 </div>
