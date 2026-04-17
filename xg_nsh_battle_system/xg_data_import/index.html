@@ -6,158 +6,418 @@
     <title>帮会数据一键导入 - 逆水寒帮战系统</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#165DFF',
-                        secondary: '#722ED1',
-                        success: '#00B42A',
-                        warning: '#FF7D00',
-                        danger: '#F53F3F',
-                        dark: '#1D2129',
-                        'dark-800': '#303846',
-                        'dark-700': '#4E5969',
-                        'dark-600': '#86909C',
-                    }
-                }
-            }
-        }
-    </script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+        
+        :root {
+            --ink-black: #0d0d0d;
+            --ink-dark: #1a1a1a;
+            --ink-gray: #2a2a2a;
+            --jade: #00d4aa;
+            --jade-dim: #00d4aa40;
+            --gold: #c9a227;
+            --gold-dim: #c9a22730;
+            --cyan: #00b4d8;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--ink-black);
             min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            color: #e0e0e0;
         }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        
+        /* 水墨背景 */
+        .ink-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: 
+                radial-gradient(ellipse at 20% 80%, rgba(0, 180, 216, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 212, 170, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 40% 40%, rgba(201, 162, 39, 0.04) 0%, transparent 40%);
         }
+        
+        /* 网格线 */
+        .tech-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: 
+                linear-gradient(rgba(0, 212, 170, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 170, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        
+        /* 装饰角纹 */
+        .corner-decoration {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--jade-dim);
+        }
+        .corner-decoration.top-left {
+            top: -1px; left: -1px;
+            border-right: none; border-bottom: none;
+        }
+        .corner-decoration.top-right {
+            top: -1px; right: -1px;
+            border-left: none; border-bottom: none;
+        }
+        .corner-decoration.bottom-left {
+            bottom: -1px; left: -1px;
+            border-right: none; border-top: none;
+        }
+        .corner-decoration.bottom-right {
+            bottom: -1px; right: -1px;
+            border-left: none; border-top: none;
+        }
+        
+        /* 主标题 */
+        .main-title {
+            font-family: 'Noto Serif SC', serif;
+            font-weight: 700;
+            letter-spacing: 0.3em;
+            background: linear-gradient(180deg, #f5f5f5 0%, #a0a0a0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 40px rgba(0, 212, 170, 0.3);
+        }
+        
+        .subtitle {
+            font-family: 'Noto Serif SC', serif;
+            font-weight: 400;
+            letter-spacing: 0.2em;
+            color: #888;
+        }
+        
+        /* 分隔线 */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--jade);
+            opacity: 0.6;
+        }
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--jade-dim), transparent);
+        }
+        
+        /* 主卡片 */
+        .main-card {
+            background: linear-gradient(145deg, rgba(26, 26, 26, 0.9) 0%, rgba(13, 13, 13, 0.95) 100%);
+            border: 1px solid var(--ink-gray);
+            position: relative;
+            transition: all 0.4s ease;
+            overflow: hidden;
+        }
+        
+        /* 输入区域 */
+        .input-section {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--ink-gray);
+            transition: all 0.3s ease;
+        }
+        
+        .input-section:focus-within {
+            border-color: var(--jade-dim);
+        }
+        
+        /* 文件上传区 */
         .upload-zone {
-            border: 2px dashed #165DFF;
-            border-radius: 0.75rem;
-            padding: 2rem;
-            text-align: center;
+            border: 2px dashed var(--ink-gray);
+            background: rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
             cursor: pointer;
-            transition: all 0.3s ease;
-            background: linear-gradient(135deg, rgba(22, 93, 255, 0.05) 0%, rgba(114, 46, 209, 0.05) 100%);
         }
+        
         .upload-zone:hover, .upload-zone.dragover {
-            border-color: #722ED1;
-            background: linear-gradient(135deg, rgba(22, 93, 255, 0.1) 0%, rgba(114, 46, 209, 0.1) 100%);
-            transform: translateY(-2px);
+            border-color: var(--jade);
+            background: rgba(0, 212, 170, 0.05);
         }
-        .status-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 500;
+        
+        /* 按钮 */
+        .action-btn {
+            position: relative;
+            background: transparent;
+            border: 1px solid var(--ink-gray);
+            color: #ccc;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            font-family: 'Noto Sans SC', sans-serif;
+            letter-spacing: 0.1em;
         }
-        .status-badge.pending {
-            background: #FFF0F6;
-            color: #C41D7F;
+        
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0;
+            background: linear-gradient(180deg, transparent, rgba(0, 212, 170, 0.1));
+            transition: height 0.3s ease;
         }
-        .status-badge.success {
-            background: #E8FFEA;
-            color: #00B42A;
+        
+        .action-btn:hover {
+            border-color: var(--jade);
+            color: var(--jade);
         }
-        .btn-gradient {
-            background: linear-gradient(135deg, #165DFF 0%, #722ED1 100%);
-            color: white;
+        
+        .action-btn:hover::before {
+            height: 100%;
+        }
+        
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* 主按钮 */
+        .primary-btn {
+            position: relative;
+            background: transparent;
+            border: 1px solid var(--jade-dim);
+            color: var(--jade);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            font-family: 'Noto Sans SC', sans-serif;
+            letter-spacing: 0.15em;
+        }
+        
+        .primary-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .primary-btn:hover {
+            border-color: var(--jade);
+            box-shadow: 0 0 20px rgba(0, 212, 170, 0.2);
+        }
+        
+        .primary-btn:hover::before {
+            opacity: 1;
+        }
+        
+        /* 危险按钮 */
+        .danger-btn {
+            border-color: var(--ink-gray);
+            color: #888;
+        }
+        .danger-btn:hover {
+            border-color: #8b2635;
+            color: #c9404b;
+        }
+        
+        /* 输入框 */
+        .custom-input {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--ink-gray);
+            color: #ccc;
             transition: all 0.3s ease;
         }
-        .btn-gradient:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(22, 93, 255, 0.3);
+        
+        .custom-input:focus {
+            outline: none;
+            border-color: var(--jade-dim);
+            box-shadow: 0 0 10px rgba(0, 212, 170, 0.1);
         }
-        .file-list {
-            max-height: 300px;
-            overflow-y: auto;
+        
+        /* 状态指示器 */
+        .status-box {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--ink-gray);
         }
-        .guild-item {
-            background: linear-gradient(135deg, rgba(22, 93, 255, 0.05) 0%, rgba(114, 46, 209, 0.05) 100%);
-            border-left: 4px solid #165DFF;
+        
+        /* 跳转按钮 */
+        .jump-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: rgba(0, 212, 170, 0.1);
+            border: 1px solid var(--jade-dim);
+            color: var(--jade);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+        
+        .jump-btn:hover {
+            background: rgba(0, 212, 170, 0.2);
+            border-color: var(--jade);
+        }
+        
+        /* 页脚 */
+        .footer-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--ink-gray), transparent);
+        }
+        
+        /* 扫描线 */
+        .scan-line {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--jade-dim), transparent);
+            opacity: 0.3;
+            animation: scan 8s linear infinite;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        @keyframes scan {
+            0% { transform: translateY(-100vh); }
+            100% { transform: translateY(100vh); }
+        }
+        
+        /* 隐藏文件输入 */
+        .hidden-file-input {
+            display: none;
         }
     </style>
 </head>
-<body class="p-6">
-    <div class="max-w-4xl mx-auto">
+<body class="p-6 md:p-12">
+    <!-- 扫描线 -->
+    <div class="scan-line"></div>
+    
+    <!-- 背景 -->
+    <div class="ink-bg"></div>
+    <div class="tech-grid"></div>
+    
+    <div class="max-w-4xl mx-auto relative">
         <!-- 头部 -->
-        <div class="text-center mb-12">
-            <h1 class="text-4xl font-bold text-white mb-4">
-                <i class="fas fa-upload mr-3"></i>帮会数据一键导入
+        <header class="text-center mb-12">
+            <!-- 装饰图案 -->
+            <div class="flex justify-center mb-6 opacity-40">
+                <svg width="120" height="24" viewBox="0 0 120 24" fill="none">
+                    <path d="M0 12h40M80 12h40" stroke="#00d4aa" stroke-width="0.5" opacity="0.5"/>
+                    <circle cx="60" cy="12" r="3" stroke="#00d4aa" stroke-width="0.5" fill="none"/>
+                    <path d="M50 12l5-3v6l-5-3zm20 0l-5-3v6l5-3z" fill="#00d4aa" opacity="0.5"/>
+                </svg>
+            </div>
+            
+            <h1 class="main-title text-2xl md:text-4xl mb-3">
+                帮会数据一键导入
             </h1>
-            <p class="text-white/80 text-lg">选择CSV文件，系统将自动处理并跳转到分析页面</p>
-        </div>
+            
+            <div class="divider text-sm mb-4 max-w-md mx-auto">
+                <i class="fas fa-yin-yang"></i>
+            </div>
+            
+            <p class="subtitle text-sm">
+                选择CSV文件，系统将自动处理并跳转到分析页面
+            </p>
+        </header>
 
         <!-- 主导入区域 -->
-        <div class="glass-card rounded-2xl p-8 shadow-2xl">
-            <div class="text-center">
-                <div class="mb-8">
-                    <i class="fas fa-file-csv text-6xl text-primary mb-4"></i>
-                    <h2 class="text-2xl font-bold mb-2">一键导入CSV数据</h2>
-                    <p class="text-gray-600">选择帮战CSV文件，系统自动解析并跳转到分析界面</p>
+        <div class="main-card rounded-sm p-8">
+            <div class="corner-decoration top-left"></div>
+            <div class="corner-decoration top-right"></div>
+            <div class="corner-decoration bottom-left"></div>
+            <div class="corner-decoration bottom-right"></div>
+            
+            <div class="relative">
+                <!-- 文件上传图标 -->
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center justify-center w-16 h-16 border border-gray-700 rounded-sm mb-4">
+                        <i class="fas fa-file-csv text-3xl text-gray-500"></i>
+                    </div>
+                    <h2 class="text-xl font-medium text-gray-300 mb-2 tracking-wide">一键导入CSV数据</h2>
+                    <p class="text-gray-500 text-sm">选择帮战CSV文件，系统自动解析并跳转到分析界面</p>
                 </div>
 
                 <!-- 默认文件夹设置 -->
-                <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h3 class="font-bold text-blue-800 mb-3 flex items-center">
-                        <i class="fas fa-folder-open mr-2"></i>
+                <div class="input-section rounded-sm p-4 mb-6">
+                    <h3 class="text-sm font-medium text-gray-400 mb-3 flex items-center tracking-wide">
+                        <i class="fas fa-folder-open mr-2 text-xs"></i>
                         默认数据文件夹
                     </h3>
                     <div class="flex items-center gap-3">
                         <input type="text" id="defaultFolder"
-                               class="flex-1 px-3 py-2 border border-blue-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary"
+                               class="custom-input flex-1 px-3 py-2 text-sm rounded-sm"
                                value="C:/Users/31352/AppData/LocalLow/netease/逆水寒手游桌面版/"
                                placeholder="输入默认文件夹路径...">
-                        <button id="saveFolderBtn" class="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition">
+                        <button id="saveFolderBtn" class="action-btn px-4 py-2 text-sm rounded-sm">
                             <i class="fas fa-save mr-1"></i>保存
                         </button>
-                        <button id="openFolderBtn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm transition">
+                        <button id="openFolderBtn" class="action-btn px-4 py-2 text-sm rounded-sm">
                             <i class="fas fa-folder mr-1"></i>打开
                         </button>
                     </div>
-                    <p class="text-xs text-gray-500 mt-2">提示：保存后将记住您的默认文件夹位置</p>
+                    <p class="text-xs text-gray-600 mt-2">提示：保存后将记住您的默认文件夹位置</p>
                 </div>
 
-                <!-- 文件选择按钮 -->
-                <div class="mb-6">
-                    <input type="file" id="csvFileInput" accept=".csv" class="hidden">
-                    <button id="importBtn" class="btn-gradient text-xl font-bold py-4 px-8 rounded-xl inline-flex items-center">
+                <!-- 文件选择区域 -->
+                <div class="upload-zone rounded-sm p-8 mb-6 text-center" id="uploadZone">
+                    <input type="file" id="csvFileInput" accept=".csv" class="hidden-file-input">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-600 mb-4"></i>
+                    <p class="text-gray-400 mb-2">点击或拖拽CSV文件到此处</p>
+                    <p class="text-gray-600 text-xs">支持标准帮战CSV格式</p>
+                </div>
+
+                <!-- 导入按钮 -->
+                <div class="text-center mb-6">
+                    <button id="importBtn" class="primary-btn text-lg font-medium py-3 px-8 rounded-sm inline-flex items-center">
                         <i class="fas fa-upload mr-3"></i>
-                        点击选择CSV文件并导入
+                        选择CSV文件并导入
                     </button>
-                    <p class="text-sm text-gray-500 mt-3">支持标准帮战CSV格式，无需额外操作</p>
                 </div>
 
                 <!-- 状态指示器 -->
                 <div id="statusIndicator" class="hidden">
-                    <div class="inline-flex items-center bg-gray-100 px-4 py-2 rounded-lg">
-                        <i class="fas fa-spinner fa-spin text-primary mr-2"></i>
-                        <span id="statusText">正在处理文件...</span>
+                    <div class="status-box rounded-sm px-4 py-3 text-center">
+                        <i class="fas fa-spinner fa-spin text-jade mr-2"></i>
+                        <span id="statusText" class="text-gray-400 text-sm">正在处理文件...</span>
                     </div>
                 </div>
 
-                <!-- 清除数据按钮 -->
-                <div class="mt-4">
-                    <button onclick="clearData()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm transition">
-                        <i class="fas fa-trash mr-1"></i>清除旧数据
+                <!-- 操作按钮组 -->
+                <div class="flex flex-wrap justify-center gap-3 mt-6 pt-6 border-t border-gray-800">
+                    <button onclick="clearData()" class="action-btn danger-btn px-4 py-2 text-sm rounded-sm">
+                        <i class="fas fa-trash mr-2"></i>清除旧数据
                     </button>
-                </div>
-
-                <div class="mt-8 pt-6 border-t border-gray-200">
-                    <div class="flex gap-3 flex-wrap justify-center">
-                        <a href="../xg_guild_analysis/xg_guild_analysis_main.html" class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition">
-                            <i class="fas fa-chart-line mr-2"></i>帮会对比分析
-                        </a>
-                    </div>
+                    <a href="../xg_guild_analysis/xg_guild_analysis_main.html" class="action-btn px-4 py-2 text-sm rounded-sm inline-flex items-center">
+                        <i class="fas fa-chart-line mr-2"></i>帮会对比分析
+                    </a>
                 </div>
             </div>
         </div>
+        
+        <!-- 页脚 -->
+        <footer class="mt-12">
+            <div class="footer-divider mb-6"></div>
+            <div class="text-center text-gray-600 text-xs tracking-wider">
+                <p class="mb-2">逆水寒战斗分析系统 · 帮战数据导入</p>
+                <div class="flex justify-center gap-4 opacity-50">
+                    <i class="fas fa-feather-alt"></i>
+                    <i class="fas fa-dragon"></i>
+                    <i class="fas fa-fan"></i>
+                </div>
+            </div>
+        </footer>
     </div>
 
     <script>
@@ -166,7 +426,7 @@
         const DEFAULT_FOLDER = 'C:/Users/31352/AppData/LocalLow/netease/逆水寒手游桌面版/';
 
         // DOM元素
-        let importBtn, csvFileInput, statusIndicator, statusText;
+        let importBtn, csvFileInput, statusIndicator, statusText, uploadZone;
         let defaultFolderInput, saveFolderBtn, openFolderBtn;
 
         // 解析 CSV 行（处理引号）
@@ -284,8 +544,7 @@
                                         if (player[field] !== undefined && player[field] !== '') {
                                             const value = player[field].replace(/,/g, '');
 
-                                            // 特殊处理 "击败/清泉" 字段（格式：" 击败数/破泉数"）
-                                            // CSV表头错误地写成了"击败/清泉"，实际含义是"击败/破泉"
+                                            // 特殊处理 "击败/清泉" 字段
                                             if (field === '击败/清泉') {
                                                 if (value.includes('/')) {
                                                     const parts = value.split('/');
@@ -295,27 +554,21 @@
                                                     player['击败'] = (player['击败'] || 0) + (parseInt(value.trim()) || 0);
                                                 }
                                             }
-                                            // 特殊处理 "复活/清泉" 字段（格式：" 化羽数/清泉数"）
-                                            // CSV表头错误地写成了"复活/清泉"，实际含义是"化羽/清泉"
+                                            // 特殊处理 "复活/清泉" 字段
                                             else if (field === '复活/清泉') {
                                                 if (value.includes('/')) {
                                                     const parts = value.split('/');
                                                     player['化羽'] = (player['化羽'] || 0) + (parseInt(parts[0].trim()) || 0);
                                                     player['清泉'] = (player['清泉'] || 0) + (parseInt(parts[1].trim()) || 0);
                                                 } else {
-                                                    // 单个数值，需要根据职业判断是化羽还是清泉
-                                                    // 潮光只有清泉，素问只有化羽
                                                     const profession = player['职业'];
                                                     if (profession === '潮光') {
-                                                        // 潮光：这个值是清泉（化羽始终为0）
                                                         player['清泉'] = (player['清泉'] || 0) + (parseInt(value.trim()) || 0);
                                                         player['化羽'] = 0;
                                                     } else if (profession === '素问') {
-                                                        // 素问：这个值是化羽（清泉始终为0）
                                                         player['化羽'] = (player['化羽'] || 0) + (parseInt(value.trim()) || 0);
                                                         player['清泉'] = 0;
                                                     } else {
-                                                        // 其他职业：没有化羽和清泉技能，默认当作化羽处理
                                                         player['化羽'] = (player['化羽'] || 0) + (parseInt(value.trim()) || 0);
                                                         player['清泉'] = 0;
                                                     }
@@ -338,7 +591,7 @@
                             }
                         }
 
-                        // 保存最后一个帮会的数据（即使没有分隔符结尾）
+                        // 保存最后一个帮会的数据
                         if (guildData.length > 0) {
                             const saveGuildName = currentGuild || `帮会${guildIndex || 1}`;
                             console.log(`保存最后一个帮会 ${saveGuildName}，成员数：${guildData.length}`);
@@ -379,12 +632,11 @@
                     revive: players.reduce((sum, p) => sum + (p['复活'] || 0), 0),
                     qingquan: players.reduce((sum, p) => sum + (p['清泉'] || 0), 0),
                     fengu: players.reduce((sum, p) => sum + (p['焚骨'] || 0), 0),
-                    deaths: 0 // 将在循环中计算
+                    deaths: 0
                 };
 
                 // 计算每个玩家的衍生数据
                 const enrichedPlayers = players.map((player, index) => {
-                    // 估算死亡次数（CSV中没有，用承伤估算）
                     const deaths = Math.floor((player['承受伤害'] || 0) / 5000) || 0;
                     totals.deaths += deaths;
 
@@ -401,7 +653,6 @@
 
                     return {
                         ...player,
-                        // 基础字段（保持原名）
                         '击败': defeat,
                         '清泉': qingquan,
                         '助攻': assist,
@@ -415,11 +666,9 @@
                         '重伤': player['重伤'] || 0,
                         '复活': player['复活'] || 0,
                         '焚骨': player['焚骨'] || 0,
-
-                        // 衍生字段（原Excel计算的）
                         '死亡次数': deaths,
                         'KDA': deaths > 0 ? ((defeat + assist) / deaths).toFixed(2) : (defeat + assist).toFixed(2),
-                        '秒伤': Math.round(playerDamage / 300), // 假设5分钟战斗
+                        '秒伤': Math.round(playerDamage / 300),
                         '秒奶': Math.round(healing / 300),
                         '击败占比': totals.defeat > 0 ? ((defeat / totals.defeat) * 100).toFixed(2) + '%' : '0%',
                         '清泉占比': totals.qingquan > 0 ? ((qingquan / totals.qingquan) * 100).toFixed(2) + '%' : '0%',
@@ -473,36 +722,31 @@
                     return false;
                 }
                 
-                // 保存数据到localStorage（与系统其他模块兼容）
-                // 保存帮会数据（原始格式）
+                // 保存数据到localStorage
                 localStorage.setItem('battleData', JSON.stringify(result));
                 
-                // 计算衍生数据并保存（联赛分析格式）
+                // 计算衍生数据并保存
                 const leagueData = calculateLeagueData(result);
                 localStorage.setItem('leagueBattleData', JSON.stringify(leagueData));
 
                 showStatus('数据导入成功！请选择要访问的模块：');
 
-                // 显示跳转选项按钮（在状态指示器下方）
-                const statusIndicator = document.getElementById('statusIndicator');
+                // 显示跳转选项按钮
                 let jumpButtons = document.getElementById('jumpButtons');
                 
-                // 如果已存在按钮组，先移除
                 if (jumpButtons) {
                     jumpButtons.remove();
                 }
                 
-                // 创建新的跳转按钮组
                 jumpButtons = document.createElement('div');
                 jumpButtons.id = 'jumpButtons';
                 jumpButtons.className = 'mt-4 flex flex-wrap gap-3 justify-center';
                 jumpButtons.innerHTML = `
-                    <a href="../xg_guild_analysis/xg_guild_analysis_main.html" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition inline-flex items-center">
+                    <a href="../xg_guild_analysis/xg_guild_analysis_main.html" class="jump-btn">
                         <i class="fas fa-chart-line mr-2"></i>帮会对比分析
                     </a>
                 `;
                 
-                // 将按钮组添加到状态指示器下方
                 statusIndicator.parentNode.insertBefore(jumpButtons, statusIndicator.nextSibling);
 
                 return true;
@@ -513,6 +757,15 @@
             }
         }
 
+        // 清除数据
+        function clearData() {
+            if (confirm('确定要清除所有保存的数据吗？清除后需要重新导入CSV文件。')) {
+                localStorage.removeItem('battleData');
+                localStorage.removeItem('leagueBattleData');
+                alert('数据已清除！请重新导入CSV文件。');
+            }
+        }
+
         // 初始化
         document.addEventListener('DOMContentLoaded', () => {
             // 初始化DOM元素
@@ -520,6 +773,7 @@
             csvFileInput = document.getElementById('csvFileInput');
             statusIndicator = document.getElementById('statusIndicator');
             statusText = document.getElementById('statusText');
+            uploadZone = document.getElementById('uploadZone');
             defaultFolderInput = document.getElementById('defaultFolder');
             saveFolderBtn = document.getElementById('saveFolderBtn');
             openFolderBtn = document.getElementById('openFolderBtn');
@@ -547,12 +801,10 @@
             openFolderBtn.addEventListener('click', () => {
                 const folderPath = defaultFolderInput.value.trim();
                 if (folderPath) {
-                    // 尝试使用 Electron 的 shell.openPath（如果在 Electron 环境中）
                     if (window.require && window.require('electron')) {
                         const { shell } = window.require('electron');
                         shell.openPath(folderPath);
                     } else {
-                        // 浏览器环境：提示用户手动打开
                         alert('请手动打开文件夹：\n' + folderPath + '\n\n提示：将此路径复制到文件资源管理器地址栏中访问');
                     }
                 } else {
@@ -565,28 +817,54 @@
                 csvFileInput.click();
             });
 
-            // 清除数据函数
-            function clearData() {
-                if (confirm('确定要清除所有保存的数据吗？清除后需要重新导入CSV文件。')) {
-                    localStorage.removeItem('battleData');
-                    localStorage.removeItem('leagueBattleData');
-                    alert('数据已清除！请重新导入CSV文件。');
+            // 上传区点击事件
+            uploadZone.addEventListener('click', (e) => {
+                if (e.target !== csvFileInput) {
+                    csvFileInput.click();
                 }
-            }
+            });
+
+            // 拖拽事件
+            uploadZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            });
+
+            uploadZone.addEventListener('dragleave', () => {
+                uploadZone.classList.remove('dragover');
+            });
+
+            uploadZone.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0 && files[0].name.endsWith('.csv')) {
+                    importBtn.disabled = true;
+                    importBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i>处理中...';
+                    
+                    await handleFileImport(files[0]);
+                    
+                    importBtn.disabled = false;
+                    importBtn.innerHTML = '<i class="fas fa-upload mr-3"></i>选择CSV文件并导入';
+                } else {
+                    alert('请上传CSV文件');
+                }
+            });
 
             // 文件选择事件
             csvFileInput.addEventListener('change', async (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
 
-                // 更新按钮状态
                 importBtn.disabled = true;
                 importBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i>处理中...';
                 
-                // 处理文件
                 await handleFileImport(file);
                 
-                // 重置文件输入（允许选择相同文件）
+                importBtn.disabled = false;
+                importBtn.innerHTML = '<i class="fas fa-upload mr-3"></i>选择CSV文件并导入';
+                
                 csvFileInput.value = '';
             });
         });
