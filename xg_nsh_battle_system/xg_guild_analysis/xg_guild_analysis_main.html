@@ -5011,6 +5011,49 @@
             guildElement.textContent = guildName;
             guildElement.className = guildName === guild1Name ? 'text-red-400' : 'text-blue-400';
 
+            // 获取职业（去除首尾空格）
+            const profession = (currentPlayer['职业'] || '').trim();
+            console.log('当前玩家职业:', profession, '玩家:', currentPlayer['玩家名字']);
+
+            // 根据职业显示/隐藏特定技能卡片
+            // 清泉只有潮光有
+            const qingquanCard = document.getElementById('cardQingquan');
+            if (qingquanCard) {
+                const shouldShow = profession === '潮光';
+                qingquanCard.style.display = shouldShow ? 'block' : 'none';
+                console.log('清泉卡片显示:', shouldShow, '职业判断:', profession === '潮光');
+            }
+
+            // 卸甲只有鸿音有
+            const playerArmorBreakCard = document.getElementById('cardPlayerArmorBreak');
+            const buildingArmorBreakCard = document.getElementById('cardBuildingArmorBreak');
+            if (playerArmorBreakCard) {
+                const showArmorBreak = profession === '鸿音';
+                playerArmorBreakCard.style.display = showArmorBreak ? 'block' : 'none';
+                console.log('人伤卸甲卡片显示:', showArmorBreak);
+            }
+            if (buildingArmorBreakCard) {
+                const showBuildingArmorBreak = profession === '鸿音';
+                buildingArmorBreakCard.style.display = showBuildingArmorBreak ? 'block' : 'none';
+                console.log('破塔卸甲卡片显示:', showBuildingArmorBreak);
+            }
+
+            // 化羽只有鸿音和素问有
+            const huayuCard = document.getElementById('cardHuayu');
+            if (huayuCard) {
+                const showHuayu = (profession === '鸿音' || profession === '素问');
+                huayuCard.style.display = showHuayu ? 'block' : 'none';
+                console.log('化羽卡片显示:', showHuayu, '职业:', profession);
+            }
+
+            // 焚骨只有九灵有
+            const fenguCard = document.getElementById('cardFengu');
+            if (fenguCard) {
+                const showFengu = profession === '九灵';
+                fenguCard.style.display = showFengu ? 'block' : 'none';
+                console.log('焚骨卡片显示:', showFengu);
+            }
+
             // 填充数据概览
             document.getElementById('fullscreenKills').textContent = currentPlayer['击败'] || 0;
             document.getElementById('fullscreenPoquan').textContent = currentPlayer['破泉'] || 0;
@@ -5328,7 +5371,7 @@
                 return;
             }
 
-            const playerProfession = currentPlayer['职业'];
+            const playerProfession = (currentPlayer['职业'] || '').trim();
             const sameProfessionPlayers = allPlayers.filter(p => p['职业'] === playerProfession);
             
             // 基础指标（所有职业都有）
@@ -5339,19 +5382,30 @@
                 { key: '助攻', label: '助攻', icon: 'fa-hands-helping', higherIsBetter: true },
                 { key: '治疗值', label: '治疗值', icon: 'fa-heart', higherIsBetter: true },
                 { key: '承受伤害', label: '承受伤害', icon: 'fa-shield-alt', higherIsBetter: true },
-                { key: '人伤卸甲', label: '人伤卸甲', icon: 'fa-shield-virus', higherIsBetter: true },
-                { key: '破塔卸甲', label: '破塔卸甲', icon: 'fa-hammer', higherIsBetter: true },
                 { key: '破泉', label: '破泉', icon: 'fa-water', higherIsBetter: true },
-                { key: '清泉', label: '清泉', icon: 'fa-tint', higherIsBetter: true },
                 { key: '资源', label: '资源', icon: 'fa-coins', higherIsBetter: true },
                 { key: '重伤', label: '重伤', icon: 'fa-procedures', higherIsBetter: false }
             ];
 
-            // 九灵职业显示焚骨，其他职业显示化羽
+            // 清泉只有潮光有
+            if (playerProfession === '潮光') {
+                metrics.push({ key: '清泉', label: '清泉', icon: 'fa-tint', higherIsBetter: true });
+            }
+
+            // 卸甲只有鸿音有
+            if (playerProfession === '鸿音') {
+                metrics.push({ key: '人伤卸甲', label: '人伤卸甲', icon: 'fa-shield-virus', higherIsBetter: true });
+                metrics.push({ key: '破塔卸甲', label: '破塔卸甲', icon: 'fa-hammer', higherIsBetter: true });
+            }
+
+            // 化羽只有鸿音和素问有
+            if (playerProfession === '鸿音' || playerProfession === '素问') {
+                metrics.push({ key: '化羽', label: '化羽', icon: 'fa-feather-alt', higherIsBetter: true });
+            }
+
+            // 焚骨只有九灵有
             if (playerProfession === '九灵') {
                 metrics.push({ key: '焚骨', label: '焚骨', icon: 'fa-fire', higherIsBetter: true });
-            } else {
-                metrics.push({ key: '化羽', label: '化羽', icon: 'fa-feather-alt', higherIsBetter: true });
             }
 
             let html = `<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">`;
@@ -8321,314 +8375,6 @@
             return std / mean;
         }
         
-        // 1. 数据基准构建 - 基于多场数据的稳定性分析
-        function calculateAllFluctuations() {
-            const selectedGuild = dataSourceManager.selectedGuild;
-            if (!selectedGuild) {
-                alert('请先选择一个帮会');
-                return;
-            }
-            
-            // 获取该帮会所有玩家的历史数据
-            const playerHistory = dataSourceManager.getGuildPlayerHistory(selectedGuild);
-            const playerNames = Object.keys(playerHistory);
-            
-            if (playerNames.length === 0) {
-                alert('该帮会暂无数据');
-                return;
-            }
-            
-            // 获取总场次数（用于加权）
-            const totalSessions = dataSourceManager.getTotalSessions();
-            const guildSessions = dataSourceManager.getGuildSessions(selectedGuild).length;
-            
-            // 计算指标列表
-            const metrics = ['对玩家伤害', '对建筑伤害', '击败', '助攻', '治疗值', '承受伤害', '重伤'];
-            
-            // 计算每个玩家的波动稳定性
-            guildDataBaseline.fluctuations = {};
-            guildDataBaseline.playerStats = {}; // 存储统计信息
-            
-            playerNames.forEach(playerName => {
-                const history = playerHistory[playerName];
-                const sessionCount = history.length;
-                
-                guildDataBaseline.fluctuations[playerName] = {};
-                guildDataBaseline.playerStats[playerName] = {
-                    sessionCount,
-                    totalSessions: guildSessions,
-                    dataReliability: Math.min(sessionCount / 3, 1) // 数据可信度，最多3场达到1.0
-                };
-                
-                metrics.forEach(metric => {
-                    // 获取该指标的所有历史值
-                    const values = history.map(p => parseFloat(p[metric]) || 0).filter(v => v > 0);
-                    
-                    if (values.length === 0) {
-                        guildDataBaseline.fluctuations[playerName][metric] = 0;
-                        return;
-                    }
-                    
-                    // 计算该玩家的均值和变异系数
-                    const mean = values.reduce((a, b) => a + b, 0) / values.length;
-                    const cv = calculateCV(values);
-                    
-                    // 计算稳定性得分 (1 - CV)，CV越小越稳定
-                    let stabilityScore = Math.max(0, 1 - cv);
-                    
-                    // 场次加权：场次越多，波动值略微增加（更可信的数据应该有略微更高的权重）
-                    // 基础场次为1场，每增加1场增加5%的权重，最多增加30%
-                    const sessionWeight = 1 + Math.min((sessionCount - 1) * 0.05, 0.3);
-                    
-                    // 综合波动值 = 稳定性得分 * 场次权重
-                    // 场次越多，最终波动值越高（表示数据更可靠）
-                    let fluctuation = stabilityScore * sessionWeight;
-                    
-                    // 应用指标权重
-                    const weight = getMetricWeight(metric);
-                    guildDataBaseline.fluctuations[playerName][metric] = fluctuation * weight;
-                });
-            });
-            
-            // 计算全局均值（用于显示参考）
-            guildDataBaseline.averages = {};
-            metrics.forEach(metric => {
-                const allValues = [];
-                playerNames.forEach(playerName => {
-                    const history = playerHistory[playerName];
-                    history.forEach(p => {
-                        const val = parseFloat(p[metric]) || 0;
-                        if (val > 0) allValues.push(val);
-                    });
-                });
-                guildDataBaseline.averages[metric] = allValues.length > 0 
-                    ? allValues.reduce((a, b) => a + b, 0) / allValues.length 
-                    : 0;
-            });
-
-            renderGuildAverages();
-            renderMemberFluctuationsV2(); // 使用新版本渲染
-            updateDataSourceUI();
-            
-            alert(`波动分析完成！\n分析了 ${playerNames.length} 名玩家\n基于 ${guildSessions} 场战斗数据\n场次加权已应用`);
-        }
-
-        function getMetricWeight(metric) {
-            const weightMap = {
-                '对玩家伤害': teamConfig.weights.output,
-                '击败': teamConfig.weights.kills,
-                '对建筑伤害': teamConfig.weights.building,
-                '承受伤害': teamConfig.weights.survival,
-                '治疗值': teamConfig.weights.support,
-                '助攻': teamConfig.weights.support * 0.5,
-                '重伤': teamConfig.weights.survival * 0.5
-            };
-            return weightMap[metric] || 1.0;
-        }
-
-        function renderGuildAverages() {
-            const container = document.getElementById('guildAverageStats');
-            if (!container) return;
-
-            const metricNames = {
-                '对玩家伤害': '平均对玩家伤害',
-                '对建筑伤害': '平均对建筑伤害',
-                '击败': '平均击败',
-                '助攻': '平均助攻',
-                '治疗值': '平均治疗',
-                '承受伤害': '平均承受伤害',
-                '重伤': '平均重伤'
-            };
-
-            container.innerHTML = Object.entries(guildDataBaseline.averages).map(([metric, avg]) => `
-                <div class="flex justify-between items-center py-2 border-b border-gray-700">
-                    <span class="text-sm text-gray-300">${metricNames[metric]}</span>
-                    <span class="font-mono text-blue-400">${formatNumber(avg)}</span>
-                </div>
-            `).join('');
-        }
-
-        function renderMemberFluctuations() {
-            renderMemberFluctuationsV2();
-        }
-        
-        // V2版本：基于多场数据的稳定性分析
-        function renderMemberFluctuationsV2() {
-            const container = document.getElementById('memberFluctuationList');
-            if (!container) return;
-            
-            const selectedGuild = dataSourceManager.selectedGuild;
-            if (!selectedGuild) {
-                container.innerHTML = '<div class="text-center text-gray-400 py-4">请先选择帮会</div>';
-                return;
-            }
-
-            const fluctuations = Object.entries(guildDataBaseline.fluctuations)
-                .map(([name, data]) => {
-                    const stats = guildDataBaseline.playerStats[name];
-                    // 计算综合稳定性得分（各指标平均值）
-                    const stabilityScore = Object.values(data).reduce((a, b) => a + b, 0) / Object.values(data).length;
-                    return {
-                        name,
-                        stabilityScore,
-                        sessionCount: stats?.sessionCount || 1,
-                        totalSessions: stats?.totalSessions || 1,
-                        dataReliability: stats?.dataReliability || 0.33,
-                        data
-                    };
-                })
-                .sort((a, b) => b.stabilityScore - a.stabilityScore);
-
-            container.innerHTML = fluctuations.map(member => {
-                // 稳定性评分：0-1，越高越稳定
-                const score = member.stabilityScore;
-                const sessionCount = member.sessionCount;
-                const reliability = member.dataReliability;
-                
-                // 根据场次显示不同颜色标识
-                let sessionBadge = '';
-                if (sessionCount >= 5) {
-                    sessionBadge = '<span class="px-1.5 py-0.5 bg-purple-500/30 text-purple-300 rounded text-[10px] ml-1" title="5场以上数据">资深</span>';
-                } else if (sessionCount >= 3) {
-                    sessionBadge = '<span class="px-1.5 py-0.5 bg-blue-500/30 text-blue-300 rounded text-[10px] ml-1" title="3场以上数据">稳定</span>';
-                } else if (sessionCount >= 2) {
-                    sessionBadge = '<span class="px-1.5 py-0.5 bg-green-500/30 text-green-300 rounded text-[10px] ml-1" title="2场数据">初步</span>';
-                } else {
-                    sessionBadge = '<span class="px-1.5 py-0.5 bg-gray-500/30 text-gray-400 rounded text-[10px] ml-1" title="单场数据">样本少</span>';
-                }
-                
-                // 稳定性等级
-                let stabilityLevel, colorClass, bgClass;
-                if (score >= 0.8) {
-                    stabilityLevel = '极稳定';
-                    colorClass = 'text-green-400';
-                    bgClass = 'bg-green-500/10 border-green-500/30';
-                } else if (score >= 0.6) {
-                    stabilityLevel = '稳定';
-                    colorClass = 'text-blue-400';
-                    bgClass = 'bg-blue-500/10 border-blue-500/30';
-                } else if (score >= 0.4) {
-                    stabilityLevel = '一般';
-                    colorClass = 'text-yellow-400';
-                    bgClass = 'bg-yellow-500/10 border-yellow-500/30';
-                } else {
-                    stabilityLevel = '波动大';
-                    colorClass = 'text-red-400';
-                    bgClass = 'bg-red-500/10 border-red-500/30';
-                }
-                
-                // 可信度进度条
-                const reliabilityPercent = Math.round(reliability * 100);
-                
-                return `
-                    <div class="p-3 rounded-none border ${bgClass} hover:bg-gray-700/50 transition-colors">
-                        <div class="flex justify-between items-center mb-1">
-                            <div class="flex items-center">
-                                <span class="font-medium text-sm">${member.name}</span>
-                                ${sessionBadge}
-                            </div>
-                            <span class="font-mono ${colorClass} font-bold">${(score * 100).toFixed(0)}%</span>
-                        </div>
-                        <div class="flex justify-between items-center text-xs text-gray-400">
-                            <span>${stabilityLevel} · ${sessionCount}场数据</span>
-                            <span>可信度 ${reliabilityPercent}%</span>
-                        </div>
-                        <div class="w-full bg-gray-700 rounded-full h-1 mt-2">
-                            <div class="bg-gradient-to-r from-primary to-secondary h-1 rounded-full" style="width: ${reliabilityPercent}%"></div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function searchFluctuationTable() {
-            const searchValue = document.getElementById('fluctuationSearch')?.value.toLowerCase() || '';
-            const container = document.getElementById('memberFluctuationList');
-            if (!container) return;
-
-            const items = container.querySelectorAll('div.p-3');
-            items.forEach(item => {
-                const name = item.querySelector('.font-medium')?.textContent.toLowerCase() || '';
-                item.style.display = name.includes(searchValue) ? '' : 'none';
-            });
-        }
-
-        // 2. 小队排表
-        function addSquad() {
-            const nameInput = document.getElementById('squadName');
-            
-            if (!nameInput.value.trim()) {
-                alert('请输入小队名称');
-                return;
-            }
-            if (selectedSquadMembers.length === 0) {
-                alert('请至少选择一个成员');
-                return;
-            }
-
-            // 从数据源管理器获取玩家数据（优先从选中的帮会获取）
-            const selectedGuild = dataSourceManager.selectedGuild;
-            let players = [];
-            
-            if (selectedGuild) {
-                players = dataSourceManager.getGuildData(selectedGuild);
-            } else {
-                players = dataSourceManager.getAllPlayers();
-            }
-            
-            const squadMembers = selectedSquadMembers.map(name => {
-                return players.find(p => p['玩家名字'] === name) || { '玩家名字': name, '职业': '未知' };
-            }).filter(m => m);
-
-            const squadData = calculateSquadData(squadMembers);
-            
-            squadList.push({
-                name: nameInput.value.trim(),
-                members: squadMembers,
-                data: squadData,
-                professions: selectedSquadMembers.map(name => playerProfessionSelections[name] || 
-                    (guildDataBaseline.playerStats[name] && guildDataBaseline.playerStats[name].selectedProfession) || '未知')
-            });
-
-            renderSquadList();
-            nameInput.value = '';
-            
-            // 清空已选成员
-            selectedSquadMembers = [];
-            updateSelectedMembersDisplay();
-            updateSquadMemberSelectUI();
-        }
-
-        function calculateSquadData(members) {
-            const metrics = ['对玩家伤害', '对建筑伤害', '击败', '助攻', '治疗值', '承受伤害'];
-            const result = {};
-            
-            metrics.forEach(metric => {
-                const values = members.map(m => parseFloat(m[metric]) || 0);
-                const avg = values.reduce((a, b) => a + b, 0) / (values.length || 1);
-                const baseline = guildDataBaseline.averages[metric] || avg;
-                result[metric] = baseline > 0 ? (avg / baseline) * 100 : 100;
-            });
-            
-            // 计算侧重类型
-            const maxMetric = Object.entries(result).sort((a, b) => b[1] - a[1])[0];
-            result.focusType = maxMetric[0];
-            result.focusValue = maxMetric[1];
-            
-            return result;
-        }
-
-        function getFocusColor(metric) {
-            const colorMap = {
-                '对玩家伤害': 'rgba(239, 68, 68, 0.7)',   // 红色 - 输出
-                '击败': 'rgba(239, 68, 68, 0.7)',
-                '对建筑伤害': 'rgba(34, 197, 94, 0.7)',   // 绿色 - 拆塔
-                '治疗值': 'rgba(236, 72, 153, 0.7)',      // 粉色 - 辅助
-                '助攻': 'rgba(236, 72, 153, 0.7)',
-                '承受伤害': 'rgba(59, 130, 246, 0.7)'     // 蓝色 - 生存
-            };
-            return colorMap[metric] || 'rgba(156, 163, 175, 0.7)';
-        }
 
         function renderSquadList() {
             const container = document.getElementById('squadList');
@@ -8719,33 +8465,7 @@
             `;
         }
 
-        // 3. 统战配置辅助
-        function updateStrategyWeights() {
-            const preference = document.getElementById('strategyPreference').value;
-            const customPanel = document.getElementById('customStrategyWeights');
-            
-            if (preference === 'custom') {
-                customPanel.classList.remove('hidden');
-            } else {
-                customPanel.classList.add('hidden');
-                
-                const presets = {
-                    'balanced': { output: 1, building: 1, survival: 1, support: 1 },
-                    'damage': { output: 2, building: 0.5, survival: 0.5, support: 0.5 },
-                    'building': { output: 0.5, building: 2, survival: 0.5, support: 0.5 },
-                    'survival': { output: 0.5, building: 0.5, survival: 2, support: 0.5 },
-                    'support': { output: 0.5, building: 0.5, survival: 0.5, support: 2 }
-                };
-                
-                const preset = presets[preference];
-                if (preset) {
-                    ['output', 'building', 'survival', 'support'].forEach(key => {
-                        const slider = document.getElementById(`custom-${key}`);
-                        if (slider) slider.value = preset[key];
-                    });
-                }
-            }
-        }
+     
 
         function updateCustomWeight(type, value) {
             document.getElementById(`custom-${type}-val`).textContent = value;
@@ -8823,41 +8543,7 @@
             generateAdjustmentSuggestions(scoredPlayers, recommended, squadSize);
         }
 
-        function generateAdjustmentSuggestions(allScored, recommended, squadSize) {
-            const container = document.getElementById('adjustmentSuggestions');
-            if (!container) return;
 
-            const notSelected = allScored.slice(squadSize).slice(0, 5);
-            
-            const suggestions = [];
-            
-            // 检查是否有高分治疗未被选中
-            const healersNotSelected = notSelected.filter(p => (parseFloat(p['治疗值']) || 0) > 200000);
-            if (healersNotSelected.length > 0) {
-                suggestions.push(`<div class="p-3 bg-yellow-900/30 border-l-4 border-yellow-500 rounded">
-                    <div class="font-medium text-yellow-400">建议补充治疗</div>
-                    <div class="text-sm text-gray-400">考虑加入 ${healersNotSelected[0]['玩家名字']} (${healersNotSelected[0]['职业']}) 增强续航能力</div>
-                </div>`);
-            }
-
-            // 检查拆塔能力
-            const buildersNotSelected = notSelected.filter(p => (parseFloat(p['对建筑伤害']) || 0) > 300000);
-            if (buildersNotSelected.length > 0) {
-                suggestions.push(`<div class="p-3 bg-green-900/30 border-l-4 border-green-500 rounded">
-                    <div class="font-medium text-green-400">拆塔备选</div>
-                    <div class="text-sm text-gray-400">${buildersNotSelected[0]['玩家名字']} 拆塔能力强，可作为攻城战替补</div>
-                </div>`);
-            }
-
-            if (suggestions.length === 0) {
-                suggestions.push(`<div class="p-3 bg-blue-900/30 border-l-4 border-blue-500 rounded">
-                    <div class="font-medium text-blue-400">配置均衡</div>
-                    <div class="text-sm text-gray-400">当前配置较为合理，可根据实际战况灵活调整</div>
-                </div>`);
-            }
-
-            container.innerHTML = suggestions.join('');
-        }
 
         // 4. 参数配置
         function updateConfigWeight(type, value) {
@@ -8865,28 +8551,7 @@
             teamConfig.weights[type] = parseFloat(value);
         }
 
-        function saveTeamConfig() {
-            // 保存波动计算方法
-            const methodSelect = document.getElementById('fluctuationMethod');
-            if (methodSelect) {
-                teamConfig.fluctuationMethod = methodSelect.value;
-            }
-
-            // 保存显示模式
-            const displaySelect = document.getElementById('displayMode');
-            if (displaySelect) {
-                teamConfig.displayMode = displaySelect.value;
-            }
-
-            // 更新预览
-            document.getElementById('weight-output').textContent = teamConfig.weights.output.toFixed(1);
-            document.getElementById('weight-kills').textContent = teamConfig.weights.kills.toFixed(1);
-            document.getElementById('weight-building').textContent = teamConfig.weights.building.toFixed(1);
-            document.getElementById('weight-survival').textContent = teamConfig.weights.survival.toFixed(1);
-            document.getElementById('weight-support').textContent = teamConfig.weights.support.toFixed(1);
-
-            alert('配置已保存！');
-        }
+ 
 
         function resetTeamConfig() {
             teamConfig = {
@@ -8965,48 +8630,48 @@
         <!-- 全屏内容区 -->
         <div id="fullscreenContent" class="p-6 max-w-[1920px] mx-auto">
             <!-- 数据概览卡片 -->
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
-                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
+            <div class="flex flex-wrap justify-center gap-4 mb-8" id="fullscreenStatsContainer">
+                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" style="flex: 1 1 150px; max-width: 180px; min-width: 140px;">
                     <div class="text-gray-500 text-sm mb-1"><i class="fas fa-skull mr-1"></i>击败</div>
                     <div class="text-2xl font-bold text-primary" id="fullscreenKills">-</div>
                 </div>
-                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
+                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" style="flex: 1 1 150px; max-width: 180px; min-width: 140px;">
                     <div class="text-gray-500 text-sm mb-1"><i class="fas fa-water mr-1"></i>破泉</div>
                     <div class="text-2xl font-bold text-warning" id="fullscreenPoquan">-</div>
                 </div>
-                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
+                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" id="cardHuayu" style="flex: 1 1 150px; max-width: 180px; min-width: 140px; display: none;">
                     <div class="text-gray-500 text-sm mb-1"><i class="fas fa-feather-alt mr-1"></i>化羽</div>
                     <div class="text-2xl font-bold text-success" id="fullscreenHuayu">-</div>
                 </div>
-                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
+                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" id="cardQingquan" style="flex: 1 1 150px; max-width: 180px; min-width: 140px; display: none;">
                     <div class="text-gray-500 text-sm mb-1"><i class="fas fa-tint mr-1"></i>清泉</div>
                     <div class="text-2xl font-bold text-accent" id="fullscreenQingquan">-</div>
                 </div>
-                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
+                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" style="flex: 1 1 150px; max-width: 180px; min-width: 140px;">
                     <div class="text-gray-500 text-sm mb-1"><i class="fas fa-hands-helping mr-1"></i>助攻</div>
                     <div class="text-2xl font-bold text-primary" id="fullscreenAssists">-</div>
                 </div>
-                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
+                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" id="cardFengu" style="flex: 1 1 150px; max-width: 180px; min-width: 140px; display: none;">
                     <div class="text-gray-500 text-sm mb-1"><i class="fas fa-fire mr-1"></i>焚骨</div>
                     <div class="text-2xl font-bold text-danger" id="fullscreenFengu">-</div>
                 </div>
-                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
+                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" style="flex: 1 1 150px; max-width: 180px; min-width: 140px;">
                     <div class="text-gray-500 text-sm mb-1"><i class="fas fa-user-slash mr-1"></i>对玩家伤害</div>
                     <div class="text-2xl font-bold text-primary" id="fullscreenPlayerDamage">-</div>
                 </div>
-                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
+                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" style="flex: 1 1 150px; max-width: 180px; min-width: 140px;">
                     <div class="text-gray-500 text-sm mb-1"><i class="fas fa-building mr-1"></i>对建筑伤害</div>
                     <div class="text-2xl font-bold text-primary" id="fullscreenBuildingDamage">-</div>
                 </div>
-                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
+                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" id="cardPlayerArmorBreak" style="flex: 1 1 150px; max-width: 180px; min-width: 140px; display: none;">
                     <div class="text-gray-500 text-sm mb-1"><i class="fas fa-shield-alt mr-1"></i>人伤卸甲</div>
                     <div class="text-2xl font-bold text-warning" id="fullscreenPlayerArmorBreak">-</div>
                 </div>
-                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center">
+                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" id="cardBuildingArmorBreak" style="flex: 1 1 150px; max-width: 180px; min-width: 140px; display: none;">
                     <div class="text-gray-500 text-sm mb-1"><i class="fas fa-hammer mr-1"></i>破塔卸甲</div>
                     <div class="text-2xl font-bold text-warning" id="fullscreenBuildingArmorBreak">-</div>
                 </div>
-                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center col-span-2">
+                <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" style="flex: 2 1 300px; max-width: 370px; min-width: 280px;">
                     <div class="text-gray-500 text-sm mb-1"><i class="fas fa-heart mr-1"></i>治疗值</div>
                     <div class="text-2xl font-bold text-success" id="fullscreenHealing">-</div>
                 </div>
