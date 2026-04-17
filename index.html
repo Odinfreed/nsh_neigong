@@ -291,6 +291,108 @@
             border-left-color: var(--ink-gray);
         }
         
+        /* 致谢弹窗 - 屏幕中央 */
+        .thanks-trigger {
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .thanks-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 2000;
+            width: 420px;
+            max-width: 90vw;
+        }
+        
+        .thanks-trigger:hover .thanks-popup {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: auto;
+        }
+        
+        .thanks-content {
+            background: linear-gradient(145deg, rgba(26, 26, 26, 0.98) 0%, rgba(13, 13, 13, 0.99) 100%);
+            border: 1px solid var(--ink-gray);
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.9);
+        }
+        
+        .thanks-content h3 {
+            color: var(--jade);
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        
+        .thanks-content .person-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin: 4px;
+        }
+        
+        .thanks-content .person-tag.purple {
+            background: linear-gradient(to right, rgba(147, 51, 234, 0.2), rgba(236, 72, 153, 0.2));
+            color: #d8b4fe;
+            border: 1px solid rgba(147, 51, 234, 0.3);
+        }
+        
+        .thanks-content .person-tag.blue {
+            background: linear-gradient(to right, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2));
+            color: #7dd3fc;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        .thanks-content .avatar {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .thanks-content .opensource-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        
+        .thanks-content .opensource-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+        
+        .thanks-content .opensource-item i {
+            font-size: 1rem;
+        }
+        
+        .thanks-content .footer-text {
+            text-align: center;
+            color: #666;
+            font-size: 0.75rem;
+            font-style: italic;
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid var(--ink-gray);
+        }
+        
         /* 鸣谢头像 */
         .credit-avatar {
             width: 20px;
@@ -530,6 +632,68 @@
                class="w-12 h-12 flex items-center justify-center text-gray-500 hover:text-[#00d4aa] transition-all duration-300">
                 <i class="fab fa-github text-xl"></i>
             </a>
+            <!-- 致谢图标 - 悬停显示致谢弹窗 -->
+            <span class="thanks-trigger w-12 h-12 flex items-center justify-center text-gray-500 hover:text-red-400 transition-all duration-300 cursor-pointer">
+                <i class="fas fa-heart text-xl"></i>
+                <div class="thanks-popup">
+                    <div class="thanks-content">
+                        <h3><i class="fas fa-heart mr-2"></i>致谢</h3>
+                        
+                        <div class="mb-4">
+                            <p class="text-gray-400 text-sm mb-3">感谢以下人员对智能分团和数据可视化提出的建议和算法优化：</p>
+                            <div class="flex flex-wrap justify-center">
+                                <span class="person-tag purple">
+                                    <img src="img/HAN.jpg" alt="修寒" class="avatar">
+                                    <span>逆水寒联赛分析-修寒</span>
+                                </span>
+                                <span class="person-tag blue">
+                                    <i class="fas fa-user"></i>
+                                    <span>顺火暖工具组-echo</span>
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="border-t border-gray-700 pt-3 mb-3">
+                            <p class="text-gray-400 text-sm mb-2">开源项目：</p>
+                            <div class="opensource-grid">
+                                <div class="opensource-item">
+                                    <i class="fas fa-chart-bar text-green-400"></i>
+                                    <div>
+                                        <div class="text-gray-200 font-medium">Chart.js</div>
+                                        <div class="text-gray-500 text-xs">数据可视化</div>
+                                    </div>
+                                </div>
+                                <div class="opensource-item">
+                                    <i class="fab fa-css3 text-cyan-400"></i>
+                                    <div>
+                                        <div class="text-gray-200 font-medium">Tailwind CSS</div>
+                                        <div class="text-gray-500 text-xs">CSS框架</div>
+                                    </div>
+                                </div>
+                                <div class="opensource-item">
+                                    <i class="fas fa-icons text-yellow-400"></i>
+                                    <div>
+                                        <div class="text-gray-200 font-medium">Font Awesome</div>
+                                        <div class="text-gray-500 text-xs">图标库</div>
+                                    </div>
+                                </div>
+                                <div class="opensource-item">
+                                    <i class="fas fa-brain text-red-400"></i>
+                                    <div>
+                                        <div class="text-gray-200 font-medium">OR-Tools</div>
+                                        <div class="text-gray-500 text-xs">约束规划</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <p class="footer-text">
+                            感谢所有开源前辈的无私奉献<br>
+                            让站在巨人肩膀上的创作成为可能
+                        </p>
+                    </div>
+                </div>
+            </span>
         </div>
     </div>
 </body>
