@@ -51,11 +51,19 @@
         }
     </script>
     <style>
-        /* 基础样式保持不变 */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+        
+        /* 基础样式 */
         :root {
-            --primary: #3B82F6;
-            --secondary: #8B5CF6;
-            --accent: #10B981;
+            --ink-black: #0d0d0d;
+            --ink-dark: #1a1a1a;
+            --ink-gray: #2a2a2a;
+            --jade: #00d4aa;
+            --jade-dim: #00d4aa40;
+            --gold: #c9a227;
+            --gold-dim: #c9a22730;
+            --crimson: #8b2635;
+            --cyan: #00b4d8;
         }
         
         * {
@@ -63,13 +71,61 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-            color: #E2E8F0;
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--ink-black);
+            color: #e0e0e0;
             min-height: 100vh;
             margin: 0;
             padding: 0;
             overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* 水墨背景 */
+        .ink-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: 
+                radial-gradient(ellipse at 20% 80%, rgba(0, 180, 216, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 212, 170, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 40% 40%, rgba(201, 162, 39, 0.04) 0%, transparent 40%);
+        }
+        
+        /* 网格线 */
+        .tech-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: 
+                linear-gradient(rgba(0, 212, 170, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 170, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        
+        /* 扫描线 */
+        .scan-line {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--jade-dim), transparent);
+            opacity: 0.3;
+            animation: scan 8s linear infinite;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        @keyframes scan {
+            0% { transform: translateY(-100vh); }
+            100% { transform: translateY(100vh); }
         }
         
         /* ==================== 新布局样式 ==================== */
@@ -80,23 +136,19 @@
             flex-direction: column;
             min-height: 100vh;
             margin: 0;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(20px);
-            box-shadow: 
-                0 0 30px rgba(102, 126, 234, 0.3),
-                inset 0 0 20px rgba(102, 126, 234, 0.1);
-            border: 1px solid rgba(102, 126, 234, 0.2);
+            background: linear-gradient(145deg, rgba(26, 26, 26, 0.95) 0%, rgba(13, 13, 13, 0.98) 100%);
+            border: 1px solid var(--ink-gray);
+            position: relative;
         }
         
         /* 头部样式 */
         .header {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
+            background: linear-gradient(180deg, rgba(26, 26, 26, 0.9) 0%, rgba(13, 13, 13, 0.95) 100%);
             padding: 15px 25px;
-            border-bottom: 1px solid rgba(102, 126, 234, 0.3);
+            border-bottom: 1px solid var(--ink-gray);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            backdrop-filter: blur(10px);
         }
         
         .header-title {
@@ -105,24 +157,23 @@
         }
         
         .header-title h1 {
+            font-family: 'Noto Serif SC', serif;
             font-size: 24px;
             margin-bottom: 4px;
             display: flex;
             align-items: center;
             gap: 10px;
-            text-shadow: 0 0 10px rgba(0, 180, 255, 0.7);
-            letter-spacing: 1px;
+            color: #f5f5f5;
+            letter-spacing: 0.1em;
         }
         
         .header-title h1 i {
-            color: #667eea;
-            filter: drop-shadow(0 0 5px #667eea);
+            color: var(--jade);
         }
         
         .header-subtitle {
             font-size: 12px;
-            opacity: 0.85;
-            color: #a78bfa;
+            color: #888;
             letter-spacing: 0.5px;
         }
         
@@ -796,28 +847,99 @@
         }
 
         .role-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(102, 126, 234, 0.2);
-            border-radius: 12px;
+            background: linear-gradient(145deg, rgba(26, 26, 26, 0.9) 0%, rgba(13, 13, 13, 0.95) 100%);
+            border: 1px solid var(--ink-gray);
+            border-radius: 4px;
             padding: 16px;
             transition: all 0.3s ease;
         }
 
         .role-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+            border-color: var(--jade-dim);
+            box-shadow: 0 0 30px rgba(0, 212, 170, 0.1);
         }
 
         .team-stat-card {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(102, 126, 234, 0.2);
-            border-radius: 12px;
+            background: linear-gradient(145deg, rgba(26, 26, 26, 0.9) 0%, rgba(13, 13, 13, 0.95) 100%);
+            border: 1px solid var(--ink-gray);
+            border-radius: 4px;
             padding: 16px;
             text-align: center;
         }
     </style>
 </head>
 <body>
+    <!-- 扫描线 -->
+    <div class="scan-line"></div>
+    
+    <!-- 背景 -->
+    <div class="ink-bg"></div>
+    <div class="tech-grid"></div>
+    
+    <!-- 遮罩层 - 等待后续更新 -->
+    <div id="updateOverlay" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(13, 13, 13, 0.98);
+        backdrop-filter: blur(10px);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 99999;
+        color: #e0e0e0;
+        font-family: 'Noto Serif SC', serif;
+    ">
+        <div style="
+            text-align: center;
+            padding: 3rem;
+            border: 1px solid var(--jade-dim);
+            background: linear-gradient(145deg, rgba(26, 26, 26, 0.9) 0%, rgba(13, 13, 13, 0.95) 100%);
+            border-radius: 4px;
+            box-shadow: 0 0 60px rgba(0, 212, 170, 0.2);
+            position: relative;
+        ">
+            <div style="font-size: 4rem; margin-bottom: 1.5rem; opacity: 0.8; color: var(--jade);">
+                <i class="fas fa-hourglass-half"></i>
+            </div>
+            <h2 style="
+                font-size: 2rem;
+                margin-bottom: 1rem;
+                letter-spacing: 0.3em;
+                background: linear-gradient(180deg, #f5f5f5, var(--jade));
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            ">等待后续更新</h2>
+            <p style="color: #888; font-size: 1rem; letter-spacing: 0.1em;">
+                此功能正在开发中，敬请期待
+            </p>
+            <div style="margin-top: 2rem; display: flex; justify-content: center; gap: 2rem; opacity: 0.5; color: var(--jade);">
+                <i class="fas fa-code"></i>
+                <i class="fas fa-cogs"></i>
+                <i class="fas fa-rocket"></i>
+            </div>
+        </div>
+        <button onclick="document.getElementById('updateOverlay').style.display='none'" style="
+            margin-top: 2rem;
+            padding: 0.75rem 2rem;
+            background: transparent;
+            border: 1px solid var(--ink-gray);
+            color: #888;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            letter-spacing: 0.1em;
+            font-family: 'Noto Sans SC', sans-serif;
+        " onmouseover="this.style.borderColor='var(--jade)'; this.style.color='var(--jade)'" onmouseout="this.style.borderColor='var(--ink-gray)'; this.style.color='#888'">
+            <i class="fas fa-eye mr-2"></i>预览界面
+        </button>
+    </div>
+
     <!-- 新布局结构 -->
     <div class="main-container">
         <!-- 头部 -->
