@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>帮会对比分析 - 逆水寒</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
@@ -4603,6 +4606,12 @@
 
         // 更新玩家图表
         function updatePlayerCharts() {
+            // 检查currentPlayer是否存在
+            if (!currentPlayer) {
+                console.log('updatePlayerCharts: currentPlayer为空，跳过更新');
+                return;
+            }
+            
             // 计算帮会最大值（用于归一化）
             const maxValues = {
                 buildingDmg: Math.max(...allPlayers.map(p => p['对建筑伤害'] || 0), 1),
@@ -4878,23 +4887,34 @@
                 });
             }
 
-            // 更新图表下方的数值显示
+            // 更新图表下方的数值显示（ID与HTML中对应）
             // 伤害与治疗数值
-            document.getElementById('stat-display-building-dmg').textContent = formatNumber(currentPlayer['对建筑伤害'] || 0);
-            document.getElementById('stat-display-player-dmg').textContent = formatNumber(currentPlayer['对玩家伤害'] || 0);
-            document.getElementById('stat-display-player-armor').textContent = currentPlayer['人伤卸甲'] || 0;
-            document.getElementById('stat-display-building-armor').textContent = currentPlayer['破塔卸甲'] || 0;
-            document.getElementById('stat-display-healing').textContent = formatNumber(currentPlayer['治疗值'] || 0);
-            document.getElementById('stat-display-taken-dmg').textContent = formatNumber(currentPlayer['承受伤害'] || 0);
+            const statBuildingDmg = document.getElementById('statBuildingDamage');
+            const statPlayerDmg = document.getElementById('statPlayerDamage');
+            const statPlayerArmor = document.getElementById('statPlayerArmorBreak');
+            const statBuildingArmor = document.getElementById('statBuildingArmorBreak');
+            const statHealingEl = document.getElementById('statHealing');
+
+            if (statBuildingDmg) statBuildingDmg.textContent = formatNumber(currentPlayer['对建筑伤害'] || 0);
+            if (statPlayerDmg) statPlayerDmg.textContent = formatNumber(currentPlayer['对玩家伤害'] || 0);
+            if (statPlayerArmor) statPlayerArmor.textContent = currentPlayer['人伤卸甲'] || 0;
+            if (statBuildingArmor) statBuildingArmor.textContent = currentPlayer['破塔卸甲'] || 0;
+            if (statHealingEl) statHealingEl.textContent = formatNumber(currentPlayer['治疗值'] || 0);
 
             // 战斗数据数值
-            document.getElementById('stat-display-kills').textContent = currentPlayer['击败'] || 0;
-            document.getElementById('stat-display-poquan').textContent = currentPlayer['破泉'] || 0;
-            document.getElementById('stat-display-huayu').textContent = currentPlayer['化羽'] || 0;
-            document.getElementById('stat-display-qingquan').textContent = currentPlayer['清泉'] || 0;
-            document.getElementById('stat-display-resource').textContent = currentPlayer['资源'] || 0;
-            document.getElementById('stat-display-assists').textContent = currentPlayer['助攻'] || 0;
-            document.getElementById('stat-display-fengu').textContent = currentPlayer['焚骨'] || 0;
+            const statKillsEl = document.getElementById('statKills');
+            const statPoquanEl = document.getElementById('statPoquan');
+            const statHuayuEl = document.getElementById('statHuayu');
+            const statQingquanEl = document.getElementById('statQingquan');
+            const statAssistsEl = document.getElementById('statAssists');
+            const statFenguEl = document.getElementById('statFengu');
+
+            if (statKillsEl) statKillsEl.textContent = currentPlayer['击败'] || 0;
+            if (statPoquanEl) statPoquanEl.textContent = currentPlayer['破泉'] || 0;
+            if (statHuayuEl) statHuayuEl.textContent = currentPlayer['化羽'] || 0;
+            if (statQingquanEl) statQingquanEl.textContent = currentPlayer['清泉'] || 0;
+            if (statAssistsEl) statAssistsEl.textContent = currentPlayer['助攻'] || 0;
+            if (statFenguEl) statFenguEl.textContent = currentPlayer['焚骨'] || 0;
         }
 
         // 更新玩家分析
@@ -5010,6 +5030,13 @@
             const guildElement = document.getElementById('fullscreenPlayerGuild');
             guildElement.textContent = guildName;
             guildElement.className = guildName === guild1Name ? 'text-red-400' : 'text-blue-400';
+
+            // 同步更新截图区域的玩家信息
+            document.getElementById('fullscreenPlayerNameScreenshot').textContent = currentPlayer['玩家名字'];
+            document.getElementById('fullscreenPlayerProfessionScreenshot').textContent = currentPlayer['职业'];
+            const guildScreenshotEl = document.getElementById('fullscreenPlayerGuildScreenshot');
+            guildScreenshotEl.textContent = guildName;
+            guildScreenshotEl.className = guildName === guild1Name ? 'text-red-400' : 'text-blue-400';
 
             // 获取职业（去除首尾空格）
             const profession = (currentPlayer['职业'] || '').trim();
@@ -5480,28 +5507,135 @@
             saveBtn.disabled = true;
 
             try {
-                // 等待图表渲染完成
+                console.log('开始保存图片流程 - 使用克隆节点方法');
+                
+                // 滚动到顶部确保完整捕获
+                const modal = document.getElementById('fullscreenAnalysisModal');
+                modal.scrollTop = 0;
                 await new Promise(resolve => setTimeout(resolve, 500));
 
-                const canvas = await html2canvas(content, {
-                    backgroundColor: '#0d0d0d',
-                    scale: 2,
-                    useCORS: true,
-                    allowTaint: true,
-                    logging: false,
-                    windowWidth: content.scrollWidth,
-                    windowHeight: content.scrollHeight
+                // 克隆节点，避免影响原页面
+                const clone = content.cloneNode(true);
+                
+                // 移除克隆节点中的所有 canvas 元素
+                const canvasesInClone = clone.querySelectorAll('canvas');
+                console.log('克隆中找到canvas数量:', canvasesInClone.length);
+                canvasesInClone.forEach(canvas => {
+                    // 创建一个占位div
+                    const placeholder = document.createElement('div');
+                    placeholder.style.width = '100%';
+                    placeholder.style.height = '450px';
+                    placeholder.style.backgroundColor = '#1a1a1a';
+                    placeholder.style.display = 'flex';
+                    placeholder.style.alignItems = 'center';
+                    placeholder.style.justifyContent = 'center';
+                    placeholder.innerHTML = '<span style="color: #666;">[雷达图]</span>';
+                    canvas.parentNode.replaceChild(placeholder, canvas);
                 });
+
+                // 修复：移除可能导致html2canvas报错的背景图片和样式
+                const allElements = clone.querySelectorAll('*');
+                allElements.forEach(el => {
+                    // 移除背景图片相关的样式
+                    if (el.style.backgroundImage) {
+                        el.style.backgroundImage = 'none';
+                    }
+                    // 确保元素有有效尺寸
+                    const rect = el.getBoundingClientRect ? { width: 0, height: 0 } : null;
+                    if (rect && rect.width === 0 && rect.height === 0) {
+                        el.style.minWidth = '1px';
+                        el.style.minHeight = '1px';
+                    }
+                });
+
+                // 将克隆节点添加到body进行截图
+                clone.style.position = 'fixed';
+                clone.style.left = '-9999px';
+                clone.style.top = '0';
+                clone.style.width = content.scrollWidth + 'px';
+                document.body.appendChild(clone);
+
+                console.log('开始生成图片, 内容尺寸:', clone.scrollWidth, 'x', clone.scrollHeight);
+
+                const canvas = await html2canvas(clone, {
+                    backgroundColor: '#0d0d0d',
+                    scale: 1,
+                    useCORS: false,
+                    allowTaint: false,
+                    logging: false,
+                    width: clone.scrollWidth,
+                    height: clone.scrollHeight,
+                    imageTimeout: 0,
+                    removeContainer: true,
+                    onclone: function(clonedDoc) {
+                        // 在克隆文档中移除所有背景图片和Canvas
+                        const elements = clonedDoc.querySelectorAll('*');
+                        elements.forEach(el => {
+                            // 移除背景图片
+                            el.style.backgroundImage = 'none';
+                            // 移除渐变背景
+                            if (el.style.background && el.style.background.includes('gradient')) {
+                                el.style.background = '#1a1a1a';
+                            }
+                            // 移除可能引发问题的CSS变量
+                            el.style.removeProperty('--tw-gradient-from');
+                            el.style.removeProperty('--tw-gradient-to');
+                            el.style.removeProperty('--tw-gradient-stops');
+                        });
+                        // 移除所有canvas元素
+                        const canvases = clonedDoc.querySelectorAll('canvas');
+                        canvases.forEach(c => {
+                            const placeholder = document.createElement('div');
+                            placeholder.style.width = c.style.width || '100%';
+                            placeholder.style.height = c.style.height || '200px';
+                            placeholder.style.backgroundColor = '#1a1a1a';
+                            if (c.parentNode) {
+                                c.parentNode.replaceChild(placeholder, c);
+                            }
+                        });
+                    }
+                });
+
+                // 移除克隆节点
+                document.body.removeChild(clone);
+
+                console.log('Canvas生成成功, 尺寸:', canvas.width, 'x', canvas.height);
 
                 // 创建下载链接
                 const link = document.createElement('a');
-                link.download = `${currentPlayer['玩家名字']}_详细分析_${new Date().toLocaleDateString()}.png`;
-                link.href = canvas.toDataURL('image/png');
+                const fileName = `${currentPlayer['玩家名字']}_详细分析_${new Date().toLocaleDateString().replace(/\//g, '-')}.png`;
+                link.download = fileName;
+                
+                // 尝试转换为DataURL
+                let dataUrl;
+                try {
+                    dataUrl = canvas.toDataURL('image/png');
+                    console.log('DataURL生成成功, 长度:', dataUrl.length);
+                } catch (e) {
+                    console.error('toDataURL失败:', e);
+                    // 尝试使用 toBlob
+                    canvas.toBlob((blob) => {
+                        if (blob) {
+                            const url = URL.createObjectURL(blob);
+                            link.href = url;
+                            link.click();
+                            URL.revokeObjectURL(url);
+                            console.log('使用Blob方式下载成功');
+                        } else {
+                            alert('生成图片失败: 无法创建Blob');
+                        }
+                    }, 'image/png');
+                    return;
+                }
+                
+                link.href = dataUrl;
                 link.click();
+                console.log('图片下载已触发:', fileName);
 
             } catch (error) {
                 console.error('保存图片失败:', error);
-                alert('保存图片失败，请重试');
+                console.error('错误堆栈:', error.stack);
+                alert('保存图片失败: ' + (error.message || '未知错误') + '\n请查看控制台获取详细信息');
             } finally {
                 // 恢复按钮状态
                 saveBtn.innerHTML = originalText;
@@ -8629,6 +8763,20 @@
 
         <!-- 全屏内容区 -->
         <div id="fullscreenContent" class="p-6 max-w-[1920px] mx-auto">
+            <!-- 玩家信息标题（截图时显示） -->
+            <div id="fullscreenHeaderForScreenshot" class="text-center mb-8 pb-6 border-b border-gray-700">
+                <div class="flex items-center justify-center gap-3 mb-2">
+                    <div class="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                    <h1 class="text-3xl font-bold text-white" id="fullscreenPlayerNameScreenshot">玩家名称</h1>
+                </div>
+                <p class="text-lg text-gray-400">
+                    <span id="fullscreenPlayerProfessionScreenshot">职业</span> | 
+                    <span id="fullscreenPlayerGuildScreenshot">帮会</span>
+                </p>
+            </div>
+
             <!-- 数据概览卡片 -->
             <div class="flex flex-wrap justify-center gap-4 mb-8" id="fullscreenStatsContainer">
                 <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" style="flex: 1 1 150px; max-width: 180px; min-width: 140px;">
