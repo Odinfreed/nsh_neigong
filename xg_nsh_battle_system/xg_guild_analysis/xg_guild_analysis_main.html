@@ -24,8 +24,8 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#3B82F6',
-                        secondary: '#8B5CF6',
+                        primary: '#FF4757',
+                        secondary: '#2E86DE',
                         accent: '#10B981',
                         dark: '#0F172A',
                         light: '#F8FAFC'
@@ -50,11 +50,19 @@
         }
     </script>
     <style>
-        /* 基础样式保持不变 */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+        
+        /* 基础样式 */
         :root {
-            --primary: #3B82F6;
-            --secondary: #8B5CF6;
-            --accent: #10B981;
+            --ink-black: #0d0d0d;
+            --ink-dark: #1a1a1a;
+            --ink-gray: #2a2a2a;
+            --jade: #00d4aa;
+            --jade-dim: #00d4aa40;
+            --gold: #c9a227;
+            --gold-dim: #c9a22730;
+            --crimson: #8b2635;
+            --cyan: #00b4d8;
         }
         
         * {
@@ -62,13 +70,61 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-            color: #E2E8F0;
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--ink-black);
+            color: #e0e0e0;
             min-height: 100vh;
             margin: 0;
             padding: 0;
             overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* 水墨背景 */
+        .ink-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: 
+                radial-gradient(ellipse at 20% 80%, rgba(0, 180, 216, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 212, 170, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 40% 40%, rgba(201, 162, 39, 0.04) 0%, transparent 40%);
+        }
+        
+        /* 网格线 */
+        .tech-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: 
+                linear-gradient(rgba(0, 212, 170, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 170, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        
+        /* 扫描线 */
+        .scan-line {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--jade-dim), transparent);
+            opacity: 0.3;
+            animation: scan 8s linear infinite;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        @keyframes scan {
+            0% { transform: translateY(-100vh); }
+            100% { transform: translateY(100vh); }
         }
         
         /* ==================== 新布局样式 ==================== */
@@ -80,23 +136,19 @@
             min-height: 100vh;
             max-width: 1800px;
             margin: 0 auto;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(20px);
-            box-shadow: 
-                0 0 30px rgba(102, 126, 234, 0.3),
-                inset 0 0 20px rgba(102, 126, 234, 0.1);
-            border: 1px solid rgba(102, 126, 234, 0.2);
+            background: linear-gradient(145deg, rgba(26, 26, 26, 0.95) 0%, rgba(13, 13, 13, 0.98) 100%);
+            border: 1px solid var(--ink-gray);
+            position: relative;
         }
         
         /* 头部样式 */
         .header {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
+            background: linear-gradient(180deg, rgba(26, 26, 26, 0.9) 0%, rgba(13, 13, 13, 0.95) 100%);
             padding: 15px 25px;
-            border-bottom: 1px solid rgba(102, 126, 234, 0.3);
+            border-bottom: 1px solid var(--ink-gray);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            backdrop-filter: blur(10px);
         }
         
         .header-title {
@@ -111,24 +163,23 @@
         }
         
         .header-title h1 {
+            font-family: 'Noto Serif SC', serif;
             font-size: 24px;
             margin-bottom: 4px;
             display: flex;
             align-items: center;
             gap: 10px;
-            text-shadow: 0 0 10px rgba(0, 180, 255, 0.7);
-            letter-spacing: 1px;
+            color: #f5f5f5;
+            letter-spacing: 0.1em;
         }
         
         .header-title h1 i {
-            color: #667eea;
-            filter: drop-shadow(0 0 5px #667eea);
+            color: var(--jade);
         }
         
         .header-subtitle {
             font-size: 12px;
-            opacity: 0.85;
-            color: #a78bfa;
+            color: #888;
             letter-spacing: 0.5px;
         }
         
@@ -171,18 +222,15 @@
             overflow-y: auto;
         }
         
-        /* 卡片样式 - 科技感 */
+        /* 卡片样式 - 古风科技 */
         .card {
-            background-color: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 10px;
+            background: linear-gradient(145deg, rgba(26, 26, 26, 0.9) 0%, rgba(13, 13, 13, 0.95) 100%);
+            border: 1px solid var(--ink-gray);
+            border-radius: 0;
             padding: 15px;
-            box-shadow: 
-                0 5px 15px rgba(0, 0, 0, 0.3),
-                inset 0 0 10px rgba(102, 126, 234, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
             position: relative;
             overflow: hidden;
+            transition: all 0.4s ease;
         }
         
         .card::before {
@@ -191,35 +239,35 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #667eea, #764ba2, transparent);
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--jade-dim), transparent);
+        }
+        
+        .card:hover {
+            border-color: var(--jade-dim);
+            box-shadow: 0 0 30px rgba(0, 212, 170, 0.1);
         }
         
         .card-header {
             padding: 12px 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(102, 126, 234, 0.1);
+            border-bottom: 1px solid var(--ink-gray);
+            background: rgba(0, 212, 170, 0.05);
             margin: -15px -15px 15px -15px;
-            backdrop-filter: blur(10px);
         }
         
-        /* 保留原有卡片样式，但增加新类名 */
         .card-title {
-            color: #a78bfa;
+            color: var(--jade);
             margin-bottom: 10px;
             padding-bottom: 6px;
-            border-bottom: 1px solid rgba(102, 126, 234, 0.5);
+            border-bottom: 1px solid var(--ink-gray);
             display: flex;
             align-items: center;
             gap: 8px;
-            text-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
-            letter-spacing: 0.5px;
             font-size: 14px;
         }
         
         .card-title i {
-            color: #667eea;
-            filter: drop-shadow(0 0 3px #667eea);
+            color: var(--jade);
         }
         
         /* 保留原有统计样式 */
@@ -240,7 +288,7 @@
             display: inline-flex;
             align-items: center;
             padding: 2px 8px;
-            border-radius: 6px;
+            border-radius: 0;
             font-size: 0.75rem;
             font-weight: 600;
         }
@@ -264,23 +312,37 @@
             display: inline-flex;
             align-items: center;
             padding: 4px 12px;
-            border-radius: 8px;
+            border-radius: 0;
             font-size: 0.875rem;
             font-weight: 600;
         }
         
         .guild-tag-primary {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(239, 68, 68, 0.1) 100%);
+            color: #EF4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .guild-tag-primary:hover {
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        .guild-tag-secondary {
             background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.1) 100%);
             color: #3B82F6;
             border: 1px solid rgba(59, 130, 246, 0.3);
             box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
+            cursor: pointer;
+            transition: all 0.2s;
         }
         
-        .guild-tag-secondary {
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(139, 92, 246, 0.1) 100%);
-            color: #8B5CF6;
-            border: 1px solid rgba(139, 92, 246, 0.3);
-            box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+        .guild-tag-secondary:hover {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+            transform: translateY(-1px);
         }
         
         .score-display {
@@ -305,21 +367,21 @@
             text-align: left;
             font-size: 0.75rem;
             font-weight: 600;
-            color: #a78bfa;
+            color: var(--jade);
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            border-bottom: 2px solid #667eea;
-            background-color: rgba(102, 126, 234, 0.2);
+            border-bottom: 1px solid var(--ink-gray);
+            background-color: rgba(0, 212, 170, 0.05);
         }
 
         .data-table td {
             padding: 6px 8px;
             font-size: 0.875rem;
-            border-bottom: 1px solid rgba(0, 140, 255, 0.1);
+            border-bottom: 1px solid rgba(42, 42, 42, 0.5);
         }
         
         .data-table tr:hover {
-            background-color: rgba(102, 126, 234, 0.1);
+            background-color: rgba(0, 212, 170, 0.05);
         }
         
         .rank-circle {
@@ -344,20 +406,20 @@
             font-size: 13px;
         }
         .result-table th {
-            background: rgba(102, 126, 234, 0.2);
+            background: rgba(0, 212, 170, 0.1);
             padding: 10px 8px;
             text-align: left;
             font-weight: 600;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--ink-gray);
             white-space: nowrap;
-            color: #E2E8F0;
+            color: var(--jade);
         }
         .result-table td {
             padding: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--ink-gray);
         }
         .result-table tr:hover {
-            background: rgba(102, 126, 234, 0.1);
+            background: rgba(0, 212, 170, 0.05);
         }
 
         .tabs {
@@ -433,7 +495,7 @@
             align-items: center;
             justify-content: center;
             padding: 8px;
-            border-radius: 8px;
+            border-radius: 0;
             background: rgba(255, 255, 255, 0.05);
         }
         
@@ -473,30 +535,31 @@
             align-items: center;
             justify-content: center;
             padding: 8px 16px;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
-            border: 1px solid rgba(102, 126, 234, 0.5);
-            color: #e0f7ff;
-            border-radius: 6px;
+            background: transparent;
+            border: 1px solid var(--ink-gray);
+            color: #ccc;
+            border-radius: 0;
             font-size: 0.875rem;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             gap: 6px;
+            font-family: 'Noto Sans SC', sans-serif;
         }
         
         .action-button:hover {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.5) 0%, rgba(118, 75, 162, 0.5) 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            border-color: var(--jade);
+            color: var(--jade);
+            background: linear-gradient(180deg, transparent, rgba(0, 212, 170, 0.1));
         }
         
         /* 页脚样式 */
         .footer {
             text-align: center;
             padding: 12px;
-            color: #a78bfa;
+            color: #666;
             font-size: 11px;
-            border-top: 1px solid rgba(102, 126, 234, 0.3);
+            border-top: 1px solid var(--ink-gray);
             flex-shrink: 0;
         }
         
@@ -795,7 +858,7 @@
         .role-badge {
             display: inline-block;
             padding: 2px 8px;
-            border-radius: 4px;
+            border-radius: 0;
             font-size: 11px;
             font-weight: 600;
             white-space: nowrap;
@@ -824,6 +887,13 @@
     </style>
 </head>
 <body>
+    <!-- 扫描线 -->
+    <div class="scan-line"></div>
+    
+    <!-- 背景 -->
+    <div class="ink-bg"></div>
+    <div class="tech-grid"></div>
+    
     <!-- 新布局结构 -->
     <div class="main-container">
         <!-- 头部 -->
@@ -832,13 +902,7 @@
                 <h1><i class="fas fa-chess-knight"></i> 帮会对决分析系统</h1>
                 <p class="header-subtitle">逆水寒 - 实时战力对比与战术分析平台</p>
             </div>
-            <div class="header-actions">
-                <button onclick="window.open('帮战分团系统.html', '_blank')" 
-                        class="px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all duration-200 shadow-lg flex items-center gap-2">
-                    <i class="fas fa-users-cog"></i>
-                    帮战分团系统
-                </button>
-            </div>
+
         </header>
         
         <!-- 主内容区域 - 三栏布局 -->
@@ -882,7 +946,7 @@
                                 </div>
                                 
                                 <div id="winnerAnnounce">
-                                    <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-3 rounded-lg border border-primary/20">
+                                    <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-3 rounded-none border border-primary/20">
                                         <div class="flex items-center">
                                             <i class="fas fa-crown text-primary mr-2"></i>
                                             <span class="font-medium">青龙会 占据优势</span>
@@ -915,24 +979,6 @@
                             </div>
                         </div>
                                     </div>
-                </div>
-                
-                <!-- 快速操作卡片 -->
-
-                
-                <!-- 快速操作卡片 -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="text-lg font-bold flex items-center">
-                            <i class="fas fa-bolt mr-2"></i>
-                            快速操作
-                        </h2>
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                        <button class="action-button" onclick="window.location.href='../xg_data_import/index.html'">
-                            <i class="fas fa-arrow-left"></i>返回
-                        </button>
-                    </div>
                 </div>
 
                 <!-- 加权得分明细卡片 -->
@@ -991,16 +1037,16 @@
                         <div id="leaderboardView" class="space-y-6 hidden">
                             <!-- 榜单切换标签 -->
                             <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
-                                <button class="tab-btn px-4 py-2 rounded-lg font-medium whitespace-nowrap active" onclick="switchLeaderboardTab('damage', this)" style="background: linear-gradient(135deg, #165DFF 0%, #722ED1 100%); color: white;">
+                                <button class="tab-btn px-4 py-2 rounded-none font-medium whitespace-nowrap active" onclick="switchLeaderboardTab('damage', this)" style="background: linear-gradient(135deg, #FF4757 0%, #2E86DE 100%); color: white;">
                                     <i class="fas fa-fire mr-2"></i>伤害榜
                                 </button>
-                                <button class="tab-btn px-4 py-2 rounded-lg font-medium whitespace-nowrap bg-gray-700 text-gray-300" onclick="switchLeaderboardTab('kills', this)">
+                                <button class="tab-btn px-4 py-2 rounded-none font-medium whitespace-nowrap bg-gray-700 text-gray-300" onclick="switchLeaderboardTab('kills', this)">
                                     <i class="fas fa-skull mr-2"></i>击败榜
                                 </button>
-                                <button class="tab-btn px-4 py-2 rounded-lg font-medium whitespace-nowrap bg-gray-700 text-gray-300" onclick="switchLeaderboardTab('healing', this)">
+                                <button class="tab-btn px-4 py-2 rounded-none font-medium whitespace-nowrap bg-gray-700 text-gray-300" onclick="switchLeaderboardTab('healing', this)">
                                     <i class="fas fa-heart mr-2"></i>治疗榜
                                 </button>
-                                <button class="tab-btn px-4 py-2 rounded-lg font-medium whitespace-nowrap bg-gray-700 text-gray-300" onclick="switchLeaderboardTab('armorBreak', this)">
+                                <button class="tab-btn px-4 py-2 rounded-none font-medium whitespace-nowrap bg-gray-700 text-gray-300" onclick="switchLeaderboardTab('armorBreak', this)">
                                     <i class="fas fa-shield-alt mr-2"></i>卸甲榜
                                 </button>
                             </div>
@@ -1008,7 +1054,7 @@
                             <!-- 伤害榜 -->
                             <div id="damageLeaderboardTab" class="leaderboard-tab">
                                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                    <div class="glass-card rounded-2xl p-6 shadow-xl">
+                                    <div class="glass-card rounded-none p-6 shadow-xl">
                                         <h3 class="card-title mb-4"><i class="fas fa-fire mr-2 text-warning"></i>对玩家伤害榜（TOP20）</h3>
                                         <div class="overflow-x-auto">
                                             <table class="result-table">
@@ -1027,7 +1073,7 @@
                                             </table>
                                         </div>
                                     </div>
-                                    <div class="glass-card rounded-2xl p-6 shadow-xl">
+                                    <div class="glass-card rounded-none p-6 shadow-xl">
                                         <h3 class="card-title mb-4"><i class="fas fa-bomb mr-2 text-warning"></i>对建筑伤害榜（TOP20）</h3>
                                         <div class="overflow-x-auto">
                                             <table class="result-table">
@@ -1051,7 +1097,7 @@
 
                             <!-- 击败榜 -->
                             <div id="killsLeaderboardTab" class="leaderboard-tab hidden">
-                                <div class="glass-card rounded-2xl p-6 shadow-xl">
+                                <div class="glass-card rounded-none p-6 shadow-xl">
                                     <h3 class="card-title mb-4"><i class="fas fa-skull mr-2 text-primary"></i>击败排行榜（TOP20）</h3>
                                     <div class="overflow-x-auto">
                                         <table class="result-table">
@@ -1074,7 +1120,7 @@
 
                             <!-- 治疗榜 -->
                             <div id="healingLeaderboardTab" class="leaderboard-tab hidden">
-                                <div class="glass-card rounded-2xl p-6 shadow-xl">
+                                <div class="glass-card rounded-none p-6 shadow-xl">
                                     <h3 class="card-title mb-4"><i class="fas fa-heart mr-2 text-success"></i>治疗排行榜（TOP20）</h3>
                                     <div class="overflow-x-auto">
                                         <table class="result-table">
@@ -1098,7 +1144,7 @@
                             <!-- 卸甲榜 -->
                             <div id="armorBreakLeaderboardTab" class="leaderboard-tab hidden">
                                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                    <div class="glass-card rounded-2xl p-6 shadow-xl">
+                                    <div class="glass-card rounded-none p-6 shadow-xl">
                                         <h3 class="card-title mb-4"><i class="fas fa-fist-raised mr-2 text-primary"></i>人伤卸甲榜（TOP20）</h3>
                                         <div class="overflow-x-auto">
                                             <table class="result-table">
@@ -1117,7 +1163,7 @@
                                             </table>
                                         </div>
                                     </div>
-                                    <div class="glass-card rounded-2xl p-6 shadow-xl">
+                                    <div class="glass-card rounded-none p-6 shadow-xl">
                                         <h3 class="card-title mb-4"><i class="fas fa-hammer mr-2 text-primary"></i>破塔卸甲榜（TOP20）</h3>
                                         <div class="overflow-x-auto">
                                             <table class="result-table">
@@ -1308,11 +1354,11 @@
                                 <div class="flex items-center justify-between">
                                     <span class="text-sm">成员数量</span>
                                     <div class="flex items-center">
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden">
-                                            <div class="h-full bg-primary rounded-full" id="bar-g1-members" style="width: 55%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden">
+                                            <div class="h-full bg-primary rounded-none" id="bar-g1-members" style="width: 55%"></div>
                                         </div>
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden ml-2">
-                                            <div class="h-full bg-secondary rounded-full" id="bar-g2-members" style="width: 45%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden ml-2">
+                                            <div class="h-full bg-secondary rounded-none" id="bar-g2-members" style="width: 45%"></div>
                                         </div>
                                         <span class="ml-2 text-xs text-primary" id="val-g1-members">15</span>
                                         <span class="ml-2 text-xs text-secondary" id="val-g2-members">12</span>
@@ -1322,11 +1368,11 @@
                                 <div class="flex items-center justify-between">
                                     <span class="text-sm">击败效率</span>
                                     <div class="flex items-center">
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden">
-                                            <div class="h-full bg-primary rounded-full" id="bar-g1-kills" style="width: 65%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden">
+                                            <div class="h-full bg-primary rounded-none" id="bar-g1-kills" style="width: 65%"></div>
                                         </div>
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden ml-2">
-                                            <div class="h-full bg-secondary rounded-full" id="bar-g2-kills" style="width: 35%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden ml-2">
+                                            <div class="h-full bg-secondary rounded-none" id="bar-g2-kills" style="width: 35%"></div>
                                         </div>
                                         <span class="ml-2 text-xs text-primary" id="val-g1-kills">142</span>
                                         <span class="ml-2 text-xs text-secondary" id="val-g2-kills">98</span>
@@ -1336,11 +1382,11 @@
                                 <div class="flex items-center justify-between">
                                     <span class="text-sm">治疗能力</span>
                                     <div class="flex items-center">
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden">
-                                            <div class="h-full bg-primary rounded-full" id="bar-g1-healing" style="width: 60%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden">
+                                            <div class="h-full bg-primary rounded-none" id="bar-g1-healing" style="width: 60%"></div>
                                         </div>
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden ml-2">
-                                            <div class="h-full bg-secondary rounded-full" id="bar-g2-healing" style="width: 40%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden ml-2">
+                                            <div class="h-full bg-secondary rounded-none" id="bar-g2-healing" style="width: 40%"></div>
                                         </div>
                                         <span class="ml-2 text-xs text-primary" id="val-g1-healing">1.2M</span>
                                         <span class="ml-2 text-xs text-secondary" id="val-g2-healing">0.9M</span>
@@ -1350,11 +1396,11 @@
                                 <div class="flex items-center justify-between">
                                     <span class="text-sm">助攻贡献</span>
                                     <div class="flex items-center">
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden">
-                                            <div class="h-full bg-primary rounded-full" id="bar-g1-assists" style="width: 55%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden">
+                                            <div class="h-full bg-primary rounded-none" id="bar-g1-assists" style="width: 55%"></div>
                                         </div>
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden ml-2">
-                                            <div class="h-full bg-secondary rounded-full" id="bar-g2-assists" style="width: 45%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden ml-2">
+                                            <div class="h-full bg-secondary rounded-none" id="bar-g2-assists" style="width: 45%"></div>
                                         </div>
                                         <span class="ml-2 text-xs text-primary" id="val-g1-assists">89</span>
                                         <span class="ml-2 text-xs text-secondary" id="val-g2-assists">76</span>
@@ -1364,11 +1410,11 @@
                                 <div class="flex items-center justify-between">
                                     <span class="text-sm">玩家伤害</span>
                                     <div class="flex items-center">
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden">
-                                            <div class="h-full bg-primary rounded-full" id="bar-g1-player-damage" style="width: 58%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden">
+                                            <div class="h-full bg-primary rounded-none" id="bar-g1-player-damage" style="width: 58%"></div>
                                         </div>
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden ml-2">
-                                            <div class="h-full bg-secondary rounded-full" id="bar-g2-player-damage" style="width: 42%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden ml-2">
+                                            <div class="h-full bg-secondary rounded-none" id="bar-g2-player-damage" style="width: 42%"></div>
                                         </div>
                                         <span class="ml-2 text-xs text-primary" id="val-g1-player-damage">2.4M</span>
                                         <span class="ml-2 text-xs text-secondary" id="val-g2-player-damage">1.8M</span>
@@ -1378,11 +1424,11 @@
                                 <div class="flex items-center justify-between">
                                     <span class="text-sm">建筑伤害</span>
                                     <div class="flex items-center">
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden">
-                                            <div class="h-full bg-primary rounded-full" id="bar-g1-building-damage" style="width: 55%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden">
+                                            <div class="h-full bg-primary rounded-none" id="bar-g1-building-damage" style="width: 55%"></div>
                                         </div>
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden ml-2">
-                                            <div class="h-full bg-secondary rounded-full" id="bar-g2-building-damage" style="width: 45%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden ml-2">
+                                            <div class="h-full bg-secondary rounded-none" id="bar-g2-building-damage" style="width: 45%"></div>
                                         </div>
                                         <span class="ml-2 text-xs text-primary" id="val-g1-building-damage">1.1M</span>
                                         <span class="ml-2 text-xs text-secondary" id="val-g2-building-damage">0.9M</span>
@@ -1392,11 +1438,11 @@
                                 <div class="flex items-center justify-between">
                                     <span class="text-sm">破泉</span>
                                     <div class="flex items-center">
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden">
-                                            <div class="h-full bg-primary rounded-full" id="bar-g1-poquan" style="width: 50%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden">
+                                            <div class="h-full bg-primary rounded-none" id="bar-g1-poquan" style="width: 50%"></div>
                                         </div>
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden ml-2">
-                                            <div class="h-full bg-secondary rounded-full" id="bar-g2-poquan" style="width: 50%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden ml-2">
+                                            <div class="h-full bg-secondary rounded-none" id="bar-g2-poquan" style="width: 50%"></div>
                                         </div>
                                         <span class="ml-2 text-xs text-primary" id="val-g1-poquan">142</span>
                                         <span class="ml-2 text-xs text-secondary" id="val-g2-poquan">98</span>
@@ -1406,11 +1452,11 @@
                                 <div class="flex items-center justify-between">
                                     <span class="text-sm">化羽</span>
                                     <div class="flex items-center">
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden">
-                                            <div class="h-full bg-primary rounded-full" id="bar-g1-huayu" style="width: 50%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden">
+                                            <div class="h-full bg-primary rounded-none" id="bar-g1-huayu" style="width: 50%"></div>
                                         </div>
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden ml-2">
-                                            <div class="h-full bg-secondary rounded-full" id="bar-g2-huayu" style="width: 50%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden ml-2">
+                                            <div class="h-full bg-secondary rounded-none" id="bar-g2-huayu" style="width: 50%"></div>
                                         </div>
                                         <span class="ml-2 text-xs text-primary" id="val-g1-huayu">142</span>
                                         <span class="ml-2 text-xs text-secondary" id="val-g2-huayu">98</span>
@@ -1420,11 +1466,11 @@
                                 <div class="flex items-center justify-between">
                                     <span class="text-sm">清泉使用</span>
                                     <div class="flex items-center">
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden">
-                                            <div class="h-full bg-primary rounded-full" id="bar-g1-qingquan" style="width: 50%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden">
+                                            <div class="h-full bg-primary rounded-none" id="bar-g1-qingquan" style="width: 50%"></div>
                                         </div>
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden ml-2">
-                                            <div class="h-full bg-secondary rounded-full" id="bar-g2-qingquan" style="width: 50%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden ml-2">
+                                            <div class="h-full bg-secondary rounded-none" id="bar-g2-qingquan" style="width: 50%"></div>
                                         </div>
                                         <span class="ml-2 text-xs text-primary" id="val-g1-qingquan">142</span>
                                         <span class="ml-2 text-xs text-secondary" id="val-g2-qingquan">98</span>
@@ -1434,11 +1480,11 @@
                                 <div class="flex items-center justify-between">
                                     <span class="text-sm">人伤卸甲</span>
                                     <div class="flex items-center">
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden">
-                                            <div class="h-full bg-primary rounded-full" id="bar-g1-player-armor-break" style="width: 55%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden">
+                                            <div class="h-full bg-primary rounded-none" id="bar-g1-player-armor-break" style="width: 55%"></div>
                                         </div>
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden ml-2">
-                                            <div class="h-full bg-secondary rounded-full" id="bar-g2-player-armor-break" style="width: 45%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden ml-2">
+                                            <div class="h-full bg-secondary rounded-none" id="bar-g2-player-armor-break" style="width: 45%"></div>
                                         </div>
                                         <span class="ml-2 text-xs text-primary" id="val-g1-player-armor-break">89</span>
                                         <span class="ml-2 text-xs text-secondary" id="val-g2-player-armor-break">76</span>
@@ -1448,11 +1494,11 @@
                                 <div class="flex items-center justify-between">
                                     <span class="text-sm">破塔卸甲</span>
                                     <div class="flex items-center">
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden">
-                                            <div class="h-full bg-primary rounded-full" id="bar-g1-building-armor-break" style="width: 58%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden">
+                                            <div class="h-full bg-primary rounded-none" id="bar-g1-building-armor-break" style="width: 58%"></div>
                                         </div>
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden ml-2">
-                                            <div class="h-full bg-secondary rounded-full" id="bar-g2-building-armor-break" style="width: 42%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden ml-2">
+                                            <div class="h-full bg-secondary rounded-none" id="bar-g2-building-armor-break" style="width: 42%"></div>
                                         </div>
                                         <span class="ml-2 text-xs text-primary" id="val-g1-building-armor-break">120</span>
                                         <span class="ml-2 text-xs text-secondary" id="val-g2-building-armor-break">95</span>
@@ -1462,11 +1508,11 @@
                                 <div class="flex items-center justify-between">
                                     <span class="text-sm">人均击败</span>
                                     <div class="flex items-center">
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden">
-                                            <div class="h-full bg-primary rounded-full" id="bar-g1-avg-kills" style="width: 52%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden">
+                                            <div class="h-full bg-primary rounded-none" id="bar-g1-avg-kills" style="width: 52%"></div>
                                         </div>
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden ml-2">
-                                            <div class="h-full bg-secondary rounded-full" id="bar-g2-avg-kills" style="width: 48%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden ml-2">
+                                            <div class="h-full bg-secondary rounded-none" id="bar-g2-avg-kills" style="width: 48%"></div>
                                         </div>
                                         <span class="ml-2 text-xs text-primary" id="val-g1-avg-kills">9.5</span>
                                         <span class="ml-2 text-xs text-secondary" id="val-g2-avg-kills">8.2</span>
@@ -1476,11 +1522,11 @@
                                 <div class="flex items-center justify-between">
                                     <span class="text-sm">人均伤害</span>
                                     <div class="flex items-center">
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden">
-                                            <div class="h-full bg-primary rounded-full" id="bar-g1-avg-damage" style="width: 53%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden">
+                                            <div class="h-full bg-primary rounded-none" id="bar-g1-avg-damage" style="width: 53%"></div>
                                         </div>
-                                        <div class="w-32 h-3 bg-gray-700 rounded-full overflow-hidden ml-2">
-                                            <div class="h-full bg-secondary rounded-full" id="bar-g2-avg-damage" style="width: 47%"></div>
+                                        <div class="w-32 h-3 bg-gray-700 rounded-none overflow-hidden ml-2">
+                                            <div class="h-full bg-secondary rounded-none" id="bar-g2-avg-damage" style="width: 47%"></div>
                                         </div>
                                         <span class="ml-2 text-xs text-primary" id="val-g1-avg-damage">160K</span>
                                         <span class="ml-2 text-xs text-secondary" id="val-g2-avg-damage">150K</span>
@@ -1496,10 +1542,20 @@
                                 <div class="card">
                                     <h3 class="card-title"><i class="fas fa-users mr-2"></i>选择玩家</h3>
                                     
+                                    <!-- 帮会筛选 -->
+                                    <div class="mb-3">
+                                        <p class="text-xs text-gray-500 mb-2">帮会筛选</p>
+                                        <div class="flex gap-2">
+                                            <button id="filterGuildAll" onclick="filterPlayerByGuild('all')" class="flex-1 px-3 py-2 text-xs bg-gradient-to-r from-red-600 to-blue-600 text-white rounded transition-colors font-medium">全部</button>
+                                            <button id="filterGuild1" onclick="filterPlayerByGuild('guild1')" class="flex-1 px-3 py-2 text-xs bg-red-600/30 hover:bg-red-600/50 text-red-300 rounded transition-colors" title="">帮会1</button>
+                                            <button id="filterGuild2" onclick="filterPlayerByGuild('guild2')" class="flex-1 px-3 py-2 text-xs bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 rounded transition-colors" title="">帮会2</button>
+                                        </div>
+                                    </div>
+                                    
                                     <!-- 搜索框 -->
                                     <div class="relative mb-2">
                                         <input type="text" id="playerSearchInput" placeholder="搜索玩家名称..." 
-                                               class="w-full p-3 pl-10 bg-dark border border-gray-600 rounded-lg text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent"
+                                               class="w-full p-3 pl-10 bg-dark border border-gray-600 rounded-none text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent"
                                                oninput="filterPlayerSelect()">
                                         <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
                                     </div>
@@ -1520,61 +1576,62 @@
                                         <button onclick="filterPlayerByProfession('鸿音')" class="px-2 py-1 text-xs bg-gradient-to-r from-yellow-600/30 to-orange-600/30 hover:from-yellow-600/50 hover:to-orange-600/50 text-yellow-200 rounded transition-colors">鸿音</button>
                                     </div>
 
-                                    <select id="playerSelect" class="w-full p-3 bg-dark border border-gray-600 rounded-lg mb-4 text-gray-100 focus:ring-2 focus:ring-primary cursor-pointer" onchange="onPlayerSelectChange(this.value)">
+                                    <select id="playerSelect" class="w-full p-3 bg-dark border border-gray-600 rounded-none mb-4 text-gray-100 focus:ring-2 focus:ring-primary cursor-pointer" onchange="onPlayerSelectChange(this.value)">
                                         <option value="">请先加载数据...</option>
                                     </select>
 
-                                    <div id="playerInfo" class="bg-dark rounded-lg p-4" style="display: none;">
+                                    <div id="playerInfo" class="bg-dark rounded-none p-4" style="display: none;">
                                         <div class="text-center mb-4">
                                             <div class="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-full mx-auto mb-2 flex items-center justify-center">
                                                 <i class="fas fa-user text-2xl text-white"></i>
                                             </div>
                                             <h3 class="font-bold text-lg" id="playerName">-</h3>
                                             <p class="text-sm text-gray-400" id="playerProfession">-</p>
+                                            <p class="text-xs mt-1" id="playerGuild">-</p>
                                         </div>
 
                                         <div class="grid grid-cols-2 gap-2 text-sm">
-                                            <div class="bg-gray-800/50 rounded-lg p-2 text-center border border-gray-700">
+                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700">
                                                 <p class="text-gray-500">击败</p>
                                                 <p class="font-bold text-primary" id="statKills">-</p>
                                             </div>
-                                            <div class="bg-gray-800/50 rounded-lg p-2 text-center border border-gray-700">
+                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700">
                                                 <p class="text-gray-500">破泉</p>
                                                 <p class="font-bold text-warning" id="statPoquan">-</p>
                                             </div>
-                                            <div class="bg-gray-800/50 rounded-lg p-2 text-center border border-gray-700">
+                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700">
                                                 <p class="text-gray-500">化羽</p>
                                                 <p class="font-bold text-success" id="statHuayu">-</p>
                                             </div>
-                                            <div class="bg-gray-800/50 rounded-lg p-2 text-center border border-gray-700">
+                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700">
                                                 <p class="text-gray-500">清泉</p>
                                                 <p class="font-bold text-accent" id="statQingquan">-</p>
                                             </div>
-                                            <div class="bg-gray-800/50 rounded-lg p-2 text-center border border-gray-700">
+                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700">
                                                 <p class="text-gray-500">助攻</p>
                                                 <p class="font-bold text-primary" id="statAssists">-</p>
                                             </div>
-                                            <div class="bg-gray-800/50 rounded-lg p-2 text-center border border-gray-700">
+                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700">
                                                 <p class="text-gray-500">焚骨</p>
                                                 <p class="font-bold text-danger" id="statFengu">-</p>
                                             </div>
-                                            <div class="bg-gray-800/50 rounded-lg p-2 text-center border border-gray-700">
+                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700">
                                                 <p class="text-gray-500">对玩家伤害</p>
                                                 <p class="font-bold text-primary" id="statPlayerDamage">-</p>
                                             </div>
-                                            <div class="bg-gray-800/50 rounded-lg p-2 text-center border border-gray-700">
+                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700">
                                                 <p class="text-gray-500">对建筑伤害</p>
                                                 <p class="font-bold text-primary" id="statBuildingDamage">-</p>
                                             </div>
-                                            <div class="bg-gray-800/50 rounded-lg p-2 text-center border border-gray-700">
+                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700">
                                                 <p class="text-gray-500">人伤卸甲</p>
                                                 <p class="font-bold text-warning" id="statPlayerArmorBreak">-</p>
                                             </div>
-                                            <div class="bg-gray-800/50 rounded-lg p-2 text-center border border-gray-700">
+                                            <div class="bg-gray-800/50 rounded-none p-2 text-center border border-gray-700">
                                                 <p class="text-gray-500">破塔卸甲</p>
                                                 <p class="font-bold text-warning" id="statBuildingArmorBreak">-</p>
                                             </div>
-                                            <div class="bg-dark-700 rounded-lg p-2 text-center col-span-2">
+                                            <div class="bg-dark-700 rounded-none p-2 text-center col-span-2">
                                                 <p class="text-gray-500">治疗值</p>
                                                 <p class="font-bold text-success" id="statHealing">-</p>
                                             </div>
@@ -1605,6 +1662,10 @@
                                         <div id="professionRankings" class="space-y-2 text-sm">
                                             <p class="text-gray-400 text-center py-4">请选择玩家查看排名</p>
                                         </div>
+                                        <div id="playerGuildInfo" class="mt-3 p-2 bg-gray-800/50 rounded text-center text-xs hidden">
+                                            <span class="text-gray-500">隶属帮会：</span>
+                                            <span id="playerGuildName" class="font-bold">-</span>
+                                        </div>
                                     </div>
 
                                     <!-- 职业分析与建议 -->
@@ -1620,7 +1681,7 @@
                         <div id="professionView" class="hidden">
                             <div class="card mb-4">
                                 <h3 class="card-title"><i class="fas fa-users mr-2"></i>选择职业</h3>
-                                <select id="professionSelect" class="w-full p-3 bg-dark border border-gray-600 rounded-lg text-gray-100 focus:ring-2 focus:ring-primary cursor-pointer" onchange="updateProfessionComparison()">
+                                <select id="professionSelect" class="w-full p-3 bg-dark border border-gray-600 rounded-none text-gray-100 focus:ring-2 focus:ring-primary cursor-pointer" onchange="updateProfessionComparison()">
                                     <option value="">请选择职业...</option>
                                 </select>
                             </div>
@@ -1673,7 +1734,7 @@
 
                         <!-- 分类数据视图 -->
                         <div id="categoryView" class="hidden">
-                            <div class="glass-card rounded-2xl p-6 shadow-xl">
+                            <div class="glass-card rounded-none p-6 shadow-xl">
                                 <h3 class="card-title mb-6"><i class="fas fa-layer-group mr-2"></i>分类数据对比表</h3>
                                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                     <!-- 战斗数据（小数值） -->
@@ -1713,16 +1774,16 @@
                         <div id="teamView" class="hidden">
                             <!-- 模块标签 -->
                             <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
-                                <button class="tab-btn px-4 py-2 rounded-lg font-medium whitespace-nowrap active" onclick="switchTeamTab('dataBase', this)" style="background: linear-gradient(135deg, #165DFF 0%, #722ED1 100%); color: white;">
+                                <button class="tab-btn px-4 py-2 rounded-none font-medium whitespace-nowrap active" onclick="switchTeamTab('dataBase', this)" style="background: linear-gradient(135deg, #FF4757 0%, #2E86DE 100%); color: white;">
                                     <i class="fas fa-database mr-2"></i>数据基准
                                 </button>
-                                <button class="tab-btn px-4 py-2 rounded-lg font-medium whitespace-nowrap bg-gray-700 text-gray-300" onclick="switchTeamTab('squadBuilder', this)">
+                                <button class="tab-btn px-4 py-2 rounded-none font-medium whitespace-nowrap bg-gray-700 text-gray-300" onclick="switchTeamTab('squadBuilder', this)">
                                     <i class="fas fa-users mr-2"></i>小队排表
                                 </button>
-                                <button class="tab-btn px-4 py-2 rounded-lg font-medium whitespace-nowrap bg-gray-700 text-gray-300" onclick="switchTeamTab('strategyAssist', this)">
+                                <button class="tab-btn px-4 py-2 rounded-none font-medium whitespace-nowrap bg-gray-700 text-gray-300" onclick="switchTeamTab('strategyAssist', this)">
                                     <i class="fas fa-chess mr-2"></i>统战辅助
                                 </button>
-                                <button class="tab-btn px-4 py-2 rounded-lg font-medium whitespace-nowrap bg-gray-700 text-gray-300" onclick="switchTeamTab('config', this)">
+                                <button class="tab-btn px-4 py-2 rounded-none font-medium whitespace-nowrap bg-gray-700 text-gray-300" onclick="switchTeamTab('config', this)">
                                     <i class="fas fa-cog mr-2"></i>参数配置
                                 </button>
                             </div>
@@ -1730,7 +1791,7 @@
                             <!-- 1. 数据基准标签页 -->
                             <div id="teamDataBaseTab" class="team-tab-content">
                                 <!-- 数据源管理 -->
-                                <div class="glass-card rounded-2xl p-6 shadow-xl mb-6">
+                                <div class="glass-card rounded-none p-6 shadow-xl mb-6">
                                     <h3 class="text-lg font-bold mb-4 flex items-center">
                                         <i class="fas fa-database mr-2 text-blue-500"></i>数据源管理
                                     </h3>
@@ -1738,7 +1799,7 @@
                                         <!-- 当前数据源 -->
                                         <div>
                                             <label class="block text-sm font-semibold mb-2">当前已加载的帮会</label>
-                                            <div id="loadedGuildsList" class="space-y-2 max-h-40 overflow-y-auto p-2 bg-gray-800 rounded-lg">
+                                            <div id="loadedGuildsList" class="space-y-2 max-h-40 overflow-y-auto p-2 bg-gray-800 rounded-none">
                                                 <div class="text-center text-gray-400 py-4">暂无数据</div>
                                             </div>
                                         </div>
@@ -1747,10 +1808,10 @@
                                             <label class="block text-sm font-semibold mb-2">导入额外数据</label>
                                             <input type="file" id="additionalDataFile" accept=".csv" class="hidden" onchange="importAdditionalData(event)">
                                             <div class="flex gap-2 mb-2">
-                                                <button onclick="document.getElementById('additionalDataFile').click()" class="flex-1 px-4 py-2 rounded-lg bg-gray-700 text-white hover:bg-gray-600 text-sm">
+                                                <button onclick="document.getElementById('additionalDataFile').click()" class="flex-1 px-4 py-2 rounded-none bg-gray-700 text-white hover:bg-gray-600 text-sm">
                                                     <i class="fas fa-plus mr-2"></i>添加数据文件
                                                 </button>
-                                                <button onclick="clearAllDataSources()" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 text-sm">
+                                                <button onclick="clearAllDataSources()" class="px-4 py-2 rounded-none bg-red-600 text-white hover:bg-red-700 text-sm">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </div>
@@ -1760,12 +1821,12 @@
                                 </div>
                                 
                                 <!-- 帮会选择 -->
-                                <div class="glass-card rounded-2xl p-6 shadow-xl mb-6">
+                                <div class="glass-card rounded-none p-6 shadow-xl mb-6">
                                     <h3 class="text-lg font-bold mb-4 flex items-center">
                                         <i class="fas fa-building mr-2 text-green-500"></i>帮会选择 <span class="text-xs text-gray-400 ml-2">(用于小队成员配置)</span>
                                     </h3>
                                     <div class="flex gap-4 items-center">
-                                        <select id="guildSelectForSquad" class="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white" onchange="onGuildSelectChange(this.value)">
+                                        <select id="guildSelectForSquad" class="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-none text-white" onchange="onGuildSelectChange(this.value)">
                                             <option value="">请选择帮会...</option>
                                         </select>
                                         <div class="text-sm text-gray-400">
@@ -1776,7 +1837,7 @@
                                 
                                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                     <!-- 全员数据均值 -->
-                                    <div class="glass-card rounded-2xl p-6 shadow-xl">
+                                    <div class="glass-card rounded-none p-6 shadow-xl">
                                         <h3 class="text-lg font-bold mb-4 flex items-center">
                                             <i class="fas fa-chart-bar mr-2 text-blue-500"></i>全员数据均值
                                         </h3>
@@ -1786,7 +1847,7 @@
                                     </div>
                                     
                                     <!-- 成员波动比 -->
-                                    <div class="glass-card rounded-2xl p-6 shadow-xl">
+                                    <div class="glass-card rounded-none p-6 shadow-xl">
                                         <h3 class="text-lg font-bold mb-4 flex items-center justify-between">
                                             <span class="flex items-center">
                                                 <i class="fas fa-wave-square mr-2 text-green-500"></i>成员波动比
@@ -1795,7 +1856,7 @@
                                                 <i class="fas fa-question-circle text-gray-400 hover:text-blue-400 cursor-pointer transition-colors" 
                                                    onmouseenter="document.getElementById('fluctuationTooltip').classList.remove('hidden')"
                                                    onmouseleave="document.getElementById('fluctuationTooltip').classList.add('hidden')"></i>
-                                                <div id="fluctuationTooltip" class="hidden absolute right-0 top-6 w-80 bg-gray-800 border border-gray-600 rounded-lg p-3 text-xs text-gray-300 shadow-xl z-50">
+                                                <div id="fluctuationTooltip" class="hidden absolute right-0 top-6 w-80 bg-gray-800 border border-gray-600 rounded-none p-3 text-xs text-gray-300 shadow-xl z-50">
                                                     <p class="mb-1 font-bold text-blue-400">稳定性分析说明：</p>
                                                     <p class="mb-1">• 基于同一玩家多场战斗数据计算</p>
                                                     <p class="mb-1">• 计算变异系数 (CV = 标准差/均值)</p>
@@ -1810,7 +1871,7 @@
                                             </div>
                                         </h3>
                                         <div class="mb-4">
-                                            <input type="text" id="fluctuationSearch" placeholder="搜索成员..." class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white" oninput="searchFluctuationTable()">
+                                            <input type="text" id="fluctuationSearch" placeholder="搜索成员..." class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-none text-white" oninput="searchFluctuationTable()">
                                         </div>
                                         <div id="memberFluctuationList" class="space-y-2 max-h-96 overflow-y-auto">
                                             <div class="text-center text-gray-400 py-4">请先加载帮会数据</div>
@@ -1818,7 +1879,7 @@
                                     </div>
                                     
                                     <!-- 波动权重配置预览 -->
-                                    <div class="glass-card rounded-2xl p-6 shadow-xl">
+                                    <div class="glass-card rounded-none p-6 shadow-xl">
                                         <h3 class="text-lg font-bold mb-4 flex items-center">
                                             <i class="fas fa-balance-scale mr-2 text-purple-500"></i>当前权重配置
                                         </h3>
@@ -1844,7 +1905,7 @@
                                                 <span class="text-blue-400" id="weight-support">1.0</span>
                                             </div>
                                         </div>
-                                        <button onclick="calculateAllFluctuations()" class="mt-4 w-full px-4 py-2 rounded-lg text-white font-medium" style="background: linear-gradient(135deg, #165DFF 0%, #722ED1 100%);">
+                                        <button onclick="calculateAllFluctuations()" class="mt-4 w-full px-4 py-2 rounded-none text-white font-medium" style="background: linear-gradient(135deg, #FF4757 0%, #2E86DE 100%);">
                                             <i class="fas fa-calculator mr-2"></i>计算波动数据
                                         </button>
                                     </div>
@@ -1867,7 +1928,7 @@
                                     
                                     <!-- 右侧：团队数据分析（占1列） -->
                                     <div class="lg:col-span-1">
-                                        <div class="glass-card rounded-2xl p-6 shadow-xl sticky top-4">
+                                        <div class="glass-card rounded-none p-6 shadow-xl sticky top-4">
                                             <h3 class="text-lg font-bold mb-4 flex items-center">
                                                 <i class="fas fa-chart-pie mr-2 text-purple-500"></i>团队数据分析
                                             </h3>
@@ -1884,7 +1945,7 @@
                                 </div>
                                 
                                 <!-- 团队数据分析详细表格 -->
-                                <div class="glass-card rounded-2xl p-6 shadow-xl mt-6">
+                                <div class="glass-card rounded-none p-6 shadow-xl mt-6">
                                     <h3 class="text-lg font-bold mb-4 flex items-center">
                                         <i class="fas fa-table mr-2 text-purple-500"></i>详细团队数据分析
                                         <span class="ml-2 text-xs text-gray-400">(颜色标识：红色=人伤 绿色=资源 蓝色=塔伤 粉色=辅助)</span>
@@ -1899,14 +1960,14 @@
                             <div id="teamStrategyAssistTab" class="team-tab-content hidden">
                                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     <!-- 目标配置倾向 -->
-                                    <div class="glass-card rounded-2xl p-6 shadow-xl">
+                                    <div class="glass-card rounded-none p-6 shadow-xl">
                                         <h3 class="text-lg font-bold mb-4 flex items-center">
                                             <i class="fas fa-bullseye mr-2 text-red-500"></i>目标团队配置倾向
                                         </h3>
                                         <div class="space-y-4">
                                             <div>
                                                 <label class="block text-sm font-semibold mb-2">配置倾向</label>
-                                                <select id="strategyPreference" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white" onchange="updateStrategyWeights()">
+                                                <select id="strategyPreference" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-none text-white" onchange="updateStrategyWeights()">
                                                     <option value="balanced">均衡型</option>
                                                     <option value="damage">侧重输出</option>
                                                     <option value="building">侧重拆塔</option>
@@ -1935,16 +1996,16 @@
                                             </div>
                                             <div>
                                                 <label class="block text-sm font-semibold mb-2">小队人数</label>
-                                                <input type="number" id="squadSize" value="10" min="1" max="50" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white">
+                                                <input type="number" id="squadSize" value="10" min="1" max="50" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-none text-white">
                                             </div>
-                                            <button onclick="generateOptimalSquad()" class="w-full px-4 py-2 rounded-lg text-white font-medium" style="background: linear-gradient(135deg, #165DFF 0%, #722ED1 100%);">
+                                            <button onclick="generateOptimalSquad()" class="w-full px-4 py-2 rounded-none text-white font-medium" style="background: linear-gradient(135deg, #FF4757 0%, #2E86DE 100%);">
                                                 <i class="fas fa-magic mr-2"></i>生成推荐组合
                                             </button>
                                         </div>
                                     </div>
                                     
                                     <!-- 推荐组合结果 -->
-                                    <div class="glass-card rounded-2xl p-6 shadow-xl">
+                                    <div class="glass-card rounded-none p-6 shadow-xl">
                                         <h3 class="text-lg font-bold mb-4 flex items-center">
                                             <i class="fas fa-star mr-2 text-yellow-500"></i>推荐成员组合
                                         </h3>
@@ -1955,7 +2016,7 @@
                                 </div>
                                 
                                 <!-- 人员调整建议 -->
-                                <div class="glass-card rounded-2xl p-6 shadow-xl mt-6">
+                                <div class="glass-card rounded-none p-6 shadow-xl mt-6">
                                     <h3 class="text-lg font-bold mb-4 flex items-center">
                                         <i class="fas fa-exchange-alt mr-2 text-orange-500"></i>人员调整建议
                                     </h3>
@@ -1969,7 +2030,7 @@
                             <div id="teamConfigTab" class="team-tab-content hidden">
                                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     <!-- 权重比配置 -->
-                                    <div class="glass-card rounded-2xl p-6 shadow-xl">
+                                    <div class="glass-card rounded-none p-6 shadow-xl">
                                         <h3 class="text-lg font-bold mb-4 flex items-center">
                                             <i class="fas fa-sliders-h mr-2 text-blue-500"></i>指标权重配置
                                         </h3>
@@ -2013,14 +2074,14 @@
                                     </div>
                                     
                                     <!-- 波动值配置 -->
-                                    <div class="glass-card rounded-2xl p-6 shadow-xl">
+                                    <div class="glass-card rounded-none p-6 shadow-xl">
                                         <h3 class="text-lg font-bold mb-4 flex items-center">
                                             <i class="fas fa-percentage mr-2 text-green-500"></i>波动值计算配置
                                         </h3>
                                         <div class="space-y-4">
                                             <div>
                                                 <label class="block text-sm font-semibold mb-2">波动影响系数</label>
-                                                <select id="fluctuationMethod" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white">
+                                                <select id="fluctuationMethod" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-none text-white">
                                                     <option value="ratio">比值法 (数据/均值)</option>
                                                     <option value="diff">差值法 (数据-均值)</option>
                                                     <option value="diff_ratio">差值比值法 ((数据-均值)/均值)</option>
@@ -2028,7 +2089,7 @@
                                             </div>
                                             <div>
                                                 <label class="block text-sm font-semibold mb-2">数据侧重显示模式</label>
-                                                <select id="displayMode" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white">
+                                                <select id="displayMode" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-none text-white">
                                                     <option value="data">数据侧重色（团外查看）</option>
                                                     <option value="profession">职业颜色（团内查看）</option>
                                                     <option value="mixed">混合模式</option>
@@ -2060,10 +2121,10 @@
                                 </div>
                                 
                                 <div class="flex gap-4 mt-6">
-                                    <button onclick="saveTeamConfig()" class="flex-1 px-6 py-3 rounded-lg text-white font-medium" style="background: linear-gradient(135deg, #165DFF 0%, #722ED1 100%);">
+                                    <button onclick="saveTeamConfig()" class="flex-1 px-6 py-3 rounded-none text-white font-medium" style="background: linear-gradient(135deg, #FF4757 0%, #2E86DE 100%);">
                                         <i class="fas fa-save mr-2"></i>保存配置
                                     </button>
-                                    <button onclick="resetTeamConfig()" class="px-6 py-3 rounded-lg bg-gray-700 text-white hover:bg-gray-600">
+                                    <button onclick="resetTeamConfig()" class="px-6 py-3 rounded-none bg-gray-700 text-white hover:bg-gray-600">
                                         <i class="fas fa-undo mr-2"></i>重置默认
                                     </button>
                                 </div>
@@ -2075,6 +2136,21 @@
 
             <!-- 右侧面板 -->
             <div class="right-panel">
+                <!-- 快速操作卡片 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="text-lg font-bold flex items-center">
+                            <i class="fas fa-bolt mr-2"></i>
+                            快速操作
+                        </h2>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="action-button" onclick="window.location.href='../xg_data_import/index.html'">
+                            <i class="fas fa-arrow-left"></i>返回
+                        </button>
+                    </div>
+                </div>
+
                 <!-- 综合评分权重分配卡片 -->
                 <div class="card">
                     <div class="card-header">
@@ -2129,19 +2205,6 @@
                             </div>
                             <div class="text-xs mt-1">得分: <span class="text-primary" id="score-g1-damage">-</span> vs <span class="text-secondary" id="score-g2-damage">-</span></div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- 战术建议卡片 -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="text-lg font-bold flex items-center">
-                            <i class="fas fa-lightbulb mr-2"></i>
-                            战术建议
-                        </h2>
-                    </div>
-                    <div id="tacticalSuggestions" class="space-y-3">
-                        <!-- 动态填充战术建议 -->
                     </div>
                 </div>
 
@@ -2303,6 +2366,29 @@
                 }
             },
             
+            // 重命名帮会
+            renameGuild(oldName, newName) {
+                if (!this.guilds[oldName] || oldName === newName) return false;
+                
+                // 复制数据到新名称
+                this.guilds[newName] = this.guilds[oldName];
+                delete this.guilds[oldName];
+                
+                // 更新选中状态
+                if (this.selectedGuild === oldName) {
+                    this.selectedGuild = newName;
+                }
+                
+                // 更新 battleSessions 中的引用
+                Object.values(this.battleSessions).forEach(session => {
+                    if (session.guildName === oldName) {
+                        session.guildName = newName;
+                    }
+                });
+                
+                return true;
+            },
+            
             // 从当前数据初始化（兼容旧数据）
             initFromCurrentData() {
                 if (guild1Data.length > 0 && guild1Name) {
@@ -2446,7 +2532,7 @@
                 btn.style.background = '#374151';
                 btn.style.color = '#D1D5DB';
             });
-            clickedElement.style.background = 'linear-gradient(135deg, #165DFF 0%, #722ED1 100%)';
+            clickedElement.style.background = 'linear-gradient(135deg, #FF4757 0%, #2E86DE 100%)';
             clickedElement.style.color = 'white';
 
             // 隐藏所有标签内容
@@ -2561,6 +2647,15 @@
             return player;
         }
 
+        // 获取玩家所属帮会（根据当前guild1Data和guild2Data动态判断）
+        function getPlayerGuildName(playerName) {
+            const inGuild1 = guild1Data.some(p => p['玩家名字'] === playerName);
+            if (inGuild1) return guild1Name;
+            const inGuild2 = guild2Data.some(p => p['玩家名字'] === playerName);
+            if (inGuild2) return guild2Name;
+            return playerName['帮会'] || '未知';
+        }
+
         // 更新排行榜表格
         function updateLeaderboardTable(tableId, data, field, isScore = false) {
             const tbody = document.getElementById(tableId);
@@ -2581,12 +2676,17 @@
 
                 const value = isScore ? player.score : parseInt(player[field]) || 0;
                 const formattedValue = isScore ? value : formatNumber(value);
+                
+                // 动态获取帮会名称
+                const guildName = getPlayerGuildName(player['玩家名字']);
+                // 根据帮会设置颜色
+                const guildColor = guildName === guild1Name ? 'text-red-400' : (guildName === guild2Name ? 'text-blue-400' : 'text-gray-400');
 
                 return `
                     <tr>
                         <td class="${rankClass}">${rank}</td>
                         <td>${player['玩家名字']}</td>
-                        <td>${player['帮会']}</td>
+                        <td class="${guildColor}">${guildName}</td>
                         <td>${player['职业']}</td>
                         <td class="font-bold text-primary">${formattedValue}</td>
                     </tr>
@@ -2819,9 +2919,6 @@
             renderMemberPool();
             renderAllTeams();
             updateTeamAnalysisTable();
-
-            // 更新战术建议（右侧面板）
-            updateTacticalSuggestions();
         }
 
         // 更新对比分析视图
@@ -3010,7 +3107,7 @@
             let announceHTML = '';
             if (diff < 5) {
                 announceHTML = `
-                    <div class="bg-gradient-to-r from-yellow-500/10 to-yellow-600/10 p-3 rounded-lg border border-yellow-500/20">
+                    <div class="bg-gradient-to-r from-yellow-500/10 to-yellow-600/10 p-3 rounded-none border border-yellow-500/20">
                         <div class="flex items-center">
                             <i class="fas fa-balance-scale text-yellow-500 mr-2"></i>
                             <span class="font-medium">势均力敌</span>
@@ -3023,7 +3120,7 @@
             } else if (score1 > score2) {
                 const advantage = (diff / score2 * 100).toFixed(0);
                 announceHTML = `
-                    <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-3 rounded-lg border border-primary/20">
+                    <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-3 rounded-none border border-primary/20">
                         <div class="flex items-center">
                             <i class="fas fa-crown text-primary mr-2"></i>
                             <span class="font-medium">${guild1Name} 占据优势</span>
@@ -3036,7 +3133,7 @@
             } else {
                 const advantage = (diff / score1 * 100).toFixed(0);
                 announceHTML = `
-                    <div class="bg-gradient-to-r from-secondary/10 to-primary/10 p-3 rounded-lg border border-secondary/20">
+                    <div class="bg-gradient-to-r from-secondary/10 to-primary/10 p-3 rounded-none border border-secondary/20">
                         <div class="flex items-center">
                             <i class="fas fa-crown text-secondary mr-2"></i>
                             <span class="font-medium">${guild2Name} 占据优势</span>
@@ -3072,28 +3169,28 @@
                         {
                             label: guild1Name,
                             data: g1Data,
-                            borderColor: '#3B82F6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderColor: '#EF4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
                             fill: true,
-                            tension: 0.4,
+                            tension: 0,
                             borderWidth: 3,
                             pointRadius: 6,
                             pointHoverRadius: 8,
-                            pointBackgroundColor: '#3B82F6',
+                            pointBackgroundColor: '#EF4444',
                             pointBorderColor: '#fff',
                             pointBorderWidth: 2
                         },
                         {
                             label: guild2Name,
                             data: g2Data,
-                            borderColor: '#8B5CF6',
-                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            borderColor: '#3B82F6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
                             fill: true,
-                            tension: 0.4,
+                            tension: 0,
                             borderWidth: 3,
                             pointRadius: 6,
                             pointHoverRadius: 8,
-                            pointBackgroundColor: '#8B5CF6',
+                            pointBackgroundColor: '#3B82F6',
                             pointBorderColor: '#fff',
                             pointBorderWidth: 2
                         }
@@ -3177,15 +3274,15 @@
                         {
                             label: guild1Name,
                             data: [g1Stats.playerDamage, g1Stats.buildingDamage, g1Stats.playerArmorBreak, g1Stats.buildingArmorBreak],
-                            backgroundColor: '#3B82F6',
-                            borderRadius: 4,
+                            backgroundColor: '#EF4444',
+                            borderRadius: 0,
                             borderSkipped: false
                         },
                         {
                             label: guild2Name,
                             data: [g2Stats.playerDamage, g2Stats.buildingDamage, g2Stats.playerArmorBreak, g2Stats.buildingArmorBreak],
-                            backgroundColor: '#8B5CF6',
-                            borderRadius: 4,
+                            backgroundColor: '#3B82F6',
+                            borderRadius: 0,
                             borderSkipped: false
                         }
                     ]
@@ -3239,15 +3336,15 @@
                         {
                             label: guild1Name,
                             data: [g1Stats.healing],
-                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                            borderRadius: 4,
+                            backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                            borderRadius: 0,
                             borderSkipped: false
                         },
                         {
                             label: guild2Name,
                             data: [g2Stats.healing],
-                            backgroundColor: 'rgba(139, 92, 246, 0.7)',
-                            borderRadius: 4,
+                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                            borderRadius: 0,
                             borderSkipped: false
                         }
                     ]
@@ -3300,15 +3397,15 @@
                         {
                             label: guild1Name,
                             data: [g1Stats.kills, g1Stats.assists, g1Stats.qingquan],
-                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                            borderRadius: 4,
+                            backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                            borderRadius: 0,
                             borderSkipped: false
                         },
                         {
                             label: guild2Name,
                             data: [g2Stats.kills, g2Stats.assists, g2Stats.qingquan],
-                            backgroundColor: 'rgba(139, 92, 246, 0.7)',
-                            borderRadius: 4,
+                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                            borderRadius: 0,
                             borderSkipped: false
                         }
                     ]
@@ -3413,13 +3510,13 @@
                                 (g1Stats.playerArmorBreak / maxPlayerArmorBreak) * 100,
                                 (g1Stats.buildingArmorBreak / maxBuildingArmorBreak) * 100
                             ],
-                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                            borderColor: 'rgba(59, 130, 246, 1)',
+                            backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                            borderColor: 'rgba(239, 68, 68, 1)',
                             borderWidth: 2,
-                            pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                            pointBackgroundColor: 'rgba(239, 68, 68, 1)',
                             pointBorderColor: '#fff',
                             pointHoverBackgroundColor: '#fff',
-                            pointHoverBorderColor: 'rgba(59, 130, 246, 1)'
+                            pointHoverBorderColor: 'rgba(239, 68, 68, 1)'
                         },
                         {
                             label: guild2Name,
@@ -3436,13 +3533,13 @@
                                 (g2Stats.playerArmorBreak / maxPlayerArmorBreak) * 100,
                                 (g2Stats.buildingArmorBreak / maxBuildingArmorBreak) * 100
                             ],
-                            backgroundColor: 'rgba(139, 92, 246, 0.2)',
-                            borderColor: 'rgba(139, 92, 246, 1)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
                             borderWidth: 2,
-                            pointBackgroundColor: 'rgba(139, 92, 246, 1)',
+                            pointBackgroundColor: 'rgba(59, 130, 246, 1)',
                             pointBorderColor: '#fff',
                             pointHoverBackgroundColor: '#fff',
-                            pointHoverBorderColor: 'rgba(139, 92, 246, 1)'
+                            pointHoverBorderColor: 'rgba(59, 130, 246, 1)'
                         }
                     ]
                 },
@@ -3606,13 +3703,13 @@
                                 (g1AvgPlayerArmorBreak / maxAvgPlayerArmorBreak) * 100,
                                 (g1AvgBuildingArmorBreak / maxAvgBuildingArmorBreak) * 100
                             ],
-                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                            borderColor: 'rgba(59, 130, 246, 1)',
+                            backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                            borderColor: 'rgba(239, 68, 68, 1)',
                             borderWidth: 2,
-                            pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                            pointBackgroundColor: 'rgba(239, 68, 68, 1)',
                             pointBorderColor: '#fff',
                             pointHoverBackgroundColor: '#fff',
-                            pointHoverBorderColor: 'rgba(59, 130, 246, 1)'
+                            pointHoverBorderColor: 'rgba(239, 68, 68, 1)'
                         },
                         {
                             label: guild2Name,
@@ -3629,13 +3726,13 @@
                                 (g2AvgPlayerArmorBreak / maxAvgPlayerArmorBreak) * 100,
                                 (g2AvgBuildingArmorBreak / maxAvgBuildingArmorBreak) * 100
                             ],
-                            backgroundColor: 'rgba(139, 92, 246, 0.2)',
-                            borderColor: 'rgba(139, 92, 246, 1)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
                             borderWidth: 2,
-                            pointBackgroundColor: 'rgba(139, 92, 246, 1)',
+                            pointBackgroundColor: 'rgba(59, 130, 246, 1)',
                             pointBorderColor: '#fff',
                             pointHoverBackgroundColor: '#fff',
-                            pointHoverBorderColor: 'rgba(139, 92, 246, 1)'
+                            pointHoverBorderColor: 'rgba(59, 130, 246, 1)'
                         }
                     ]
                 },
@@ -3725,7 +3822,7 @@
                 const diffText = diff !== 0 ? (diff > 0 ? `+${diff.toLocaleString()}` : diff.toLocaleString()) : '-';
 
                 return `
-                    <div class="bg-gray-800/50 rounded-lg p-3">
+                    <div class="bg-gray-800/50 rounded-none p-3">
                         <div class="flex justify-between items-center text-xs text-gray-400 mb-1">
                             <span>${item.label}</span>
                             <span class="${diffClass}">${diffText}</span>
@@ -3761,7 +3858,7 @@
                 const diffText = diff !== 0 ? (diff > 0 ? `+${formatNumber(diff)}` : formatNumber(diff)) : '-';
 
                 return `
-                    <div class="bg-gray-800/50 rounded-lg p-3">
+                    <div class="bg-gray-800/50 rounded-none p-3">
                         <div class="flex justify-between items-center text-xs text-gray-400 mb-1">
                             <span>${item.label}</span>
                             <span class="${diffClass}">${diffText}</span>
@@ -3797,7 +3894,7 @@
                 const diffText = diff !== 0 ? (diff > 0 ? `+${formatNumber(diff)}` : formatNumber(diff)) : '-';
 
                 return `
-                    <div class="bg-gray-800/50 rounded-lg p-3">
+                    <div class="bg-gray-800/50 rounded-none p-3">
                         <div class="flex justify-between items-center text-xs text-gray-400 mb-1">
                             <span>${item.label}</span>
                             <span class="${diffClass}">${diffText}</span>
@@ -3851,7 +3948,7 @@
             const html = sortedProfessions.map(([profession, count]) => {
                 const percentage = ((count / guild1Data.length) * 100).toFixed(1);
                 return `
-                    <div class="flex items-center justify-between p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                    <div class="flex items-center justify-between p-2 rounded-none bg-white/5 hover:bg-white/10 transition-colors">
                         <div class="flex items-center">
                             <div class="w-3 h-3 rounded-full mr-2" style="background-color: ${getProfessionColor(profession)}"></div>
                             <span class="text-sm font-medium text-gray-300">${profession}</span>
@@ -3867,236 +3964,6 @@
             const container = document.getElementById('professionAnalysisList');
             if (container) {
                 container.innerHTML = html;
-            }
-        }
-
-        // 更新战术建议（右侧面板，基于真实数据）
-        function updateTacticalSuggestions() {
-            const suggestions = [];
-
-            // 检查数据是否存在
-            if (!guild1Data || !guild2Data || guild1Data.length === 0 || guild2Data.length === 0) {
-                const container = document.getElementById('tacticalSuggestions');
-                if (container) {
-                    container.innerHTML = `
-                        <div class="text-center text-gray-500 py-4">
-                            <i class="fas fa-info-circle mb-2"></i>
-                            <p class="text-sm">请上传数据以获取战术建议</p>
-                        </div>
-                    `;
-                }
-                return;
-            }
-
-            // 计算两个帮会的统计数据
-            const g1Stats = calculateStats(guild1Data);
-            const g2Stats = calculateStats(guild2Data);
-
-            // 职业分布对比
-            const g1Prof = getProfessionDistribution(guild1Data);
-            const g2Prof = getProfessionDistribution(guild2Data);
-            const g1Suwen = g1Prof.data[g1Prof.labels.indexOf('素问')] || 0;
-            const g2Suwen = g2Prof.data[g2Prof.labels.indexOf('素问')] || 0;
-
-            // 生成战术建议
-            const totalKills = g1Stats.kills + g2Stats.kills || 1;
-            const g1KillRate = (g1Stats.kills / totalKills * 100).toFixed(1);
-            const g2KillRate = (g2Stats.kills / totalKills * 100).toFixed(1);
-
-            const totalHealing = g1Stats.healing + g2Stats.healing || 1;
-            const g1HealRate = (g1Stats.healing / totalHealing * 100).toFixed(1);
-            const g2HealRate = (g2Stats.healing / totalHealing * 100).toFixed(1);
-
-            const totalDamage = g1Stats.playerDamage + g2Stats.playerDamage || 1;
-            const g1DmgRate = (g1Stats.playerDamage / totalDamage * 100).toFixed(1);
-            const g2DmgRate = (g2Stats.playerDamage / totalDamage * 100).toFixed(1);
-
-            const totalPlayerArmorBreak = g1Stats.playerArmorBreak + g2Stats.playerArmorBreak || 1;
-            const g1PlayerArmorBreakRate = (g1Stats.playerArmorBreak / totalPlayerArmorBreak * 100).toFixed(1);
-            const g2PlayerArmorBreakRate = (g2Stats.playerArmorBreak / totalPlayerArmorBreak * 100).toFixed(1);
-
-            const totalBuildingArmorBreak = g1Stats.buildingArmorBreak + g2Stats.buildingArmorBreak || 1;
-            const g1BuildingArmorBreakRate = (g1Stats.buildingArmorBreak / totalBuildingArmorBreak * 100).toFixed(1);
-            const g2BuildingArmorBreakRate = (g2Stats.buildingArmorBreak / totalBuildingArmorBreak * 100).toFixed(1);
-
-            const totalQingquan = g1Stats.qingquan + g2Stats.qingquan || 1;
-            const g1QingquanRate = (g1Stats.qingquan / totalQingquan * 100).toFixed(1);
-            const g2QingquanRate = (g2Stats.qingquan / totalQingquan * 100).toFixed(1);
-
-            // 治疗对比建议
-            if (g1Suwen > g2Suwen + 2) {
-                suggestions.push({
-                    icon: 'fa-heart',
-                    color: 'text-pink-400',
-                    text: `${guild1Name}治疗资源丰富（${g1Suwen}个素问），建议采取持久战消耗对方`,
-                    type: 'advantage'
-                });
-            } else if (g2Suwen > g1Suwen + 2) {
-                suggestions.push({
-                    icon: 'fa-heart',
-                    color: 'text-pink-400',
-                    text: `${guild2Name}治疗资源丰富（${g2Suwen}个素问），需要优先集火对方治疗`,
-                    type: 'warning'
-                });
-            }
-
-            // 击败能力对比
-            if (parseFloat(g1KillRate) > parseFloat(g2KillRate) + 10) {
-                suggestions.push({
-                    icon: 'fa-crosshairs',
-                    color: 'text-red-400',
-                    text: `${guild1Name}击败能力突出（占${g1KillRate}%），建议积极进攻抢占先机`,
-                    type: 'advantage'
-                });
-            } else if (parseFloat(g2KillRate) > parseFloat(g1KillRate) + 10) {
-                suggestions.push({
-                    icon: 'fa-crosshairs',
-                    color: 'text-red-400',
-                    text: `${guild2Name}击败能力突出（占${g2KillRate}%），需要谨慎应对避免被击杀`,
-                    type: 'warning'
-                });
-            }
-
-            // 清泉使用对比
-            if (parseFloat(g1QingquanRate) > parseFloat(g2QingquanRate) + 15) {
-                suggestions.push({
-                    icon: 'fa-tint',
-                    color: 'text-blue-400',
-                    text: `${guild1Name}清泉使用频繁（占${g1QingquanRate}%），续航能力较强`,
-                    type: 'advantage'
-                });
-            } else if (parseFloat(g2QingquanRate) > parseFloat(g1QingquanRate) + 15) {
-                suggestions.push({
-                    icon: 'fa-tint',
-                    color: 'text-blue-400',
-                    text: `${guild2Name}清泉使用频繁（占${g2QingquanRate}%），需要持续压制防止其恢复`,
-                    type: 'warning'
-                });
-            }
-
-            // 人伤卸甲对比
-            if (parseFloat(g1PlayerArmorBreakRate) > parseFloat(g2PlayerArmorBreakRate) + 15) {
-                suggestions.push({
-                    icon: 'fa-shield-virus',
-                    color: 'text-orange-400',
-                    text: `${guild1Name}人伤卸甲能力突出（占${g1PlayerArmorBreakRate}%），快速削弱敌方防御`,
-                    type: 'advantage'
-                });
-            } else if (parseFloat(g2PlayerArmorBreakRate) > parseFloat(g1PlayerArmorBreakRate) + 15) {
-                suggestions.push({
-                    icon: 'fa-shield-virus',
-                    color: 'text-orange-400',
-                    text: `${guild2Name}人伤卸甲能力突出（占${g2PlayerArmorBreakRate}%），需要保护己方防御`,
-                    type: 'warning'
-                });
-            }
-
-            // 破塔卸甲对比
-            if (parseFloat(g1BuildingArmorBreakRate) > parseFloat(g2BuildingArmorBreakRate) + 15) {
-                suggestions.push({
-                    icon: 'fa-hammer',
-                    color: 'text-yellow-400',
-                    text: `${guild1Name}破塔卸甲能力突出（占${g1BuildingArmorBreakRate}%），拆塔效率高`,
-                    type: 'advantage'
-                });
-            } else if (parseFloat(g2BuildingArmorBreakRate) > parseFloat(g1BuildingArmorBreakRate) + 15) {
-                suggestions.push({
-                    icon: 'fa-hammer',
-                    color: 'text-yellow-400',
-                    text: `${guild2Name}破塔卸甲能力突出（占${g2BuildingArmorBreakRate}%），需要重点防守建筑`,
-                    type: 'warning'
-                });
-            }
-
-            // 伤害输出对比
-            if (parseFloat(g1DmgRate) > parseFloat(g2DmgRate) + 10) {
-                suggestions.push({
-                    icon: 'fa-fire',
-                    color: 'text-orange-400',
-                    text: `${guild1Name}伤害输出优势明显（占${g1DmgRate}%），建议集中火力快速压制`,
-                    type: 'advantage'
-                });
-            } else if (parseFloat(g2DmgRate) > parseFloat(g1DmgRate) + 10) {
-                suggestions.push({
-                    icon: 'fa-fire',
-                    color: 'text-orange-400',
-                    text: `${guild2Name}伤害输出优势明显（占${g2DmgRate}%），需要注意保护己方输出`,
-                    type: 'warning'
-                });
-            }
-
-            // 治疗能力对比
-            if (parseFloat(g1HealRate) > parseFloat(g2HealRate) + 10) {
-                suggestions.push({
-                    icon: 'fa-shield-alt',
-                    color: 'text-green-400',
-                    text: `${guild1Name}治疗能力强（占${g1HealRate}%），可以大胆进攻`,
-                    type: 'advantage'
-                });
-            } else if (parseFloat(g2HealRate) > parseFloat(g1HealRate) + 10) {
-                suggestions.push({
-                    icon: 'fa-shield-alt',
-                    color: 'text-green-400',
-                    text: `${guild2Name}治疗能力强（占${g2HealRate}%），需要避免持续作战`,
-                    type: 'warning'
-                });
-            }
-
-            // 成员数量对比
-            if (g1Stats.members > g2Stats.members + 3) {
-                suggestions.push({
-                    icon: 'fa-users',
-                    color: 'text-blue-400',
-                    text: `${guild1Name}人数优势明显（多${g1Stats.members - g2Stats.members}人），可以分兵作战`,
-                    type: 'info'
-                });
-            } else if (g2Stats.members > g1Stats.members + 3) {
-                suggestions.push({
-                    icon: 'fa-users',
-                    color: 'text-blue-400',
-                    text: `${guild2Name}人数优势（多${g2Stats.members - g1Stats.members}人），需要集中兵力防守`,
-                    type: 'info'
-                });
-            }
-
-            // 建筑伤害对比
-            if (g1Stats.buildingDamage > g2Stats.buildingDamage * 1.3) {
-                suggestions.push({
-                    icon: 'fa-chess-rook',
-                    color: 'text-yellow-400',
-                    text: `${guild1Name}拆塔能力强，建议优先推塔`,
-                    type: 'info'
-                });
-            } else if (g2Stats.buildingDamage > g1Stats.buildingDamage * 1.3) {
-                suggestions.push({
-                    icon: 'fa-chess-rook',
-                    color: 'text-yellow-400',
-                    text: `${guild2Name}拆塔能力强，需要重点防守塔`,
-                    type: 'warning'
-                });
-            }
-
-            // 渲染建议
-            const html = suggestions.map(suggestion => {
-                const bgColor = suggestion.type === 'advantage' ? 'bg-green-400/10 border-green-400/20' :
-                               suggestion.type === 'warning' ? 'bg-red-400/10 border-red-400/20' :
-                               'bg-blue-400/10 border-blue-400/20';
-                return `
-                    <div class="flex items-start p-3 rounded-lg ${bgColor} border">
-                        <i class="fas ${suggestion.icon} ${suggestion.color} mr-3 mt-0.5"></i>
-                        <span class="text-sm text-gray-300 leading-relaxed">${suggestion.text}</span>
-                    </div>
-                `;
-            }).join('');
-
-            const container = document.getElementById('tacticalSuggestions');
-            if (container) {
-                container.innerHTML = html || `
-                    <div class="text-center text-gray-500 py-4">
-                        <i class="fas fa-info-circle mb-2"></i>
-                        <p class="text-sm">双方实力接近，请根据实际情况灵活调整战术</p>
-                    </div>
-                `;
             }
         }
 
@@ -4201,6 +4068,21 @@
         // 存储筛选后的玩家列表
         let filteredPlayers = [];
         let currentProfessionFilter = '';
+        let currentGuildFilter = 'all'; // 'all', 'guild1', 'guild2'
+        
+        // 更新帮会筛选按钮文字
+        function updateGuildFilterButtons() {
+            const btn1 = document.getElementById('filterGuild1');
+            const btn2 = document.getElementById('filterGuild2');
+            if (btn1) {
+                btn1.textContent = guild1Name || '帮会1';
+                btn1.title = guild1Name || '帮会1';
+            }
+            if (btn2) {
+                btn2.textContent = guild2Name || '帮会2';
+                btn2.title = guild2Name || '帮会2';
+            }
+        }
         
         function updatePlayerSelect() {
             const playerSelect = document.getElementById('playerSelect');
@@ -4211,6 +4093,9 @@
                 return;
             }
 
+            // 更新帮会筛选按钮
+            updateGuildFilterButtons();
+            
             // 应用搜索和职业筛选
             applyPlayerFilters();
         }
@@ -4221,10 +4106,18 @@
             const searchInput = document.getElementById('playerSearchInput');
             const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
             
-            // 先按职业筛选
-            let players = currentProfessionFilter 
-                ? allPlayers.filter(p => p['职业'] === currentProfessionFilter)
-                : [...allPlayers];
+            // 先按帮会筛选
+            let players = [...allPlayers];
+            if (currentGuildFilter === 'guild1') {
+                players = players.filter(p => guild1Data.some(g => g['玩家名字'] === p['玩家名字']));
+            } else if (currentGuildFilter === 'guild2') {
+                players = players.filter(p => guild2Data.some(g => g['玩家名字'] === p['玩家名字']));
+            }
+            
+            // 再按职业筛选
+            if (currentProfessionFilter) {
+                players = players.filter(p => p['职业'] === currentProfessionFilter);
+            }
             
             // 再按名称搜索
             if (searchTerm) {
@@ -4237,9 +4130,39 @@
             if (players.length === 0) {
                 playerSelect.innerHTML = '<option value="">无匹配玩家</option>';
             } else {
-                playerSelect.innerHTML = '<option value="">选择玩家 (' + players.length + '人)</option>' +
+                const guildLabel = currentGuildFilter === 'guild1' ? `[${guild1Name}] ` : (currentGuildFilter === 'guild2' ? `[${guild2Name}] ` : '');
+                playerSelect.innerHTML = '<option value="">' + guildLabel + '选择玩家 (' + players.length + '人)</option>' +
                     players.map(p => `<option value="${p['玩家名字']}">${p['玩家名字']} (${p['职业']})</option>`).join('');
             }
+        }
+        
+        // 帮会筛选
+        function filterPlayerByGuild(guild) {
+            currentGuildFilter = guild;
+            
+            // 更新按钮样式
+            const btnAll = document.getElementById('filterGuildAll');
+            const btn1 = document.getElementById('filterGuild1');
+            const btn2 = document.getElementById('filterGuild2');
+            
+            // 重置所有按钮
+            if (btnAll) {
+                btnAll.className = guild === 'all' 
+                    ? 'flex-1 px-3 py-2 text-xs bg-gradient-to-r from-red-600 to-blue-600 text-white rounded transition-colors font-medium'
+                    : 'flex-1 px-3 py-2 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded transition-colors';
+            }
+            if (btn1) {
+                btn1.className = guild === 'guild1'
+                    ? 'flex-1 px-3 py-2 text-xs bg-red-600 text-white rounded transition-colors font-medium'
+                    : 'flex-1 px-3 py-2 text-xs bg-red-600/30 hover:bg-red-600/50 text-red-300 rounded transition-colors';
+            }
+            if (btn2) {
+                btn2.className = guild === 'guild2'
+                    ? 'flex-1 px-3 py-2 text-xs bg-blue-600 text-white rounded transition-colors font-medium'
+                    : 'flex-1 px-3 py-2 text-xs bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 rounded transition-colors';
+            }
+            
+            applyPlayerFilters();
         }
         
         // 搜索筛选
@@ -4288,6 +4211,15 @@
 
             document.getElementById('playerName').textContent = currentPlayer['玩家名字'];
             document.getElementById('playerProfession').textContent = currentPlayer['职业'];
+            
+            // 显示隶属帮会
+            const guildName = getPlayerGuildName(currentPlayer['玩家名字']);
+            const guildElement = document.getElementById('playerGuild');
+            if (guildElement) {
+                const isGuild1 = guildName === guild1Name;
+                guildElement.innerHTML = `<span class="${isGuild1 ? 'text-red-400' : 'text-blue-400'}">${guildName}</span>`;
+            }
+            
             document.getElementById('statKills').textContent = currentPlayer['击败'] || 0;
             document.getElementById('statPoquan').textContent = currentPlayer['破泉'] || 0;
             document.getElementById('statHuayu').textContent = currentPlayer['化羽'] || 0;
@@ -4376,6 +4308,17 @@
 
             html += '</div>';
             rankingsContainer.innerHTML = html;
+            
+            // 更新隶属帮会信息
+            const guildInfoContainer = document.getElementById('playerGuildInfo');
+            const guildNameElement = document.getElementById('playerGuildName');
+            if (guildInfoContainer && guildNameElement) {
+                const guildName = getPlayerGuildName(playerName);
+                const isGuild1 = guildName === guild1Name;
+                guildNameElement.textContent = guildName;
+                guildNameElement.className = `font-bold ${isGuild1 ? 'text-red-400' : 'text-blue-400'}`;
+                guildInfoContainer.classList.remove('hidden');
+            }
         }
 
         // 计算前N名平均值
@@ -4486,12 +4429,12 @@
                                     normalizeValue(myGuildStats['治疗值'] || 0, maxValues.healing),
                                     normalizeValue(myGuildStats['承受伤害'] || 0, maxValues.takenDmg)
                                 ],
-                                backgroundColor: 'rgba(139, 92, 246, 0.2)',
-                                borderColor: '#8B5CF6',
-                                pointBackgroundColor: '#8B5CF6',
+                                backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                                borderColor: '#EF4444',
+                                pointBackgroundColor: '#EF4444',
                                 pointBorderColor: '#fff',
                                 pointHoverBackgroundColor: '#fff',
-                                pointHoverBorderColor: '#8B5CF6'
+                                pointHoverBorderColor: '#EF4444'
                             },
                             {
                                 label: guild2Name + '前16',
@@ -4503,12 +4446,12 @@
                                     normalizeValue(enemyGuildStats['治疗值'] || 0, maxValues.healing),
                                     normalizeValue(enemyGuildStats['承受伤害'] || 0, maxValues.takenDmg)
                                 ],
-                                backgroundColor: 'rgba(239, 68, 68, 0.2)',
-                                borderColor: '#EF4444',
-                                pointBackgroundColor: '#EF4444',
+                                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                                borderColor: '#3B82F6',
+                                pointBackgroundColor: '#3B82F6',
                                 pointBorderColor: '#fff',
                                 pointHoverBackgroundColor: '#fff',
-                                pointHoverBorderColor: '#EF4444'
+                                pointHoverBorderColor: '#3B82F6'
                             }
                         ]
                     },
@@ -4593,12 +4536,12 @@
                                     normalizeValue(myGuildStats['助攻'] || 0, maxValues.assists),
                                     normalizeValue(myGuildStats['焚骨'] || 0, maxValues.fenGu)
                                 ],
-                                backgroundColor: 'rgba(139, 92, 246, 0.2)',
-                                borderColor: '#8B5CF6',
-                                pointBackgroundColor: '#8B5CF6',
+                                backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                                borderColor: '#EF4444',
+                                pointBackgroundColor: '#EF4444',
                                 pointBorderColor: '#fff',
                                 pointHoverBackgroundColor: '#fff',
-                                pointHoverBorderColor: '#8B5CF6'
+                                pointHoverBorderColor: '#EF4444'
                             },
                             {
                                 label: guild2Name + '前16',
@@ -4611,12 +4554,12 @@
                                     normalizeValue(enemyGuildStats['助攻'] || 0, maxValues.assists),
                                     normalizeValue(enemyGuildStats['焚骨'] || 0, maxValues.fenGu)
                                 ],
-                                backgroundColor: 'rgba(239, 68, 68, 0.2)',
-                                borderColor: '#EF4444',
-                                pointBackgroundColor: '#EF4444',
+                                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                                borderColor: '#3B82F6',
+                                pointBackgroundColor: '#3B82F6',
                                 pointBorderColor: '#fff',
                                 pointHoverBackgroundColor: '#fff',
-                                pointHoverBorderColor: '#EF4444'
+                                pointHoverBorderColor: '#3B82F6'
                             }
                         ]
                     },
@@ -4697,15 +4640,15 @@
 
             const html = `
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="bg-dark-800 rounded-lg p-4">
+                    <div class="bg-dark-800 rounded-none p-4">
                         <h4 class="font-bold text-primary mb-2"><i class="fas fa-user-tag mr-2"></i>职业</h4>
                         <p class="text-sm text-gray-300">${profession}</p>
                     </div>
-                    <div class="bg-dark-800 rounded-lg p-4">
+                    <div class="bg-dark-800 rounded-none p-4">
                         <h4 class="font-bold text-warning mb-2"><i class="fas fa-lightbulb mr-2"></i>分团建议</h4>
                         <p class="text-sm text-gray-300">${getTeamSuggestion(profession, playerDamage, buildingDamage, healing, playerArmorBreak, buildingArmorBreak)}</p>
                     </div>
-                    <div class="bg-dark-800 rounded-lg p-4 md:col-span-2">
+                    <div class="bg-dark-800 rounded-none p-4 md:col-span-2">
                         <h4 class="font-bold text-secondary mb-2"><i class="fas fa-chart-line mr-2"></i>表现评估</h4>
                         <p class="text-sm text-gray-300">${getPerformanceEvaluation(kills, qingquan, assists, playerDamage, buildingDamage, healing, playerArmorBreak, buildingArmorBreak)}</p>
                     </div>
@@ -4965,9 +4908,9 @@
                                     normalizeValue(avgStats.治疗值 || 0, maxValues.healing),
                                     normalizeValue(avgStats.承受伤害 || 0, maxValues.takenDmg)
                                 ],
-                                backgroundColor: 'rgba(139, 92, 246, 0.2)',
-                                borderColor: '#8B5CF6',
-                                pointBackgroundColor: '#8B5CF6'
+                                backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                                borderColor: '#EF4444',
+                                pointBackgroundColor: '#EF4444'
                             }
                         ]
                     },
@@ -5040,9 +4983,9 @@
                                     normalizeValue(avgStats.助攻 || 0, maxValues.assists),
                                     normalizeValue(avgStats.焚骨 || 0, maxValues.fenGu)
                                 ],
-                                backgroundColor: 'rgba(139, 92, 246, 0.2)',
-                                borderColor: '#8B5CF6',
-                                pointBackgroundColor: '#8B5CF6'
+                                backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                                borderColor: '#EF4444',
+                                pointBackgroundColor: '#EF4444'
                             }
                         ]
                     },
@@ -6294,6 +6237,9 @@
             
             // 初始化数据源管理器
             initDataSourceManager();
+            
+            // 初始化帮会名称双击编辑
+            initGuildNameEdit();
         });
 
         // ==================== 帮会分团排表优化模块 ====================
@@ -6303,6 +6249,91 @@
             dataSourceManager.initFromCurrentData();
             updateDataSourceUI();
             updateGuildSelectOptions();
+        }
+
+        // 双击编辑帮会名称
+        function initGuildNameEdit() {
+            const guild1Tag = document.getElementById('guild1Tag');
+            const guild2Tag = document.getElementById('guild2Tag');
+            
+            if (guild1Tag) {
+                guild1Tag.addEventListener('dblclick', function(e) {
+                    e.stopPropagation();
+                    editGuildName(1);
+                });
+                // 添加提示
+                guild1Tag.title = '双击编辑帮会名称';
+            }
+            
+            if (guild2Tag) {
+                guild2Tag.addEventListener('dblclick', function(e) {
+                    e.stopPropagation();
+                    editGuildName(2);
+                });
+                // 添加提示
+                guild2Tag.title = '双击编辑帮会名称';
+            }
+        }
+        
+        // 编辑帮会名称
+        function editGuildName(guildNum) {
+            const currentName = guildNum === 1 ? guild1Name : guild2Name;
+            const newName = prompt(`请输入帮会 ${guildNum} 的新名称:`, currentName);
+            
+            if (newName && newName.trim() && newName.trim() !== currentName) {
+                const trimmedName = newName.trim();
+                
+                // 更新数据源管理器中的名称
+                if (guildNum === 1) {
+                    dataSourceManager.renameGuild(guild1Name, trimmedName);
+                    guild1Name = trimmedName;
+                    document.getElementById('guild1NameDisplay').textContent = guild1Name;
+                } else {
+                    dataSourceManager.renameGuild(guild2Name, trimmedName);
+                    guild2Name = trimmedName;
+                    document.getElementById('guild2NameDisplay').textContent = guild2Name;
+                }
+                
+                // 更新所有显示
+                updateStats();
+                updateCharts();
+                updateDataSourceUI();
+                updateGuildSelectOptions();
+                
+                // 更新排行榜（关键修复：确保榜单中的帮会名称更新）
+                updateLeaderboardView();
+                
+                // 更新个人分析中的帮会筛选按钮
+                updateGuildFilterButtons();
+                
+                // 如果当前有选中的玩家，更新其隶属帮会显示
+                if (currentPlayer) {
+                    updatePlayerInfo();
+                }
+                
+                // 显示提示
+                showNotification(`帮会名称已更新为: ${trimmedName}`, 'success');
+            }
+        }
+        
+        // 显示通知
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-6 py-3 rounded shadow-lg z-50 animate-fade-in`;
+            notification.style.cssText = `
+                background: ${type === 'success' ? 'rgba(16, 185, 129, 0.9)' : type === 'error' ? 'rgba(239, 68, 68, 0.9)' : 'rgba(59, 130, 246, 0.9)'};
+                color: white;
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+            `;
+            notification.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} mr-2"></i>${message}`;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.3s';
+                setTimeout(() => notification.remove(), 300);
+            }, 2000);
         }
 
         // 更新数据源UI
@@ -6822,7 +6853,7 @@
             if (!tooltip) {
                 tooltip = document.createElement('div');
                 tooltip.id = 'playerTooltip';
-                tooltip.className = 'fixed z-50 bg-gray-900 border border-gray-600 rounded-lg p-3 shadow-xl text-xs';
+                tooltip.className = 'fixed z-50 bg-gray-900 border border-gray-600 rounded-none p-3 shadow-xl text-xs';
                 tooltip.style.maxWidth = '280px';
                 document.body.appendChild(tooltip);
             }
@@ -6979,7 +7010,7 @@
                 const groups = teamStructure[teamName];
                 
                 html += `
-                    <div class="glass-card rounded-2xl p-6 shadow-xl mb-4">
+                    <div class="glass-card rounded-none p-6 shadow-xl mb-4">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-xl font-bold flex items-center">
                                 <i class="fas fa-flag mr-2 text-blue-500"></i>${teamName}
@@ -7322,7 +7353,7 @@
             if (!tooltip) {
                 tooltip = document.createElement('div');
                 tooltip.id = 'playerTooltip';
-                tooltip.className = 'fixed z-50 bg-gray-900 border border-gray-600 rounded-lg p-3 shadow-xl text-xs max-w-xs';
+                tooltip.className = 'fixed z-50 bg-gray-900 border border-gray-600 rounded-none p-3 shadow-xl text-xs max-w-xs';
                 document.body.appendChild(tooltip);
             }
 
@@ -7496,7 +7527,7 @@
                 t.style.color = '#d1d5db';
             });
             clickedElement.classList.add('active');
-            clickedElement.style.background = 'linear-gradient(135deg, #165DFF 0%, #722ED1 100%)';
+            clickedElement.style.background = 'linear-gradient(135deg, #FF4757 0%, #2E86DE 100%)';
             clickedElement.style.color = 'white';
 
             document.querySelectorAll('.team-tab-content').forEach(content => {
@@ -7739,7 +7770,7 @@
                 const reliabilityPercent = Math.round(reliability * 100);
                 
                 return `
-                    <div class="p-3 rounded-lg border ${bgClass} hover:bg-gray-700/50 transition-colors">
+                    <div class="p-3 rounded-none border ${bgClass} hover:bg-gray-700/50 transition-colors">
                         <div class="flex justify-between items-center mb-1">
                             <div class="flex items-center">
                                 <span class="font-medium text-sm">${member.name}</span>
@@ -7752,7 +7783,7 @@
                             <span>可信度 ${reliabilityPercent}%</span>
                         </div>
                         <div class="w-full bg-gray-700 rounded-full h-1 mt-2">
-                            <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-1 rounded-full" style="width: ${reliabilityPercent}%"></div>
+                            <div class="bg-gradient-to-r from-primary to-secondary h-1 rounded-full" style="width: ${reliabilityPercent}%"></div>
                         </div>
                     </div>
                 `;
@@ -7869,7 +7900,7 @@
                 }[squad.data.focusType] || '综合';
 
                 return `
-                    <div class="p-4 bg-gray-800 rounded-lg border-l-4" style="border-left-color: ${focusColor}">
+                    <div class="p-4 bg-gray-800 rounded-none border-l-4" style="border-left-color: ${focusColor}">
                         <div class="flex justify-between items-start mb-2">
                             <div>
                                 <h4 class="font-bold text-lg">${squad.name}</h4>
@@ -7926,7 +7957,7 @@
                     ${squadList.map(squad => {
                         const focusColor = getFocusColor(squad.data.focusType);
                         return `
-                            <div class="text-center p-4 rounded-lg" style="background: ${focusColor.replace('0.7', '0.2')}; border: 2px solid ${focusColor}">
+                            <div class="text-center p-4 rounded-none" style="background: ${focusColor.replace('0.7', '0.2')}; border: 2px solid ${focusColor}">
                                 <div class="font-bold text-lg mb-2">${squad.name}</div>
                                 <div class="text-3xl font-bold mb-1" style="color: ${focusColor.replace('0.7', '1')}">${squad.data.focusValue.toFixed(0)}%</div>
                                 <div class="text-xs text-gray-400">综合评分</div>
@@ -8026,7 +8057,7 @@
             const resultContainer = document.getElementById('optimalSquadResult');
             if (resultContainer) {
                 resultContainer.innerHTML = recommended.map((p, i) => `
-                    <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+                    <div class="flex justify-between items-center p-3 bg-gray-800 rounded-none">
                         <div class="flex items-center gap-3">
                             <span class="w-6 h-6 rounded-full bg-blue-600 text-xs flex items-center justify-center">${i + 1}</span>
                             <span class="font-medium">${p['玩家名字']}</span>
