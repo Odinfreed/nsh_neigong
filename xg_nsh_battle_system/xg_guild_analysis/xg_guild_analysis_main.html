@@ -1027,12 +1027,13 @@
                     <div class="card-header">
                         <div class="tabs">
                             <div class="tab" onclick="switchTab('leaderboard', this)">全局排行</div>
-                            <div class="tab active" onclick="switchTab('stats', this)">核心统计</div>
-                            <div class="tab" onclick="switchTab('charts', this)">数据图表</div>
+                            <div class="tab" onclick="switchTab('stats', this)">核心统计</div>
+                            <div class="tab active" onclick="switchTab('charts', this)">数据图表</div>
                             <div class="tab" onclick="switchTab('compare', this)">对比分析</div>
                             <div class="tab" onclick="switchTab('player', this)">个人分析</div>
                             <div class="tab" onclick="switchTab('profession', this)">职业对比</div>
                             <div class="tab" onclick="switchTab('category', this)">分类数据</div>
+                            <div id="lowperformTab" class="tab hidden" onclick="switchTab('lowperform', this)">职业末位</div>
                         </div>
                     </div>
                     <div class="flex-1 p-4">
@@ -1841,6 +1842,49 @@
                             </div>
                         </div>
 
+                        <!-- 职业末位成员视图 -->
+                        <div id="lowperformView" class="hidden">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <!-- 左列：帮会一数据后20% -->
+                                <div class="space-y-6">
+                                    <div class="glass-card rounded-none p-4 shadow-xl">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h3 class="card-title mb-0 text-sm"><i class="fas fa-arrow-down mr-2 text-red-500"></i>帮会一 · 全职业后20%</h3>
+                                            <span class="px-2 py-0.5 bg-red-600/30 text-red-300 rounded text-xs">数据偏低</span>
+                                        </div>
+                                        <div class="mb-3 p-2 bg-red-500/10 border border-red-500/30 rounded-none text-xs">
+                                            <p class="text-gray-300">
+                                                <i class="fas fa-info-circle mr-1 text-red-500"></i>
+                                                仅显示有成员处于全职业后20%的职业
+                                            </p>
+                                        </div>
+                                        <div id="guildBottom20Container" class="space-y-3 max-h-[600px] overflow-y-auto">
+                                            <!-- 动态填充 -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 右列：帮会二数据前20% -->
+                                <div class="space-y-6">
+                                    <div class="glass-card rounded-none p-4 shadow-xl">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h3 class="card-title mb-0 text-sm"><i class="fas fa-arrow-up mr-2 text-green-500"></i>帮会二 · 全职业前20%</h3>
+                                            <span class="px-2 py-0.5 bg-green-600/30 text-green-300 rounded text-xs">数据优秀</span>
+                                        </div>
+                                        <div class="mb-3 p-2 bg-green-500/10 border border-green-500/30 rounded-none text-xs">
+                                            <p class="text-gray-300">
+                                                <i class="fas fa-info-circle mr-1 text-green-500"></i>
+                                                仅显示有成员处于全职业前20%的职业
+                                            </p>
+                                        </div>
+                                        <div id="guildTop20Container" class="space-y-3 max-h-[600px] overflow-y-auto">
+                                            <!-- 动态填充 -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- 智能分团视图 - 帮会分团排表优化模块 -->
                         <div id="teamView" class="hidden">
                             <!-- 模块标签 -->
@@ -2502,7 +2546,7 @@
 
         // 初始化排行榜标签
         // 当前激活的标签页
-        let activeTab = 'stats';
+        let activeTab = 'charts';
 
         // 切换标签页
         function switchTab(tab, clickedElement) {
@@ -2523,7 +2567,7 @@
             }
 
             // 隐藏所有存在的视图
-            const views = ['leaderboardView', 'statsView', 'chartsView', 'compareView', 'playerView', 'professionView', 'categoryView', 'teamView'];
+            const views = ['leaderboardView', 'statsView', 'chartsView', 'compareView', 'playerView', 'professionView', 'categoryView', 'teamView', 'lowperformView'];
             views.forEach(viewId => {
                 const view = document.getElementById(viewId);
                 if (view) {
@@ -2544,6 +2588,11 @@
                 // 如果切换到分类数据视图，更新分类数据表格
                 if (tab === 'category') {
                     updateCategoryTables();
+                }
+
+                // 如果切换到职业末位视图，更新职业末位成员列表
+                if (tab === 'lowperform') {
+                    updateLowPerformMembers();
                 }
             }
 
@@ -2591,7 +2640,8 @@
                 'player': '个人分析',
                 'profession': '职业对比',
                 'category': '分类数据',
-                'team': '智能分团'
+                'team': '智能分团',
+                'lowperform': '职业末位'
             };
             return labels[tab] || tab;
         }
@@ -4240,6 +4290,25 @@
         // 搜索筛选
         function filterPlayerSelect() {
             applyPlayerFilters();
+
+            // 检测隐藏命令 OX208
+            const searchInput = document.getElementById('playerSearchInput');
+            const lowperformTab = document.getElementById('lowperformTab');
+
+            if (searchInput && lowperformTab) {
+                const searchValue = searchInput.value.trim();
+
+                if (searchValue === 'OX208') {
+                    // 显示职业末位标签
+                    lowperformTab.classList.remove('hidden');
+                    // 自动切换到职业末位视图
+                    switchTab('lowperform');
+                } else if (searchValue === '' && !lowperformTab.classList.contains('hidden')) {
+                    // 如果输入为空且标签当前可见，隐藏标签并切换到数据图表
+                    lowperformTab.classList.add('hidden');
+                    switchTab('charts');
+                }
+            }
         }
         
         // 职业筛选
@@ -7164,7 +7233,7 @@
             }
 
             // 初始化标签页
-            switchTab('stats');
+            switchTab('charts');
 
             // 初始化个人分析
             initPlayerAnalysis();
@@ -8724,6 +8793,301 @@
                 console.error('Chart.js 未加载，请确保 libs/chart.umd.min.js 文件存在');
             }
         });
+
+        // ==================== 职业末位成员检测模块 ====================
+
+        // 职业特定指标配置（重伤为负面指标，数值越高越差）
+        const PROFESSION_METRICS = {
+            '素问': ['治疗值', '化羽', '助攻', '复活', '重伤'],
+            '鸿音': ['治疗值', '化羽', '人伤卸甲', '破塔卸甲', '助攻', '重伤'],
+            '九灵': ['焚骨', '击败', '对玩家伤害', '助攻', '重伤'],
+            '潮光': ['清泉', '击败', '对玩家伤害', '助攻', '重伤'],
+            '铁衣': ['承受伤害', '击败', '对玩家伤害', '助攻', '重伤'],
+            '血河': ['击败', '对玩家伤害', '助攻', '重伤'],
+            '龙吟': ['击败', '对玩家伤害', '助攻', '重伤'],
+            '碎梦': ['击败', '对玩家伤害', '助攻', '重伤'],
+            '神相': ['击败', '对玩家伤害', '助攻', '重伤'],
+            '玄机': ['击败', '对玩家伤害', '助攻', '重伤'],
+            '沧澜': ['击败', '对玩家伤害', '助攻', '重伤']
+        };
+
+        // 负面指标（数值越高越差）
+        const NEGATIVE_METRICS = ['重伤'];
+
+        // 获取职业对应的指标
+        function getMetricsForProfession(profession) {
+            return PROFESSION_METRICS[profession] || ['击败', '助攻', '对玩家伤害', '承受伤害', '重伤'];
+        }
+
+        // 计算帮会一本职业后20%（基于全职业排名）
+        function calculateGuildBottom20ByProfession() {
+            const allPlayers = dataSourceManager.getAllPlayers();
+            if (!allPlayers || allPlayers.length === 0) {
+                return {};
+            }
+
+            // 按职业分组所有玩家（全职业）
+            const allByProfession = {};
+            allPlayers.forEach(p => {
+                const prof = p['职业'] || '未知';
+                if (!allByProfession[prof]) {
+                    allByProfession[prof] = [];
+                }
+                allByProfession[prof].push(p);
+            });
+
+            // 获取帮会一成员
+            const guild1Members = allPlayers.filter(p => {
+                const guildName = p['帮会'] || getPlayerGuildName(p['玩家名字']);
+                return guildName === guild1Name;
+            });
+
+            const result = {};
+
+            // 处理每个职业
+            Object.keys(allByProfession).forEach(prof => {
+                const profAllPlayers = allByProfession[prof];
+                const profGuild1Members = guild1Members.filter(p => (p['职业'] || '未知') === prof);
+
+                if (profGuild1Members.length === 0) return;
+
+                const metrics = getMetricsForProfession(prof);
+                const totalCount = profAllPlayers.length;
+                
+                // 计算后20%的目标人数（四舍五入，至少1人）
+                const targetBottomCount = Math.max(1, Math.round(totalCount * 0.2));
+
+                // 为每个指标计算后20%的成员名单
+                const metricBottomPlayers = {};
+                metrics.forEach(metricKey => {
+                    const allValues = profAllPlayers
+                        .map(p => ({ name: p['玩家名字'], value: parseFloat(p[metricKey]) || 0, player: p }));
+                    
+                    const isNegative = NEGATIVE_METRICS.includes(metricKey);
+                    
+                    // 排序：负面指标越高越差，正面指标越低越差
+                    let sortedByMetric;
+                    if (isNegative) {
+                        sortedByMetric = allValues.sort((a, b) => b.value - a.value); // 从高到低
+                    } else {
+                        sortedByMetric = allValues.sort((a, b) => a.value - b.value); // 从低到高
+                    }
+                    
+                    // 取后20%的人
+                    const bottomPlayers = sortedByMetric.slice(0, targetBottomCount);
+                    
+                    // 筛选出帮会一的成员
+                    metricBottomPlayers[metricKey] = bottomPlayers.filter(p => {
+                        const guildName = p.player['帮会'] || getPlayerGuildName(p.name);
+                        return guildName === guild1Name;
+                    }).map(p => p.name);
+                });
+
+                // 汇总帮会一成员及其处于后20%的指标
+                const playerBottomMetricsMap = {};
+                Object.entries(metricBottomPlayers).forEach(([metricKey, playerNames]) => {
+                    playerNames.forEach(name => {
+                        if (!playerBottomMetricsMap[name]) {
+                            playerBottomMetricsMap[name] = [];
+                        }
+                        playerBottomMetricsMap[name].push(metricKey);
+                    });
+                });
+
+                // 转换为数组格式
+                const playerList = Object.entries(playerBottomMetricsMap).map(([name, metrics]) => ({
+                    name: name,
+                    bottomMetrics: metrics,
+                    score: metrics.length
+                })).sort((a, b) => b.score - a.score);
+
+                if (playerList.length > 0) {
+                    result[prof] = {
+                        totalCount: totalCount,
+                        bottom20Count: targetBottomCount,
+                        guild1Count: profGuild1Members.length,
+                        players: playerList
+                    };
+                }
+            });
+
+            return result;
+        }
+
+        // 计算帮会二本职业前20%（基于全职业排名）
+        function calculateGuildTop20ByProfession() {
+            const allPlayers = dataSourceManager.getAllPlayers();
+            if (!allPlayers || allPlayers.length === 0) {
+                return {};
+            }
+
+            // 按职业分组所有玩家（全职业）
+            const allByProfession = {};
+            allPlayers.forEach(p => {
+                const prof = p['职业'] || '未知';
+                if (!allByProfession[prof]) {
+                    allByProfession[prof] = [];
+                }
+                allByProfession[prof].push(p);
+            });
+
+            // 获取帮会二成员
+            const guild2Members = allPlayers.filter(p => {
+                const guildName = p['帮会'] || getPlayerGuildName(p['玩家名字']);
+                return guildName === guild2Name;
+            });
+
+            const result = {};
+
+            // 处理每个职业
+            Object.keys(allByProfession).forEach(prof => {
+                const profAllPlayers = allByProfession[prof];
+                const profGuild2Members = guild2Members.filter(p => (p['职业'] || '未知') === prof);
+
+                if (profGuild2Members.length === 0) return;
+
+                const metrics = getMetricsForProfession(prof);
+                const totalCount = profAllPlayers.length;
+                
+                // 计算前20%的目标人数（四舍五入，至少1人）
+                const targetTopCount = Math.max(1, Math.round(totalCount * 0.2));
+
+                // 为每个指标计算前20%的成员名单
+                const metricTopPlayers = {};
+                metrics.forEach(metricKey => {
+                    const allValues = profAllPlayers
+                        .map(p => ({ name: p['玩家名字'], value: parseFloat(p[metricKey]) || 0, player: p }));
+                    
+                    const isNegative = NEGATIVE_METRICS.includes(metricKey);
+                    
+                    // 排序：负面指标越低越好，正面指标越高越好
+                    let sortedByMetric;
+                    if (isNegative) {
+                        sortedByMetric = allValues.sort((a, b) => a.value - b.value); // 从低到高
+                    } else {
+                        sortedByMetric = allValues.sort((a, b) => b.value - a.value); // 从高到低
+                    }
+                    
+                    // 取前20%的人
+                    const topPlayers = sortedByMetric.slice(0, targetTopCount);
+                    
+                    // 筛选出帮会二的成员
+                    metricTopPlayers[metricKey] = topPlayers.filter(p => {
+                        const guildName = p.player['帮会'] || getPlayerGuildName(p.name);
+                        return guildName === guild2Name;
+                    }).map(p => p.name);
+                });
+
+                // 汇总帮会二成员及其处于前20%的指标
+                const playerTopMetricsMap = {};
+                Object.entries(metricTopPlayers).forEach(([metricKey, playerNames]) => {
+                    playerNames.forEach(name => {
+                        if (!playerTopMetricsMap[name]) {
+                            playerTopMetricsMap[name] = [];
+                        }
+                        playerTopMetricsMap[name].push(metricKey);
+                    });
+                });
+
+                // 转换为数组格式
+                const playerList = Object.entries(playerTopMetricsMap).map(([name, metrics]) => ({
+                    name: name,
+                    topMetrics: metrics,
+                    score: metrics.length
+                })).sort((a, b) => b.score - a.score);
+
+                if (playerList.length > 0) {
+                    result[prof] = {
+                        totalCount: totalCount,
+                        top20Count: targetTopCount,
+                        guild2Count: profGuild2Members.length,
+                        players: playerList
+                    };
+                }
+            });
+
+            return result;
+        }
+
+        // 更新职业末位成员列表显示
+        function updateLowPerformMembers() {
+            const bottomContainer = document.getElementById('guildBottom20Container');
+            const topContainer = document.getElementById('guildTop20Container');
+
+            if (!bottomContainer || !topContainer) return;
+
+            // 1. 渲染帮会一本职业后20%
+            const bottomData = calculateGuildBottom20ByProfession();
+            const bottomProfs = Object.keys(bottomData).sort();
+
+            if (bottomProfs.length === 0) {
+                bottomContainer.innerHTML = '<div class="text-center text-gray-400 py-4 text-sm">暂无数据</div>';
+            } else {
+                bottomContainer.innerHTML = bottomProfs.map(prof => {
+                    const data = bottomData[prof];
+                    const profColor = getProfessionColor(prof);
+
+                    return `
+                        <div class="bg-gray-800/30 rounded p-2">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-0.5 rounded text-xs" style="background-color: ${profColor}30; color: ${profColor};">${prof}</span>
+                                    <span class="text-xs text-gray-400">${data.bottom20Count}/${data.totalCount}</span>
+                                </div>
+                                <span class="text-xs text-red-400">后20%</span>
+                            </div>
+                            <div class="space-y-1">
+                                ${data.players.map(p => `
+                                    <div class="bg-gray-800/50 rounded p-1.5 text-xs">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-medium text-gray-300">${p.name}</span>
+                                            <span class="text-red-400">${p.score}项</span>
+                                        </div>
+                                        <div class="text-gray-500 mt-0.5 text-[10px]">${p.bottomMetrics.join('、')}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // 2. 渲染帮会二本职业前20%
+            const topData = calculateGuildTop20ByProfession();
+            const topProfs = Object.keys(topData).sort();
+
+            if (topProfs.length === 0) {
+                topContainer.innerHTML = '<div class="text-center text-gray-400 py-4 text-sm">暂无数据</div>';
+            } else {
+                topContainer.innerHTML = topProfs.map(prof => {
+                    const data = topData[prof];
+                    const profColor = getProfessionColor(prof);
+
+                    return `
+                        <div class="bg-gray-800/30 rounded p-2">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-0.5 rounded text-xs" style="background-color: ${profColor}30; color: ${profColor};">${prof}</span>
+                                    <span class="text-xs text-gray-400">${data.top20Count}/${data.totalCount}</span>
+                                </div>
+                                <span class="text-xs text-green-400">前20%</span>
+                            </div>
+                            <div class="space-y-1">
+                                ${data.players.map(p => `
+                                    <div class="bg-gray-800/50 rounded p-1.5 text-xs">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-medium text-gray-300">${p.name}</span>
+                                            <span class="text-green-400">${p.score}项</span>
+                                        </div>
+                                        <div class="text-gray-500 mt-0.5 text-[10px]">${p.topMetrics.join('、')}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
     </script>
 
     <!-- 全屏详细分析模态框 -->
