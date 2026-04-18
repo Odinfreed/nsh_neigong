@@ -3097,13 +3097,49 @@
 
         // 获取玩家所属帮会（根据当前guild1Data和guild2Data动态判断）
         function getPlayerGuildName(playerName) {
+            // 优先从当前加载的数据判断
             const inGuild1 = guild1Data.some(p => p['玩家名字'] === playerName);
             if (inGuild1) return guild1Name;
             const inGuild2 = guild2Data.some(p => p['玩家名字'] === playerName);
             if (inGuild2) return guild2Name;
+            
+            // 从多场缓存中查找（使用最近一场的帮会名称映射）
+            if (multiBattleCache.length > 0) {
+                const latestBattle = multiBattleCache[multiBattleCache.length - 1];
+                const guildsData = latestBattle.guilds || latestBattle.data || {};
+                const guildNames = Object.keys(guildsData);
+                
+                for (let i = 0; i < guildNames.length; i++) {
+                    const rawName = guildNames[i];
+                    const players = guildsData[rawName] || [];
+                    if (players.find(p => p['玩家名字'] === playerName)) {
+                        // 返回自定义名称
+                        if (i === 0 && latestBattle.guild1Name) {
+                            return latestBattle.guild1Name;
+                        } else if (i === 1 && latestBattle.guild2Name) {
+                            return latestBattle.guild2Name;
+                        }
+                        return rawName;
+                    }
+                }
+            }
+            
             // 从allPlayers中查找该玩家的帮会信息
             const player = allPlayers.find(p => p['玩家名字'] === playerName);
             return player?.['帮会'] || '未知';
+        }
+        
+        // 判断帮会颜色（基于最近一场的第一个帮会）
+        function getPlayerGuildColorClass(guildName) {
+            // 获取最近一场的第一个帮会名称
+            let firstGuildName = guild1Name;
+            if (multiBattleCache.length > 0) {
+                const latestBattle = multiBattleCache[multiBattleCache.length - 1];
+                const guildsData = latestBattle.guilds || latestBattle.data || {};
+                const guildNames = Object.keys(guildsData);
+                firstGuildName = latestBattle.guild1Name || guildNames[0] || guild1Name;
+            }
+            return guildName === firstGuildName ? 'text-red-400' : 'text-blue-400';
         }
 
         // 更新排行榜表格
@@ -3130,7 +3166,7 @@
                 // 动态获取帮会名称
                 const guildName = getPlayerGuildName(player['玩家名字']);
                 // 根据帮会设置颜色
-                const guildColor = guildName === guild1Name ? 'text-red-400' : (guildName === guild2Name ? 'text-blue-400' : 'text-gray-400');
+                const guildColor = getPlayerGuildColorClass(guildName);
 
                 return `
                     <tr>
@@ -4612,7 +4648,7 @@
                 compactName.textContent = currentPlayer['玩家名字'];
                 const guildName = getPlayerGuildName(currentPlayer['玩家名字']);
                 compactInfo.textContent = `${currentPlayer['职业']} | ${guildName}`;
-                compactInfo.className = 'text-xs ' + (guildName === guild1Name ? 'text-red-400' : 'text-blue-400');
+                compactInfo.className = 'text-xs ' + getPlayerGuildColorClass(guildName);
             } else {
                 compactName.textContent = '未选择玩家';
                 compactInfo.textContent = '点击展开选择面板';
@@ -4651,8 +4687,7 @@
             const guildName = getPlayerGuildName(currentPlayer['玩家名字']);
             const guildElement = document.getElementById('playerGuild');
             if (guildElement) {
-                const isGuild1 = guildName === guild1Name;
-                guildElement.innerHTML = `<span class="${isGuild1 ? 'text-red-400' : 'text-blue-400'}">${guildName}</span>`;
+                guildElement.innerHTML = `<span class="${getPlayerGuildColorClass(guildName)}">${guildName}</span>`;
             }
             
             document.getElementById('statKills').textContent = currentPlayer['击败'] || 0;
@@ -4926,9 +4961,8 @@
             const guildNameElement = document.getElementById('playerGuildName');
             if (guildInfoContainer && guildNameElement) {
                 const guildName = getPlayerGuildName(playerName);
-                const isGuild1 = guildName === guild1Name;
                 guildNameElement.textContent = guildName;
-                guildNameElement.className = `font-bold ${isGuild1 ? 'text-red-400' : 'text-blue-400'}`;
+                guildNameElement.className = `font-bold ${getPlayerGuildColorClass(guildName)}`;
                 guildInfoContainer.classList.remove('hidden');
             }
         }
@@ -5390,14 +5424,14 @@
             const guildName = getPlayerGuildName(currentPlayer['玩家名字']);
             const guildElement = document.getElementById('fullscreenPlayerGuild');
             guildElement.textContent = guildName;
-            guildElement.className = guildName === guild1Name ? 'text-red-400' : 'text-blue-400';
+            guildElement.className = getPlayerGuildColorClass(guildName);
 
             // 同步更新截图区域的玩家信息
             document.getElementById('fullscreenPlayerNameScreenshot').textContent = currentPlayer['玩家名字'];
             document.getElementById('fullscreenPlayerProfessionScreenshot').textContent = currentPlayer['职业'];
             const guildScreenshotEl = document.getElementById('fullscreenPlayerGuildScreenshot');
             guildScreenshotEl.textContent = guildName;
-            guildScreenshotEl.className = guildName === guild1Name ? 'text-red-400' : 'text-blue-400';
+            guildScreenshotEl.className = getPlayerGuildColorClass(guildName);
 
             // 获取职业（去除首尾空格）
             const profession = (currentPlayer['职业'] || '').trim();
@@ -7835,9 +7869,6 @@
             
             // 初始化数据源管理器
             initDataSourceManager();
-            
-            // 初始化帮会名称双击编辑
-            initGuildNameEdit();
         });
 
         // ==================== 帮会分团排表优化模块 ====================
@@ -7889,86 +7920,6 @@
             }
         }
 
-        // 双击编辑帮会名称
-        function initGuildNameEdit() {
-            const guild1Tag = document.getElementById('guild1Tag');
-            const guild2Tag = document.getElementById('guild2Tag');
-            
-            if (guild1Tag) {
-                guild1Tag.addEventListener('dblclick', function(e) {
-                    e.stopPropagation();
-                    editGuildName(1);
-                });
-                // 添加提示
-                guild1Tag.title = '双击编辑帮会名称';
-            }
-            
-            if (guild2Tag) {
-                guild2Tag.addEventListener('dblclick', function(e) {
-                    e.stopPropagation();
-                    editGuildName(2);
-                });
-                // 添加提示
-                guild2Tag.title = '双击编辑帮会名称';
-            }
-        }
-        
-        // 编辑帮会名称
-        function editGuildName(guildNum) {
-            const currentName = guildNum === 1 ? guild1Name : guild2Name;
-            const newName = prompt(`请输入帮会 ${guildNum} 的新名称:`, currentName);
-            
-            if (newName && newName.trim() && newName.trim() !== currentName) {
-                const trimmedName = newName.trim();
-                
-                // 更新数据源管理器中的名称
-                if (guildNum === 1) {
-                    dataSourceManager.renameGuild(guild1Name, trimmedName);
-                    guild1Name = trimmedName;
-                    document.getElementById('guild1NameDisplay').textContent = guild1Name;
-                } else {
-                    dataSourceManager.renameGuild(guild2Name, trimmedName);
-                    guild2Name = trimmedName;
-                    document.getElementById('guild2NameDisplay').textContent = guild2Name;
-                }
-                
-                // 更新所有显示
-                updateStats();
-                updateCharts();
-                updateDataSourceUI();
-                updateGuildSelectOptions();
-                
-                // 更新排行榜（关键修复：确保榜单中的帮会名称更新）
-                updateLeaderboardView();
-                
-                // 更新个人分析中的帮会筛选按钮
-                updateGuildFilterButtons();
-                
-                // 如果当前有选中的玩家，更新其隶属帮会显示
-                if (currentPlayer) {
-                    updatePlayerInfo();
-                }
-                
-                // 更新职业末位成员列表（如果当前在该视图）
-                if (activeTab === 'lowperform') {
-                    updateLowPerformMembers();
-                }
-                
-                // 更新职业末位界面标题
-                const lowperformGuild1NameEl = document.getElementById('lowperformGuild1Name');
-                const lowperformGuild2NameEl = document.getElementById('lowperformGuild2Name');
-                if (lowperformGuild1NameEl) lowperformGuild1NameEl.textContent = guild1Name;
-                if (lowperformGuild2NameEl) lowperformGuild2NameEl.textContent = guild2Name;
-                
-                // 保存到localStorage
-                localStorage.setItem('xg_nsh_guild1Name', guild1Name);
-                localStorage.setItem('xg_nsh_guild2Name', guild2Name);
-                
-                // 显示提示
-                showNotification(`帮会名称已更新为: ${trimmedName}`, 'success');
-            }
-        }
-        
         // 显示通知
         function showNotification(message, type = 'info') {
             const notification = document.createElement('div');
@@ -8389,20 +8340,23 @@
             }
             
             container.innerHTML = multiBattleCache.map((battle, index) => {
-                // 获取帮会名称显示 - 兼容两种格式
-                let guildNames, totalPlayers;
-                
-                if (battle.guilds && typeof battle.guilds === 'object') {
-                    // 新格式：使用 guilds 对象
-                    guildNames = Object.keys(battle.guilds).join(' vs ');
-                    totalPlayers = Object.values(battle.guilds).reduce((sum, players) => sum + (players?.length || 0), 0);
-                } else if (battle.data && typeof battle.data === 'object') {
-                    // 旧格式/导入页面格式：使用 guild1Name/guild2Name 或 data 的键
-                    guildNames = (battle.guild1Name && battle.guild2Name) 
-                        ? `${battle.guild1Name} vs ${battle.guild2Name}`
-                        : Object.keys(battle.data).join(' vs ');
-                    totalPlayers = Object.values(battle.data).reduce((sum, players) => sum + (players?.length || 0), 0);
+                // 使用每场自己保存的帮会名称
+                let guildNames;
+                if (battle.guild1Name && battle.guild2Name) {
+                    guildNames = `${battle.guild1Name} vs ${battle.guild2Name}`;
                 } else {
+                    const dataObj = battle.data || battle.guilds || {};
+                    guildNames = Object.keys(dataObj).join(' vs ');
+                }
+                
+                // 计算总人数
+                const dataObj = battle.data || battle.guilds || {};
+                let totalPlayers = 0;
+                if (dataObj && typeof dataObj === 'object') {
+                    totalPlayers = Object.values(dataObj).reduce((sum, players) => sum + (players?.length || 0), 0);
+                }
+                
+                if (!guildNames) {
                     return `
                         <div class="flex items-center justify-between p-3 bg-gray-800 rounded-none border-l-4 border-red-500">
                             <div class="text-sm text-red-400">数据格式错误 (ID: ${battle.id || 'unknown'})</div>
@@ -8644,6 +8598,33 @@
             // 从localStorage加载多场数据
             loadMultiBattleCacheForDashboard();
             
+            // 从最近一场数据同步帮会名称到全局变量（如果全局变量是默认值）
+            if (multiBattleCache.length > 0) {
+                const latestBattle = multiBattleCache[multiBattleCache.length - 1];
+                const guildsData = latestBattle.guilds || latestBattle.data || {};
+                const dataGuildNames = Object.keys(guildsData);
+                
+                // 获取最近一场的帮会名称
+                const latestGuild1Name = latestBattle.guild1Name || dataGuildNames[0] || '帮会1';
+                const latestGuild2Name = latestBattle.guild2Name || dataGuildNames[1] || '帮会2';
+                
+                // 如果全局变量是默认值，则使用最近一场的名称
+                if (guild1Name === '帮会1' && latestGuild1Name !== '帮会1') {
+                    guild1Name = latestGuild1Name;
+                    localStorage.setItem('xg_nsh_guild1Name', guild1Name);
+                }
+                if (guild2Name === '帮会2' && latestGuild2Name !== '帮会2') {
+                    guild2Name = latestGuild2Name;
+                    localStorage.setItem('xg_nsh_guild2Name', guild2Name);
+                }
+                
+                // 更新UI显示
+                const guild1Display = document.getElementById('guild1NameDisplay');
+                const guild2Display = document.getElementById('guild2NameDisplay');
+                if (guild1Display) guild1Display.textContent = guild1Name;
+                if (guild2Display) guild2Display.textContent = guild2Name;
+            }
+            
             // 更新帮会选择器
             updateMultiBattleGuildSelect();
             
@@ -8665,25 +8646,57 @@
             const select = document.getElementById('multiBattleGuildSelect');
             if (!select) return;
             
-            // 获取所有帮会名称
-            const allGuilds = [...new Set(multiBattleCache.flatMap(b => {
-                const guildsData = b.guilds || b.data || {};
-                return Object.keys(guildsData);
-            }))];
-            
-            if (allGuilds.length === 0) {
+            if (multiBattleCache.length === 0) {
                 select.innerHTML = '<option value="">请先导入多场数据</option>';
                 return;
             }
             
+            // 收集所有出现过的帮会（按显示名称去重）
+            const allGuildsMap = new Map(); // key: 显示名称, value: 原始键名数组（用于数据查找）
+            
+            multiBattleCache.forEach(battle => {
+                const guildsData = battle.guilds || battle.data || {};
+                const dataGuildNames = Object.keys(guildsData);
+                
+                dataGuildNames.forEach((rawName, index) => {
+                    // 确定该帮会的显示名称
+                    let displayName;
+                    if (index === 0 && battle.guild1Name) {
+                        displayName = battle.guild1Name;
+                    } else if (index === 1 && battle.guild2Name) {
+                        displayName = battle.guild2Name;
+                    } else {
+                        displayName = rawName;
+                    }
+                    
+                    // 按显示名称去重，记录该显示名称对应的所有原始键名
+                    if (!allGuildsMap.has(displayName)) {
+                        allGuildsMap.set(displayName, new Set());
+                    }
+                    allGuildsMap.get(displayName).add(rawName);
+                });
+            });
+            
+            if (allGuildsMap.size === 0) {
+                select.innerHTML = '<option value="">请先导入多场数据</option>';
+                return;
+            }
+            
+            // 转换为数组并排序（使用显示名称作为key和显示文本）
+            const allGuilds = Array.from(allGuildsMap.entries()).map(([displayName, rawNamesSet]) => ({ 
+                key: displayName,  // 使用显示名称作为key
+                name: displayName, // 使用显示名称作为显示文本
+                rawNames: Array.from(rawNamesSet) // 保存对应的原始键名用于数据查找
+            }));
+            
             // 更新多场看板帮会选择器
             select.innerHTML = allGuilds.map(guild => 
-                `<option value="${guild}" ${guild === selectedMultiBattleGuild ? 'selected' : ''}>${guild}</option>`
+                `<option value="${guild.key}" ${guild.key === selectedMultiBattleGuild ? 'selected' : ''}>${guild.name}</option>`
             ).join('');
             
             // 如果没有选择帮会，默认选择第一个
             if (!selectedMultiBattleGuild && allGuilds.length > 0) {
-                selectedMultiBattleGuild = allGuilds[0];
+                selectedMultiBattleGuild = allGuilds[0].key;
                 select.value = selectedMultiBattleGuild;
             }
         }
@@ -8701,16 +8714,75 @@
             }
         }
         
+        // 获取显示名称对应的所有可能的原始键名
+        function getRawGuildNamesForDisplay(displayName) {
+            const rawNames = new Set();
+            rawNames.add(displayName); // 显示名称本身也可能是原始键名
+            
+            multiBattleCache.forEach(battle => {
+                const guildsData = battle.guilds || battle.data || {};
+                const dataGuildNames = Object.keys(guildsData);
+                
+                dataGuildNames.forEach((rawName, index) => {
+                    // 确定该帮会的显示名称
+                    let battleDisplayName;
+                    if (index === 0 && battle.guild1Name) {
+                        battleDisplayName = battle.guild1Name;
+                    } else if (index === 1 && battle.guild2Name) {
+                        battleDisplayName = battle.guild2Name;
+                    } else {
+                        battleDisplayName = rawName;
+                    }
+                    
+                    // 如果显示名称匹配，记录原始键名
+                    if (battleDisplayName === displayName) {
+                        rawNames.add(rawName);
+                    }
+                });
+            });
+            
+            return Array.from(rawNames);
+        }
+        
+        // 根据显示名称获取该场次中对应的数据
+        function getGuildDataByDisplayName(battle, displayName) {
+            const guildsData = battle.guilds || battle.data || {};
+            const dataGuildNames = Object.keys(guildsData);
+            
+            // 先尝试直接匹配
+            if (guildsData[displayName]) {
+                return guildsData[displayName];
+            }
+            
+            // 遍历查找匹配的显示名称
+            for (let i = 0; i < dataGuildNames.length; i++) {
+                const rawName = dataGuildNames[i];
+                let battleDisplayName;
+                if (i === 0 && battle.guild1Name) {
+                    battleDisplayName = battle.guild1Name;
+                } else if (i === 1 && battle.guild2Name) {
+                    battleDisplayName = battle.guild2Name;
+                } else {
+                    battleDisplayName = rawName;
+                }
+                
+                if (battleDisplayName === displayName) {
+                    return guildsData[rawName];
+                }
+            }
+            
+            return null;
+        }
+        
         // 更新显示该帮会的场次数量
         function updateMultiBattleBattleCount() {
             const countEl = document.getElementById('multiBattleGuildBattleCount');
             const titleEl = document.getElementById('multiBattleTitle');
             if (!countEl || !selectedMultiBattleGuild) return;
             
-            // 计算该帮会出现的场次
+            // 计算该帮会出现的场次（使用显示名称匹配）
             const battleCount = multiBattleCache.filter(battle => {
-                const guildsData = battle.guilds || battle.data || {};
-                return guildsData[selectedMultiBattleGuild];
+                return getGuildDataByDisplayName(battle, selectedMultiBattleGuild) !== null;
             }).length;
             
             countEl.textContent = `共 ${battleCount} 场数据`;
@@ -8725,17 +8797,11 @@
                     multiBattleCache = JSON.parse(cached);
                     
                     // 兼容数据导入页面的格式转换
+                    // 保留原始键名，不转换为自定义名称，以确保帮会选择和过滤能正确匹配
                     multiBattleCache = multiBattleCache.map(battle => {
                         if (battle.data && !battle.guilds) {
-                            const guilds = {};
-                            const guildNames = Object.keys(battle.data);
-                            guildNames.forEach((name, index) => {
-                                let finalName = name;
-                                if (index === 0 && battle.guild1Name) finalName = battle.guild1Name;
-                                if (index === 1 && battle.guild2Name) finalName = battle.guild2Name;
-                                guilds[finalName] = battle.data[name];
-                            });
-                            return { ...battle, guilds };
+                            // 直接使用原始数据，只添加 guilds 属性指向 data
+                            return { ...battle, guilds: battle.data };
                         }
                         return battle;
                     });
@@ -8823,8 +8889,7 @@
             
             // 过滤出包含该帮会的场次，并按时间排序
             const guildBattles = multiBattleCache.filter(battle => {
-                const guildsData = battle.guilds || battle.data || {};
-                return guildsData[selectedMultiBattleGuild];
+                return getGuildDataByDisplayName(battle, selectedMultiBattleGuild) !== null;
             }).sort((a, b) => a.timestamp - b.timestamp);
             
             if (guildBattles.length === 0) {
@@ -8837,8 +8902,7 @@
             
             // 计算该帮会在每场的数据
             const calculateMetric = (battle, metric) => {
-                const guildsData = battle.guilds || battle.data || {};
-                const players = guildsData[selectedMultiBattleGuild] || [];
+                const players = getGuildDataByDisplayName(battle, selectedMultiBattleGuild) || [];
                 if (players.length === 0) return 0;
                 // 特殊处理复活/化羽：需要同时计算'复活'和'化羽'两个字段
                 if (metric === '复活化羽') {
@@ -8899,8 +8963,7 @@
             
             // 过滤出包含该帮会的场次
             const guildBattles = multiBattleCache.filter(battle => {
-                const guildsData = battle.guilds || battle.data || {};
-                return guildsData[selectedMultiBattleGuild];
+                return getGuildDataByDisplayName(battle, selectedMultiBattleGuild) !== null;
             }).sort((a, b) => a.timestamp - b.timestamp);
             
             if (guildBattles.length === 0) {
@@ -8911,8 +8974,7 @@
             const isAvg = battleDisplayMode === 'avg';
             
             const calculateValue = (battle, metric) => {
-                const guildsData = battle.guilds || battle.data || {};
-                const players = guildsData[selectedMultiBattleGuild] || [];
+                const players = getGuildDataByDisplayName(battle, selectedMultiBattleGuild) || [];
                 if (players.length === 0) return 0;
                 // 特殊处理复活/化羽：需要同时计算'复活'和'化羽'两个字段
                 if (metric === '复活' || metric === '化羽') {
@@ -8924,8 +8986,7 @@
             };
             
             tbody.innerHTML = guildBattles.map(battle => {
-                const guildsData = battle.guilds || battle.data || {};
-                const players = guildsData[selectedMultiBattleGuild] || [];
+                const players = getGuildDataByDisplayName(battle, selectedMultiBattleGuild) || [];
                 const dateStr = new Date(battle.dateTime).toLocaleDateString('zh-CN', {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'});
                 
                 // 复活+化羽合并计算（calculateValue已处理合并逻辑）
@@ -9072,10 +9133,9 @@
                 return;
             }
             
-            // 计算该帮会出现的场次（不是所有场次）
+            // 计算该帮会出现的场次（使用显示名称匹配）
             const guildBattles = multiBattleCache.filter(battle => {
-                const guildsData = battle.guilds || battle.data || {};
-                return guildsData[selectedGuild];
+                return getGuildDataByDisplayName(battle, selectedGuild) !== null;
             });
             
             const totalBattlesForGuild = guildBattles.length;
@@ -9089,8 +9149,7 @@
             // 收集该帮会在所有场次中的成员
             const playerAttendance = {};
             guildBattles.forEach(battle => {
-                const guildsData = battle.guilds || battle.data || {};
-                const players = guildsData[selectedGuild] || [];
+                const players = getGuildDataByDisplayName(battle, selectedGuild) || [];
                 players.forEach(p => {
                     const name = p['玩家名字'];
                     if (!playerAttendance[name]) {
@@ -10698,6 +10757,34 @@
         // 初始化多维度看板
         function initMultiDashboard() {
             loadMultiBattleCacheForDashboard();
+            
+            // 从最近一场数据同步帮会名称到全局变量（如果全局变量是默认值）
+            if (multiBattleCache.length > 0) {
+                const latestBattle = multiBattleCache[multiBattleCache.length - 1];
+                const guildsData = latestBattle.guilds || latestBattle.data || {};
+                const dataGuildNames = Object.keys(guildsData);
+                
+                // 获取最近一场的帮会名称
+                const latestGuild1Name = latestBattle.guild1Name || dataGuildNames[0] || '帮会1';
+                const latestGuild2Name = latestBattle.guild2Name || dataGuildNames[1] || '帮会2';
+                
+                // 如果全局变量是默认值，则使用最近一场的名称
+                if (guild1Name === '帮会1' && latestGuild1Name !== '帮会1') {
+                    guild1Name = latestGuild1Name;
+                    localStorage.setItem('xg_nsh_guild1Name', guild1Name);
+                }
+                if (guild2Name === '帮会2' && latestGuild2Name !== '帮会2') {
+                    guild2Name = latestGuild2Name;
+                    localStorage.setItem('xg_nsh_guild2Name', guild2Name);
+                }
+                
+                // 更新UI显示
+                const guild1Display = document.getElementById('guild1NameDisplay');
+                const guild2Display = document.getElementById('guild2NameDisplay');
+                if (guild1Display) guild1Display.textContent = guild1Name;
+                if (guild2Display) guild2Display.textContent = guild2Name;
+            }
+            
             updateMultiDashboardDataSourceInfo();
             renderMultiDashboard();
         }
@@ -10711,8 +10798,15 @@
                 infoEl.textContent = '当前显示: 暂无多场数据';
                 infoEl.className = 'text-yellow-500 ml-2';
             } else {
-                const guildCount = [...new Set(multiBattleCache.flatMap(b => Object.keys(b.guilds || b.data || {})))].length;
-                infoEl.textContent = `共 ${multiBattleCache.length} 场数据，${guildCount} 个帮会`;
+                // 使用最近一场的帮会名称
+                const latestBattle = multiBattleCache[multiBattleCache.length - 1];
+                const guildsData = latestBattle.guilds || latestBattle.data || {};
+                const dataGuildNames = Object.keys(guildsData);
+                const latestGuild1Name = latestBattle.guild1Name || dataGuildNames[0] || '帮会1';
+                const latestGuild2Name = latestBattle.guild2Name || dataGuildNames[1] || '帮会2';
+                
+                const guildNames = new Set([latestGuild1Name, latestGuild2Name]);
+                infoEl.textContent = `共 ${multiBattleCache.length} 场数据，${guildNames.size} 个帮会`;
                 infoEl.className = 'text-jade ml-2';
             }
         }
@@ -10760,18 +10854,16 @@
             const entries = Object.entries(guildStats);
             if (entries.length === 0) return guildStats;
             
-            // 找到第一个帮会（按导入顺序的第一个）
+            // 使用最近一场的第一个帮会名称作为排序依据
             let firstGuildName = null;
-            for (const battle of multiBattleCache) {
-                const guildsData = battle.guilds || battle.data || {};
-                const guildNames = Object.keys(guildsData);
-                if (guildNames.length > 0) {
-                    firstGuildName = guildNames[0];
-                    break;
-                }
+            if (multiBattleCache.length > 0) {
+                const latestBattle = multiBattleCache[multiBattleCache.length - 1];
+                const latestGuildsData = latestBattle.guilds || latestBattle.data || {};
+                const latestGuildNames = Object.keys(latestGuildsData);
+                firstGuildName = latestBattle.guild1Name || latestGuildNames[0];
             }
             
-            if (!firstGuildName) return guildStats;
+            if (!firstGuildName || !guildStats[firstGuildName]) return guildStats;
             
             // 重新排序：帮会1放第一位
             const sortedEntries = [];
@@ -10792,17 +10884,6 @@
         function calculateAllGuildStats(useSingleBattleForFirstGuild = false) {
             const guildStats = {};
             
-            // 先确定帮会1的名称（从所有缓存数据中找到第一个出现的帮会）
-            let firstGuildName = null;
-            for (const battle of multiBattleCache) {
-                const guildsData = battle.guilds || battle.data || {};
-                const guildNames = Object.keys(guildsData);
-                if (guildNames.length > 0) {
-                    firstGuildName = guildNames[0];
-                    break;
-                }
-            }
-            
             // 获取最近一场数据（用于帮会1单场模式）
             let latestBattleData = null;
             if (useSingleBattleForFirstGuild && multiBattleCache.length > 0) {
@@ -10812,12 +10893,24 @@
             // 收集每个帮会的数据
             multiBattleCache.forEach((battle, battleIndex) => {
                 const guildsData = battle.guilds || battle.data || {};
+                const dataGuildNames = Object.keys(guildsData);
                 
-                Object.entries(guildsData).forEach(([guildName, players]) => {
+                Object.entries(guildsData).forEach(([rawGuildName, players]) => {
+                    // 确定该数据应该归属的显示名称（使用每场自己的自定义名称）
+                    let displayName;
+                    const index = dataGuildNames.indexOf(rawGuildName);
+                    if (index === 0 && battle.guild1Name) {
+                        displayName = battle.guild1Name;
+                    } else if (index === 1 && battle.guild2Name) {
+                        displayName = battle.guild2Name;
+                    } else {
+                        displayName = rawGuildName;
+                    }
+                    
                     // 初始化帮会数据（如果还没初始化）
-                    if (!guildStats[guildName]) {
-                        guildStats[guildName] = {
-                            name: guildName,
+                    if (!guildStats[displayName]) {
+                        guildStats[displayName] = {
+                            name: displayName,
                             totalPlayers: 0,
                             battleCount: 0,
                             totalBattleAttended: 0, // 总参加场次（实际出现的场次）
@@ -10842,39 +10935,43 @@
                     }
                     
                     // 总参加场次始终累计（用于显示）
-                    guildStats[guildName].totalBattleAttended++;
+                    guildStats[displayName].totalBattleAttended++;
                     
                     // 如果是帮会1且开启单场模式，只处理最近一场的数据
-                    if (useSingleBattleForFirstGuild && guildName === firstGuildName) {
-                        if (battle !== latestBattleData) {
+                    // 获取最近一场的第一个帮会名称作为判断依据
+                    if (useSingleBattleForFirstGuild && latestBattleData) {
+                        const latestGuildsData = latestBattleData.guilds || latestBattleData.data || {};
+                        const latestGuildNames = Object.keys(latestGuildsData);
+                        const firstGuildName = latestBattleData.guild1Name || latestGuildNames[0];
+                        if (displayName === firstGuildName && battle !== latestBattleData) {
                             return; // 跳过非最近场次的帮会1数据
                         }
                     }
                     
-                    guildStats[guildName].battleCount++;
-                    guildStats[guildName].totalPlayers += players.length;
+                    guildStats[displayName].battleCount++;
+                    guildStats[displayName].totalPlayers += players.length;
                     
                     players.forEach(p => {
-                        guildStats[guildName].playerSet.add(p['玩家名字']);
+                        guildStats[displayName].playerSet.add(p['玩家名字']);
                         // 核心战斗数据
-                        guildStats[guildName].totalDamage += parseFloat(p['对玩家伤害']) || 0;
-                        guildStats[guildName].totalKills += parseFloat(p['击败']) || 0;
-                        guildStats[guildName].totalHeal += parseFloat(p['治疗值']) || 0;
-                        guildStats[guildName].totalBuilding += parseFloat(p['对建筑伤害']) || 0;
-                        guildStats[guildName].totalAssist += parseFloat(p['助攻']) || 0;
-                        guildStats[guildName].totalTakenDamage += parseFloat(p['承受伤害']) || 0;
+                        guildStats[displayName].totalDamage += parseFloat(p['对玩家伤害']) || 0;
+                        guildStats[displayName].totalKills += parseFloat(p['击败']) || 0;
+                        guildStats[displayName].totalHeal += parseFloat(p['治疗值']) || 0;
+                        guildStats[displayName].totalBuilding += parseFloat(p['对建筑伤害']) || 0;
+                        guildStats[displayName].totalAssist += parseFloat(p['助攻']) || 0;
+                        guildStats[displayName].totalTakenDamage += parseFloat(p['承受伤害']) || 0;
                         // 扩展维度数据
-                        guildStats[guildName].totalDeaths += parseFloat(p['重伤']) || 0;
-                        guildStats[guildName].totalResurrect += parseFloat(p['复活']) || 0;
-                        guildStats[guildName].totalHuayu += parseFloat(p['化羽']) || 0;
-                        guildStats[guildName].totalFengu += parseFloat(p['焚骨']) || 0;
-                        guildStats[guildName].totalZiyuan += parseFloat(p['资源']) || 0;
-                        guildStats[guildName].totalRenShang += parseFloat(p['人伤卸甲']) || 0;
-                        guildStats[guildName].totalPoTa += parseFloat(p['破塔卸甲']) || 0;
+                        guildStats[displayName].totalDeaths += parseFloat(p['重伤']) || 0;
+                        guildStats[displayName].totalResurrect += parseFloat(p['复活']) || 0;
+                        guildStats[displayName].totalHuayu += parseFloat(p['化羽']) || 0;
+                        guildStats[displayName].totalFengu += parseFloat(p['焚骨']) || 0;
+                        guildStats[displayName].totalZiyuan += parseFloat(p['资源']) || 0;
+                        guildStats[displayName].totalRenShang += parseFloat(p['人伤卸甲']) || 0;
+                        guildStats[displayName].totalPoTa += parseFloat(p['破塔卸甲']) || 0;
                         
                         // 统计职业
                         const prof = p['职业'] || '未知';
-                        guildStats[guildName].professionCount[prof] = (guildStats[guildName].professionCount[prof] || 0) + 1;
+                        guildStats[displayName].professionCount[prof] = (guildStats[displayName].professionCount[prof] || 0) + 1;
                     });
                 });
             });
@@ -10969,17 +11066,24 @@
             const colors = ['#00d4aa', '#c9a227', '#2E86DE', '#FF4757', '#9b59b6', '#e67e22'];
 
             container.innerHTML = sortedBattles.map((battle, index) => {
+                // 获取原始数据
                 const guildsData = battle.guilds || battle.data || {};
-                const guildNames = Object.keys(guildsData);
+                const dataGuildNames = Object.keys(guildsData);
+                
+                // 使用每场自己保存的帮会名称（从一键导入带入）
+                let guild1, guild2;
+                if (battle.guild1Name && battle.guild2Name) {
+                    guild1 = battle.guild1Name;
+                    guild2 = battle.guild2Name;
+                } else {
+                    guild1 = dataGuildNames[0] || '未知帮会';
+                    guild2 = dataGuildNames[1] || '未知帮会';
+                }
 
                 // 格式化时间显示
                 const date = new Date(battle.dateTime);
                 const dateStr = date.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' });
                 const timeStr = date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
-
-                // 获取两个帮会名称（如果只有一个则显示"未知"）
-                const guild1 = guildNames[0] || '未知帮会';
-                const guild2 = guildNames[1] || '未知帮会';
                 const color1 = colors[0 % colors.length];
                 const color2 = colors[1 % colors.length];
 
@@ -11194,10 +11298,15 @@
             const currentBattle = multiBattleCache[multiBattleCache.length - 1];
             const currentGuildsData = currentBattle.guilds || currentBattle.data || {};
             
+            // 获取当前场次的原始帮会键名和自定义名称
+            const dataGuildNames = Object.keys(currentGuildsData);
+            const currentGuild1Name = currentBattle.guild1Name || dataGuildNames[0] || '帮会1';
+            const currentGuild2Name = currentBattle.guild2Name || dataGuildNames[1] || '帮会2';
+            
             // 按时间排序的所有场次（用于查找缺失帮会的最近数据）
             const sortedBattles = [...multiBattleCache].sort((a, b) => b.timestamp - a.timestamp);
             
-            // 收集所有出现过的帮会名称
+            // 收集所有出现过的帮会名称（原始键名）
             const allGuildNames = new Set();
             multiBattleCache.forEach(battle => {
                 const guildsData = battle.guilds || battle.data || {};
@@ -11228,6 +11337,16 @@
                 }
                 
                 if (sourcePlayers) {
+                    // 确定显示名称：根据原始键名匹配当前场次的自定义名称
+                    let displayName;
+                    if (guildName === dataGuildNames[0] || guildName === currentGuild1Name) {
+                        displayName = currentGuild1Name;
+                    } else if (guildName === dataGuildNames[1] || guildName === currentGuild2Name) {
+                        displayName = currentGuild2Name;
+                    } else {
+                        displayName = guildName;
+                    }
+                    
                     // 计算12维度的总数数据
                     const totalDamage = sourcePlayers.reduce((sum, p) => sum + (parseFloat(p['对玩家伤害']) || 0), 0);
                     const totalKills = sourcePlayers.reduce((sum, p) => sum + (parseFloat(p['击败']) || 0), 0);
@@ -11243,8 +11362,8 @@
                     const totalRenShang = sourcePlayers.reduce((sum, p) => sum + (parseFloat(p['人伤卸甲']) || 0), 0);
                     const totalPoTa = sourcePlayers.reduce((sum, p) => sum + (parseFloat(p['破塔卸甲']) || 0), 0);
                     
-                    stats[guildName] = {
-                        name: guildName,
+                    stats[displayName] = {
+                        name: displayName,
                         totalDamage,
                         totalKills,
                         totalHeal,
@@ -11277,6 +11396,11 @@
             const currentBattle = multiBattleCache[multiBattleCache.length - 1];
             const currentGuildsData = currentBattle.guilds || currentBattle.data || {};
             
+            // 获取当前场次的原始帮会键名和自定义名称
+            const dataGuildNames = Object.keys(currentGuildsData);
+            const currentGuild1Name = currentBattle.guild1Name || dataGuildNames[0] || '帮会1';
+            const currentGuild2Name = currentBattle.guild2Name || dataGuildNames[1] || '帮会2';
+            
             // 按时间排序的所有场次（用于查找缺失帮会的最近数据）
             const sortedBattles = [...multiBattleCache].sort((a, b) => b.timestamp - a.timestamp);
             
@@ -11284,34 +11408,70 @@
             const guildHistory = {};
             multiBattleCache.forEach(battle => {
                 const guildsData = battle.guilds || battle.data || {};
-                Object.entries(guildsData).forEach(([guildName, players]) => {
-                    if (!guildHistory[guildName]) {
-                        guildHistory[guildName] = { battles: [], totalBattles: 0 };
+                Object.entries(guildsData).forEach(([rawGuildName, players]) => {
+                    // 根据当前场次的名称映射来确定历史数据的显示名称
+                    let displayName;
+                    const battleGuildNames = Object.keys(guildsData);
+                    if (rawGuildName === battleGuildNames[0] || rawGuildName === battle.guild1Name) {
+                        displayName = battle.guild1Name || battleGuildNames[0] || rawGuildName;
+                    } else if (rawGuildName === battleGuildNames[1] || rawGuildName === battle.guild2Name) {
+                        displayName = battle.guild2Name || battleGuildNames[1] || rawGuildName;
+                    } else {
+                        displayName = rawGuildName;
                     }
-                    guildHistory[guildName].battles.push({ battle, players });
-                    guildHistory[guildName].totalBattles++;
+                    
+                    if (!guildHistory[displayName]) {
+                        guildHistory[displayName] = { battles: [], totalBattles: 0 };
+                    }
+                    guildHistory[displayName].battles.push({ battle, players, rawGuildName });
+                    guildHistory[displayName].totalBattles++;
                 });
             });
             
             const stats = {};
             
             // 为每个帮会确定数据来源并计算场均
-            Object.keys(guildHistory).forEach(guildName => {
+            Object.keys(guildHistory).forEach(displayName => {
                 let sourcePlayers = null;
                 let battleCount = 0;
+                let sourceRawGuildName = null;
                 
-                // 1. 优先检查当前场次是否有该帮会
-                if (currentGuildsData[guildName]) {
-                    sourcePlayers = currentGuildsData[guildName];
-                    // 计算该帮会的总场次（用于场均）
-                    battleCount = guildHistory[guildName].totalBattles;
+                // 1. 优先检查当前场次是否有该帮会（通过名称匹配）
+                // 检查当前场次的 guild1Name 或 guild2Name 是否匹配 displayName
+                if (currentGuild1Name === displayName && dataGuildNames[0]) {
+                    sourcePlayers = currentGuildsData[dataGuildNames[0]];
+                    sourceRawGuildName = dataGuildNames[0];
+                    battleCount = guildHistory[displayName].totalBattles;
+                } else if (currentGuild2Name === displayName && dataGuildNames[1]) {
+                    sourcePlayers = currentGuildsData[dataGuildNames[1]];
+                    sourceRawGuildName = dataGuildNames[1];
+                    battleCount = guildHistory[displayName].totalBattles;
+                } else if (currentGuildsData[displayName]) {
+                    // 直接匹配原始键名
+                    sourcePlayers = currentGuildsData[displayName];
+                    sourceRawGuildName = displayName;
+                    battleCount = guildHistory[displayName].totalBattles;
                 } else {
                     // 2. 当前场次没有，查找该帮会最近一场的数据
                     for (const battle of sortedBattles) {
                         const guildsData = battle.guilds || battle.data || {};
-                        if (guildsData[guildName]) {
-                            sourcePlayers = guildsData[guildName];
-                            battleCount = guildHistory[guildName].totalBattles;
+                        const battleGuildNames = Object.keys(guildsData);
+                        
+                        // 尝试匹配该场次的自定义名称或原始键名
+                        if (battle.guild1Name === displayName && battleGuildNames[0]) {
+                            sourcePlayers = guildsData[battleGuildNames[0]];
+                            sourceRawGuildName = battleGuildNames[0];
+                            battleCount = guildHistory[displayName].totalBattles;
+                            break;
+                        } else if (battle.guild2Name === displayName && battleGuildNames[1]) {
+                            sourcePlayers = guildsData[battleGuildNames[1]];
+                            sourceRawGuildName = battleGuildNames[1];
+                            battleCount = guildHistory[displayName].totalBattles;
+                            break;
+                        } else if (guildsData[displayName]) {
+                            sourcePlayers = guildsData[displayName];
+                            sourceRawGuildName = displayName;
+                            battleCount = guildHistory[displayName].totalBattles;
                             break;
                         }
                     }
@@ -11334,8 +11494,8 @@
                     const totalRenShang = sourcePlayers.reduce((sum, p) => sum + (parseFloat(p['人伤卸甲']) || 0), 0);
                     const totalPoTa = sourcePlayers.reduce((sum, p) => sum + (parseFloat(p['破塔卸甲']) || 0), 0);
                     
-                    stats[guildName] = {
-                        name: guildName,
+                    stats[displayName] = {
+                        name: displayName,
                         // 场均数据 = 当前显示数据的总数 / 该帮会历史总场次
                         avgDamage: battleCount > 0 ? Math.round(totalDamage / battleCount) : 0,
                         avgKills: battleCount > 0 ? Math.round(totalKills / battleCount * 10) / 10 : 0,
@@ -11717,15 +11877,34 @@
             const container = document.getElementById('professionDistributionContainer');
             if (!container) return;
             
+            // 获取当前场次的自定义名称映射
+            const currentBattle = multiBattleCache.length > 0 ? multiBattleCache[multiBattleCache.length - 1] : null;
+            const currentGuildsData = currentBattle ? (currentBattle.guilds || currentBattle.data || {}) : {};
+            const currentDataGuildNames = Object.keys(currentGuildsData);
+            const currentGuild1Name = currentBattle ? (currentBattle.guild1Name || currentDataGuildNames[0] || '帮会1') : '帮会1';
+            const currentGuild2Name = currentBattle ? (currentBattle.guild2Name || currentDataGuildNames[1] || '帮会2') : '帮会2';
+            
             // 收集每个帮会在每场中的职业数据（参考updateCharts逻辑）
-            const guildProfessions = {}; // {guildName: {prof: [count1, count2, ...], ...}}
+            const guildProfessions = {}; // {displayName: {prof: [count1, count2, ...], ...}}
             const allProfessions = new Set();
             
             multiBattleCache.forEach(battle => {
                 const guildsData = battle.guilds || battle.data || {};
-                Object.entries(guildsData).forEach(([guildName, players]) => {
-                    if (!guildProfessions[guildName]) {
-                        guildProfessions[guildName] = {};
+                const battleGuildNames = Object.keys(guildsData);
+                
+                Object.entries(guildsData).forEach(([rawGuildName, players]) => {
+                    // 确定显示名称
+                    let displayName;
+                    if (rawGuildName === battleGuildNames[0] || rawGuildName === battle.guild1Name) {
+                        displayName = battle.guild1Name || battleGuildNames[0] || rawGuildName;
+                    } else if (rawGuildName === battleGuildNames[1] || rawGuildName === battle.guild2Name) {
+                        displayName = battle.guild2Name || battleGuildNames[1] || rawGuildName;
+                    } else {
+                        displayName = rawGuildName;
+                    }
+                    
+                    if (!guildProfessions[displayName]) {
+                        guildProfessions[displayName] = {};
                     }
                     
                     // 统计当前场次的职业分布（使用'职业'字段，参考getProfessionDistribution）
@@ -11738,21 +11917,21 @@
                     
                     // 将本场数据添加到对应帮会的数组中
                     Object.entries(battleProfessions).forEach(([prof, count]) => {
-                        if (!guildProfessions[guildName][prof]) {
-                            guildProfessions[guildName][prof] = [];
+                        if (!guildProfessions[displayName][prof]) {
+                            guildProfessions[displayName][prof] = [];
                         }
-                        guildProfessions[guildName][prof].push(count);
+                        guildProfessions[displayName][prof].push(count);
                     });
                     
                     // 对于本场没有的职业，也要记录为0，确保平均值计算正确
                     allProfessions.forEach(prof => {
                         if (!battleProfessions[prof]) {
-                            if (!guildProfessions[guildName][prof]) {
-                                guildProfessions[guildName][prof] = [];
+                            if (!guildProfessions[displayName][prof]) {
+                                guildProfessions[displayName][prof] = [];
                             }
                             // 只有当该帮会已经出现过这个职业时才补0
-                            if (guildProfessions[guildName][prof].length > 0) {
-                                guildProfessions[guildName][prof].push(0);
+                            if (guildProfessions[displayName][prof].length > 0) {
+                                guildProfessions[displayName][prof].push(0);
                             }
                         }
                     });
