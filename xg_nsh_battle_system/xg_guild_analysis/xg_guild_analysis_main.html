@@ -2775,7 +2775,9 @@
             if (inGuild1) return guild1Name;
             const inGuild2 = guild2Data.some(p => p['玩家名字'] === playerName);
             if (inGuild2) return guild2Name;
-            return playerName['帮会'] || '未知';
+            // 从allPlayers中查找该玩家的帮会信息
+            const player = allPlayers.find(p => p['玩家名字'] === playerName);
+            return player?.['帮会'] || '未知';
         }
 
         // 更新排行榜表格
@@ -4983,7 +4985,10 @@
 
         // 更新玩家分析
         function updatePlayerAnalysis() {
-            document.getElementById('analysisSection').style.display = 'block';
+            const analysisSection = document.getElementById('analysisSection');
+            if (analysisSection) {
+                analysisSection.style.display = 'block';
+            }
 
             const profession = currentPlayer['职业'];
             const playerDamage = parseInt(currentPlayer['对玩家伤害']) || 0;
@@ -9127,11 +9132,8 @@
                 allByProfession[prof].push(p);
             });
 
-            // 获取帮会一成员
-            const guild1Members = allPlayers.filter(p => {
-                const guildName = p['帮会'] || getPlayerGuildName(p['玩家名字']);
-                return guildName === guild1Name;
-            });
+            // 获取帮会一成员（直接使用guild1Data，而不是通过名称筛选）
+            const guild1Members = guild1Data || [];
 
             const result = {};
 
@@ -9167,10 +9169,10 @@
                     // 取后20%的人
                     const bottomPlayers = sortedByMetric.slice(0, targetBottomCount);
                     
-                    // 筛选出帮会一的成员
+                    // 筛选出帮会一的成员（直接检查是否在guild1Members中）
+                    const guild1MemberNames = new Set(guild1Members.map(m => m['玩家名字']));
                     metricBottomPlayers[metricKey] = bottomPlayers.filter(p => {
-                        const guildName = p.player['帮会'] || getPlayerGuildName(p.name);
-                        return guildName === guild1Name;
+                        return guild1MemberNames.has(p.name);
                     }).map(p => p.name);
                 });
 
@@ -9222,11 +9224,8 @@
                 allByProfession[prof].push(p);
             });
 
-            // 获取帮会二成员
-            const guild2Members = allPlayers.filter(p => {
-                const guildName = p['帮会'] || getPlayerGuildName(p['玩家名字']);
-                return guildName === guild2Name;
-            });
+            // 获取帮会二成员（直接使用guild2Data，而不是通过名称筛选）
+            const guild2Members = guild2Data || [];
 
             const result = {};
 
@@ -9262,10 +9261,10 @@
                     // 取前20%的人
                     const topPlayers = sortedByMetric.slice(0, targetTopCount);
                     
-                    // 筛选出帮会二的成员
+                    // 筛选出帮会二的成员（直接检查是否在guild2Members中）
+                    const guild2MemberNames = new Set(guild2Members.map(m => m['玩家名字']));
                     metricTopPlayers[metricKey] = topPlayers.filter(p => {
-                        const guildName = p.player['帮会'] || getPlayerGuildName(p.name);
-                        return guildName === guild2Name;
+                        return guild2MemberNames.has(p.name);
                     }).map(p => p.name);
                 });
 
