@@ -399,9 +399,6 @@
                     <button onclick="clearData()" class="action-btn danger-btn px-4 py-2 text-sm rounded-sm">
                         <i class="fas fa-trash mr-2"></i>清除旧数据
                     </button>
-                    <a href="../xg_guild_analysis/xg_guild_analysis_main.html" class="action-btn px-4 py-2 text-sm rounded-sm inline-flex items-center">
-                        <i class="fas fa-chart-line mr-2"></i>帮会对比分析
-                    </a>
                 </div>
             </div>
         </div>
@@ -729,25 +726,12 @@
                 const leagueData = calculateLeagueData(result);
                 localStorage.setItem('leagueBattleData', JSON.stringify(leagueData));
 
-                showStatus('数据导入成功！请选择要访问的模块：');
+                showStatus('数据导入成功！正在跳转...');
 
-                // 显示跳转选项按钮
-                let jumpButtons = document.getElementById('jumpButtons');
-                
-                if (jumpButtons) {
-                    jumpButtons.remove();
-                }
-                
-                jumpButtons = document.createElement('div');
-                jumpButtons.id = 'jumpButtons';
-                jumpButtons.className = 'mt-4 flex flex-wrap gap-3 justify-center';
-                jumpButtons.innerHTML = `
-                    <a href="../xg_guild_analysis/xg_guild_analysis_main.html" class="jump-btn">
-                        <i class="fas fa-chart-line mr-2"></i>帮会对比分析
-                    </a>
-                `;
-                
-                statusIndicator.parentNode.insertBefore(jumpButtons, statusIndicator.nextSibling);
+                // 直接跳转到帮会对比分析页面
+                setTimeout(() => {
+                    window.location.href = '../xg_guild_analysis/xg_guild_analysis_main.html';
+                }, 500);
 
                 return true;
             } catch (error) {
