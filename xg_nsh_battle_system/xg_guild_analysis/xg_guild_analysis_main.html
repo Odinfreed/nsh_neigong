@@ -2051,7 +2051,7 @@
                                         </div>
                                         <p class="text-xs text-gray-500 mt-2">
                                             <i class="fas fa-info-circle mr-1"></i>
-                                            导入时请填写本场帮战的时间和双方帮会名称。系统将自动缓存最多5场数据。
+                                            导入时请填写本场帮战的时间和双方帮会名称。系统不限制缓存场次数量。
                                         </p>
                                     </div>
                                     
@@ -2059,7 +2059,7 @@
                                     <div class="mb-4">
                                         <div class="flex items-center justify-between mb-2">
                                             <label class="block text-sm font-semibold">已缓存场次</label>
-                                            <span id="cachedBattleCount" class="text-xs text-gray-400">0/5 场</span>
+                                            <span id="cachedBattleCount" class="text-xs text-gray-400">0 场</span>
                                         </div>
                                         <div id="multiBattleList" class="space-y-2 max-h-48 overflow-y-auto">
                                             <div class="text-center text-gray-500 py-4 text-sm">
@@ -5503,6 +5503,15 @@
         function initMultiBattleAnalysis() {
             if (!currentPlayer) return;
             
+            // 检查 PlayerMultiAnalysis 是否已加载
+            if (typeof PlayerMultiAnalysis === 'undefined') {
+                console.warn('PlayerMultiAnalysis 模块未加载，多场数据对比功能不可用');
+                // 隐藏多场数据相关UI
+                const multiSection = document.getElementById('multiBattleSection');
+                if (multiSection) multiSection.style.display = 'none';
+                return;
+            }
+            
             const playerName = currentPlayer['玩家名字'];
             
             // 显示参战率（按游戏ID统计，不区分职业）
@@ -8186,9 +8195,8 @@
 
         // ==================== v4.0.0 多场数据管理功能 ====================
         
-        // 多场数据缓存 (最多5场)
+        // 多场数据缓存 (不限制场次)
         let multiBattleCache = [];
-        const MAX_BATTLE_CACHE = 5;
         
         // 多场数据图表实例
         let multiBattleCharts = {};
@@ -8288,11 +8296,8 @@
                         multiBattleCache.push(battleSession);
                     }
                     
-                    // 按时间排序，只保留最新的5场
+                    // 按时间排序
                     multiBattleCache.sort((a, b) => b.timestamp - a.timestamp);
-                    if (multiBattleCache.length > MAX_BATTLE_CACHE) {
-                        multiBattleCache = multiBattleCache.slice(0, MAX_BATTLE_CACHE);
-                    }
                     
                     // 保存缓存
                     saveMultiBattleCache();
@@ -8325,7 +8330,7 @@
             const countEl = document.getElementById('cachedBattleCount');
             
             if (countEl) {
-                countEl.textContent = `${multiBattleCache.length}/${MAX_BATTLE_CACHE} 场`;
+                countEl.textContent = `${multiBattleCache.length} 场`;
             }
             
             if (!container) return;
