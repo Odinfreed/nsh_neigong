@@ -191,6 +191,12 @@
             box-shadow: 0 0 10px rgba(0, 212, 170, 0.1);
         }
         
+        /* 日期选择器日历图标改为白色 */
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+        
         .status-box {
             background: rgba(0, 0, 0, 0.4);
             border: 1px solid var(--ink-gray);
@@ -245,6 +251,10 @@
             border-color: var(--jade-dim);
             background: rgba(0, 212, 170, 0.05);
         }
+        .battle-item.selected {
+            border-color: var(--jade);
+            background: rgba(0, 212, 170, 0.15);
+        }
         .battle-item.active {
             border-color: var(--jade);
             background: rgba(0, 212, 170, 0.1);
@@ -252,9 +262,52 @@
         
         /* 滚动条样式 */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: var(--ink-dark); }
-        ::-webkit-scrollbar-thumb { background: var(--ink-gray); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--jade-dim); }
+        ::-webkit-scrollbar-track { background: var(--ink-dark); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: var(--jade-dim); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--jade); }
+        
+        /* 列表容器滚动条 */
+        #multiBattleList::-webkit-scrollbar {
+            width: 4px;
+        }
+        #multiBattleList::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 2px;
+        }
+        #multiBattleList::-webkit-scrollbar-thumb {
+            background: var(--jade-dim);
+            border-radius: 2px;
+        }
+        #multiBattleList::-webkit-scrollbar-thumb:hover {
+            background: var(--jade);
+        }
+        
+        /* 选择框样式 */
+        .battle-checkbox {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 1px solid var(--ink-gray);
+            border-radius: 3px;
+            background: rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        .battle-checkbox:checked {
+            background: var(--jade);
+            border-color: var(--jade);
+        }
+        .battle-checkbox:checked::after {
+            content: '\2713';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #000;
+            font-size: 12px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body class="p-6 md:p-8">
@@ -275,29 +328,29 @@
             <h1 class="main-title text-2xl md:text-3xl mb-2">帮会数据一键导入</h1>
             <div class="divider text-sm mb-2 max-w-md mx-auto"><i class="fas fa-yin-yang"></i></div>
             <p class="subtitle text-sm">支持导入多场帮战数据，自动整理供后续分析</p>
-            <p class="text-xs text-jade mt-2"><i class="fas fa-star mr-1"></i>v4.0.0 多场数据管理</p>
+            <p class="text-xs text-jade mt-2"><i class="fas fa-star mr-1"></i>v4.0.0 多场数据管理（无限制存储，最多选择10场分析）</p>
         </header>
 
         <!-- v4.0.0: 多场数据导入管理 -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6 items-stretch">
             <!-- 左侧：多场数据列表 -->
-            <div class="lg:col-span-1">
-                <div class="main-card rounded-sm p-4 h-full">
+            <div class="lg:col-span-1 flex">
+                <div class="main-card rounded-sm p-4 h-full flex flex-col" style="min-height: 420px;">
                     <div class="corner-decoration top-left"></div>
                     <div class="corner-decoration top-right"></div>
                     <div class="corner-decoration bottom-left"></div>
                     <div class="corner-decoration bottom-right"></div>
                     
-                    <div class="relative">
+                    <div class="relative flex flex-col flex-1">
                         <div class="flex items-center justify-between mb-3">
                             <h3 class="text-base font-medium text-gray-300 flex items-center">
                                 <i class="fas fa-layer-group mr-2 text-jade"></i>
                                 多场数据列表
                             </h3>
-                            <span id="battleCountBadge" class="text-xs bg-jade/20 text-jade px-2 py-0.5 rounded">0/5场</span>
+                            <span id="battleCountBadge" class="text-xs bg-jade/20 text-jade px-2 py-0.5 rounded">0 场</span>
                         </div>
                         
-                        <div id="multiBattleList" class="space-y-2 max-h-[350px] overflow-y-auto">
+                        <div id="multiBattleList" class="space-y-2 overflow-y-auto">
                             <div class="text-center text-gray-500 py-6 text-sm">
                                 <i class="fas fa-inbox text-xl mb-2 block"></i>
                                 暂无导入数据
@@ -305,8 +358,15 @@
                         </div>
                         
                         <div class="mt-3 pt-3 border-t border-gray-800 space-y-2">
+                            <div id="selectionControls" class="flex items-center justify-between text-xs text-gray-500 mb-2 hidden">
+                                <span>勾选 <span id="selectedCount" class="text-jade">0</span> 场导入</span>
+                                <button onclick="toggleSelectAll()" class="text-jade hover:underline">全选/取消</button>
+                            </div>
+                            <div id="autoSelectHint" class="text-xs text-gray-500 mb-2">
+                                <i class="fas fa-info-circle mr-1"></i>点击列表选择要导入的场次
+                            </div>
                             <button onclick="loadSelectedToAnalysis()" id="loadToAnalysisBtn" class="primary-btn w-full px-3 py-2 text-sm rounded-sm" disabled>
-                                <i class="fas fa-file-import mr-2"></i>导入选中场次到分析系统
+                                <i class="fas fa-file-import mr-2"></i>导入选中到分析系统
                             </button>
                             <button onclick="clearAllBattleData()" class="action-btn danger-btn w-full px-3 py-2 text-sm rounded-sm">
                                 <i class="fas fa-trash-alt mr-2"></i>清空所有场次
@@ -317,26 +377,64 @@
             </div>
             
             <!-- 右侧：导入区域 -->
-            <div class="lg:col-span-2">
-                <div class="main-card rounded-sm p-6">
+            <div class="lg:col-span-3 flex">
+                <div class="main-card rounded-sm p-6 h-full flex flex-col w-full" style="min-height: 420px;">
                     <div class="corner-decoration top-left"></div>
                     <div class="corner-decoration top-right"></div>
                     <div class="corner-decoration bottom-left"></div>
                     <div class="corner-decoration bottom-right"></div>
                     
-                    <div class="relative">
+                    <div class="relative h-full flex flex-col">
                         <div class="text-center mb-4">
                             <div class="inline-flex items-center justify-center w-12 h-12 border border-gray-700 rounded-sm mb-2">
                                 <i class="fas fa-file-csv text-xl text-gray-500"></i>
                             </div>
                             <h2 class="text-base font-medium text-gray-300 mb-1">导入本场帮战数据</h2>
-                            <p class="text-gray-500 text-xs">填写信息后选择CSV文件导入</p>
+                            <p class="text-gray-500 text-xs">选择CSV文件自动识别帮会名称</p>
                         </div>
 
-                        <!-- 帮战信息输入 -->
-                        <div class="input-section rounded-sm p-3 mb-4">
+                        <!-- 文件选择区域（移到上方） -->
+                        <div class="upload-zone rounded-sm p-6 mb-4 text-center" id="uploadZone">
+                            <input type="file" id="csvFileInput" accept=".csv" class="hidden-file-input">
+                            <i class="fas fa-cloud-upload-alt text-3xl text-gray-600 mb-2"></i>
+                            <p class="text-gray-400 mb-1 text-sm">点击或拖拽CSV文件到此处</p>
+                            <p class="text-gray-600 text-xs">支持标准帮战CSV格式，自动识别帮会名称</p>
+                        </div>
+
+                        <!-- 状态指示器 -->
+                        <div id="statusIndicator" class="hidden mb-4">
+                            <div class="status-box rounded-sm px-3 py-2 text-center">
+                                <i class="fas fa-spinner fa-spin text-jade mr-2"></i>
+                                <span id="statusText" class="text-gray-400 text-sm">正在处理文件...</span>
+                            </div>
+                        </div>
+
+                        <!-- 解析结果显示（动态显示） -->
+                        <div id="parseResult" class="hidden mb-4">
+                            <div class="input-section rounded-sm p-3">
+                                <h3 class="text-xs font-medium text-jade mb-2 flex items-center">
+                                    <i class="fas fa-check-circle mr-2"></i>文件解析成功
+                                </h3>
+                                <div class="grid grid-cols-2 gap-3 mb-3">
+                                    <div class="bg-black/30 rounded p-2">
+                                        <span class="text-xs text-gray-500 block">识别到的帮会</span>
+                                        <span id="detectedGuild1" class="text-sm text-gray-300">-</span>
+                                    </div>
+                                    <div class="bg-black/30 rounded p-2">
+                                        <span class="text-xs text-gray-500 block">识别到的帮会</span>
+                                        <span id="detectedGuild2" class="text-sm text-gray-300">-</span>
+                                    </div>
+                                </div>
+                                <p id="manualInputHint" class="text-xs text-yellow-500 hidden">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>未识别到帮会名称，请手动输入
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- 帮战信息输入（移到下方，仅在需要时显示） -->
+                        <div id="battleInfoSection" class="input-section rounded-sm p-3 mb-4 hidden">
                             <h3 class="text-xs font-medium text-gray-400 mb-2 flex items-center">
-                                <i class="fas fa-info-circle mr-2"></i>本场帮战信息
+                                <i class="fas fa-edit mr-2"></i>本场帮战信息
                             </h3>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                                 <div>
@@ -354,40 +452,24 @@
                             </div>
                         </div>
 
-                        <!-- 文件选择区域 -->
-                        <div class="upload-zone rounded-sm p-6 mb-4 text-center" id="uploadZone">
-                            <input type="file" id="csvFileInput" accept=".csv" class="hidden-file-input">
-                            <i class="fas fa-cloud-upload-alt text-3xl text-gray-600 mb-2"></i>
-                            <p class="text-gray-400 mb-1 text-sm">点击或拖拽CSV文件到此处</p>
-                            <p class="text-gray-600 text-xs">支持标准帮战CSV格式</p>
-                        </div>
-
                         <!-- 导入按钮 -->
-                        <div class="text-center mb-3">
-                            <button id="importBtn" class="primary-btn text-sm font-medium py-2 px-6 rounded-sm inline-flex items-center">
+                        <div class="text-center mt-auto pt-4">
+                            <button id="importBtn" class="primary-btn text-sm font-medium py-2 px-6 rounded-sm inline-flex items-center" disabled>
                                 <i class="fas fa-plus mr-2"></i>添加本场数据
                             </button>
                         </div>
-
-                        <!-- 状态指示器 -->
-                        <div id="statusIndicator" class="hidden">
-                            <div class="status-box rounded-sm px-3 py-2 text-center">
-                                <i class="fas fa-spinner fa-spin text-jade mr-2"></i>
-                                <span id="statusText" class="text-gray-400 text-sm">正在处理文件...</span>
-                            </div>
+                        
+                        <!-- 快捷操作 -->
+                        <div class="mt-4 pt-4 border-t border-gray-800 grid grid-cols-2 gap-2">
+                            <button onclick="exportAllBattleData()" class="action-btn px-2 py-2 text-xs rounded-sm whitespace-nowrap">
+                                <i class="fas fa-download mr-1"></i>导出备份
+                            </button>
+                            <button onclick="document.getElementById('importAllFileInput').click()" class="action-btn px-2 py-2 text-xs rounded-sm whitespace-nowrap">
+                                <i class="fas fa-upload mr-1"></i>导入备份
+                            </button>
+                            <input type="file" id="importAllFileInput" accept=".json" class="hidden" onchange="importAllBattleData(event)">
                         </div>
                     </div>
-                </div>
-                
-                <!-- 快捷操作 -->
-                <div class="mt-4 flex gap-2">
-                    <button onclick="exportAllBattleData()" class="action-btn flex-1 px-3 py-2 text-xs rounded-sm">
-                        <i class="fas fa-download mr-1"></i>导出全部数据备份
-                    </button>
-                    <button onclick="document.getElementById('importAllFileInput').click()" class="action-btn flex-1 px-3 py-2 text-xs rounded-sm">
-                        <i class="fas fa-upload mr-1"></i>导入备份数据
-                    </button>
-                    <input type="file" id="importAllFileInput" accept=".json" class="hidden" onchange="importAllBattleData(event)">
                 </div>
             </div>
         </div>
@@ -436,16 +518,18 @@
         // ==================== v4.0.0 多场数据管理 ====================
         
         const MULTI_BATTLE_KEY = 'multiBattleCache_v4';
-        const MAX_BATTLE_COUNT = 5;
+        const MAX_BATTLE_SELECT = 10; // 最多选择10场进行分析
         let multiBattleData = [];
-        let selectedBattleId = null;
+        let selectedBattleIds = new Set(); // 改为多选
         let processedData = {};
+        let parsedFileInfo = null; // 存储解析后的文件信息
         const DEFAULT_FOLDER = 'C:/Users/31352/AppData/LocalLow/netease/逆水寒手游桌面版/';
 
         // DOM元素
         let importBtn, csvFileInput, statusIndicator, statusText, uploadZone;
         let defaultFolderInput, saveFolderBtn, openFolderBtn;
         let battleDateTimeInput, guild1NameInput, guild2NameInput;
+        let parseResult, detectedGuild1, detectedGuild2, manualInputHint, battleInfoSection;
 
         // 初始化
         document.addEventListener('DOMContentLoaded', () => {
@@ -461,6 +545,11 @@
             battleDateTimeInput = document.getElementById('battleDateTime');
             guild1NameInput = document.getElementById('guild1NameInput');
             guild2NameInput = document.getElementById('guild2NameInput');
+            parseResult = document.getElementById('parseResult');
+            detectedGuild1 = document.getElementById('detectedGuild1');
+            detectedGuild2 = document.getElementById('detectedGuild2');
+            manualInputHint = document.getElementById('manualInputHint');
+            battleInfoSection = document.getElementById('battleInfoSection');
 
             // 加载多场数据缓存
             loadMultiBattleData();
@@ -490,7 +579,7 @@
                 }
             });
 
-            importBtn.addEventListener('click', () => csvFileInput.click());
+            importBtn.addEventListener('click', handleImportClick);
             
             uploadZone.addEventListener('click', (e) => {
                 if (e.target !== csvFileInput) csvFileInput.click();
@@ -507,7 +596,7 @@
                 uploadZone.classList.remove('dragover');
                 const files = e.dataTransfer.files;
                 if (files.length > 0 && files[0].name.endsWith('.csv')) {
-                    await handleFileImport(files[0]);
+                    await handleFileParse(files[0]);
                 } else {
                     alert('请上传CSV文件');
                 }
@@ -516,7 +605,7 @@
             csvFileInput.addEventListener('change', async (e) => {
                 const file = e.target.files[0];
                 if (file) {
-                    await handleFileImport(file);
+                    await handleFileParse(file);
                     csvFileInput.value = '';
                 }
             });
@@ -528,11 +617,25 @@
                 const cached = localStorage.getItem(MULTI_BATTLE_KEY);
                 if (cached) {
                     multiBattleData = JSON.parse(cached);
+                    // 数据格式兼容处理
+                    multiBattleData = multiBattleData.map(battle => {
+                        // 兼容旧数据：如果 guilds 存在但 data 不存在，进行转换
+                        if (battle.guilds && !battle.data) {
+                            battle.data = battle.guilds;
+                        }
+                        // 兼容旧数据：如果 data 不存在，初始化为空对象
+                        if (!battle.data) {
+                            battle.data = {};
+                        }
+                        return battle;
+                    });
                 }
             } catch (e) {
                 console.error('加载多场数据失败:', e);
                 multiBattleData = [];
             }
+            // 自动选择（如果不足10场则全选）
+            autoSelectIfEmpty();
             updateBattleListUI();
         }
 
@@ -545,13 +648,18 @@
             }
         }
 
+        // 当前单选标识（用于导入到当前分析系统）
+        let activeBattleId = null;
+        
         // 更新多场数据列表UI
         function updateBattleListUI() {
             const container = document.getElementById('multiBattleList');
             const badge = document.getElementById('battleCountBadge');
             const loadBtn = document.getElementById('loadToAnalysisBtn');
+            const selectedCount = document.getElementById('selectedCount');
             
-            badge.textContent = `${multiBattleData.length}/${MAX_BATTLE_COUNT}场`;
+            badge.textContent = `${multiBattleData.length} 场`;
+            selectedCount.textContent = selectedBattleIds.size;
             
             if (multiBattleData.length === 0) {
                 container.innerHTML = `
@@ -559,6 +667,7 @@
                         <i class="fas fa-inbox text-xl mb-2 block"></i>
                         暂无导入数据
                     </div>`;
+                container.style.maxHeight = 'none';
                 loadBtn.disabled = true;
                 return;
             }
@@ -566,27 +675,63 @@
             // 按时间排序（最新的在前）
             const sortedData = [...multiBattleData].sort((a, b) => b.timestamp - a.timestamp);
             
+            // 判断是否显示选择框（超过10场才显示）
+            const showCheckboxes = sortedData.length > MAX_BATTLE_SELECT;
+            
+            // 更新选择控件显示
+            const selectionControls = document.getElementById('selectionControls');
+            const autoSelectHint = document.getElementById('autoSelectHint');
+            const autoSelectCount = document.getElementById('autoSelectCount');
+            if (selectionControls && autoSelectHint) {
+                if (showCheckboxes) {
+                    selectionControls.classList.remove('hidden');
+                    autoSelectHint.classList.add('hidden');
+                } else {
+                    selectionControls.classList.add('hidden');
+                    autoSelectHint.classList.remove('hidden');
+                    if (autoSelectCount) autoSelectCount.textContent = sortedData.length;
+                }
+            }
+            
             container.innerHTML = sortedData.map((battle, index) => {
                 const date = new Date(battle.dateTime);
                 const dateStr = date.toLocaleString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-                const guildNames = Object.keys(battle.data || {}).join(' vs ');
-                const totalPlayers = Object.values(battle.data || {}).reduce((sum, players) => sum + players.length, 0);
-                const isSelected = battle.id === selectedBattleId;
+                // 优先使用手动输入的帮会名
+                const guild1Name = battle.guild1Name || (battle.guildNames ? battle.guildNames[0] : null) || '帮会1';
+                const guild2Name = battle.guild2Name || (battle.guildNames ? battle.guildNames[1] : null) || '帮会2';
+                const guildNames = `${guild1Name} vs ${guild2Name}`;
+                // 计算总人数 - 兼容不同数据结构
+                let totalPlayers = 0;
+                if (battle.data) {
+                    totalPlayers = Object.values(battle.data).reduce((sum, players) => {
+                        if (Array.isArray(players)) {
+                            return sum + players.length;
+                        }
+                        return sum;
+                    }, 0);
+                }
+                const isChecked = selectedBattleIds.has(battle.id);
+                const isActive = activeBattleId === battle.id;
                 const isLatest = index === 0;
                 
                 return `
-                    <div class="battle-item rounded-sm p-3 ${isSelected ? 'active' : ''}" onclick="selectBattle('${battle.id}')">
+                    <div class="battle-item rounded-sm p-3 ${isActive ? 'active' : ''}">
                         <div class="flex items-center justify-between">
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-2">
-                                    ${isLatest ? '<span class="text-xs bg-jade/20 text-jade px-1.5 py-0.5 rounded">最新</span>' : ''}
-                                    <span class="text-xs text-gray-500">#${sortedData.length - index}</span>
-                                </div>
-                                <div class="text-sm text-gray-300 mt-1 truncate">${guildNames || '未命名帮会'}</div>
-                                <div class="text-xs text-gray-500 mt-0.5">
-                                    <i class="far fa-clock mr-1"></i>${dateStr}
-                                    <span class="mx-1">|</span>
-                                    <i class="fas fa-users mr-1"></i>${totalPlayers}人
+                            <div class="flex items-center gap-2 flex-1 min-w-0" onclick="setActiveBattle('${battle.id}')">
+                                ${showCheckboxes ? `<input type="checkbox" class="battle-checkbox" ${isChecked ? 'checked' : ''} 
+                                       onclick="event.stopPropagation(); toggleMultiSelect('${battle.id}')">` : ''}
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        ${isLatest ? '<span class="text-xs bg-jade/20 text-jade px-1.5 py-0.5 rounded">最新</span>' : ''}
+                                        ${isActive ? '<span class="text-xs bg-yellow-500/20 text-yellow-400 px-1.5 py-0.5 rounded">当前</span>' : ''}
+                                        <span class="text-xs text-gray-500">#${sortedData.length - index}</span>
+                                    </div>
+                                    <div class="text-sm text-gray-300 mt-1 truncate">${guildNames}</div>
+                                    <div class="text-xs text-gray-500 mt-0.5">
+                                        <i class="far fa-clock mr-1"></i>${dateStr}
+                                        <span class="mx-1">|</span>
+                                        <i class="fas fa-users mr-1"></i>${totalPlayers}人
+                                    </div>
                                 </div>
                             </div>
                             <div class="flex gap-1 ml-2">
@@ -600,20 +745,76 @@
                 `;
             }).join('');
             
-            loadBtn.disabled = !selectedBattleId;
+            // 动态调整列表高度：>3场时固定高度显示滚动条（固定显示3场的高度），<=3场时自适应
+            if (sortedData.length <= 3) {
+                container.style.maxHeight = 'none';
+            } else {
+                container.style.maxHeight = '240px';
+            }
+            
+            // 启用导入按钮逻辑：<10场需要activeBattleId，≥10场需要selectedBattleIds
+            if (showCheckboxes) {
+                loadBtn.disabled = selectedBattleIds.size === 0;
+            } else {
+                loadBtn.disabled = !activeBattleId;
+            }
         }
 
-        // 选择场次
-        function selectBattle(battleId) {
-            selectedBattleId = selectedBattleId === battleId ? null : battleId;
+        // 设置当前激活的场次（单选，用于导入到分析系统）
+        function setActiveBattle(battleId) {
+            activeBattleId = activeBattleId === battleId ? null : battleId;
             updateBattleListUI();
+        }
+
+        // 切换多选（用于批量导入）
+        function toggleMultiSelect(battleId) {
+            if (selectedBattleIds.has(battleId)) {
+                selectedBattleIds.delete(battleId);
+            } else {
+                // 最多选择10场
+                if (selectedBattleIds.size >= MAX_BATTLE_SELECT) {
+                    alert(`最多只能选择 ${MAX_BATTLE_SELECT} 场数据`);
+                    return;
+                }
+                selectedBattleIds.add(battleId);
+            }
+            updateBattleListUI();
+        }
+
+        // 全选/取消全选（最多10场）
+        function toggleSelectAll() {
+            const sortedData = [...multiBattleData].sort((a, b) => b.timestamp - a.timestamp);
+            if (selectedBattleIds.size === multiBattleData.length || selectedBattleIds.size >= MAX_BATTLE_SELECT) {
+                // 全部选中，取消全选
+                selectedBattleIds.clear();
+            } else {
+                // 否则全选（最多10场）
+                selectedBattleIds.clear();
+                sortedData.slice(0, MAX_BATTLE_SELECT).forEach(b => selectedBattleIds.add(b.id));
+            }
+            updateBattleListUI();
+        }
+
+        // 自动选择（不足10场时全选，超过10场时不自动选择）
+        function autoSelectIfEmpty() {
+            if (multiBattleData.length === 0) return;
+            
+            const sortedData = [...multiBattleData].sort((a, b) => b.timestamp - a.timestamp);
+            
+            // 如果数据量不超过10场，自动全选
+            if (sortedData.length <= MAX_BATTLE_SELECT) {
+                selectedBattleIds.clear();
+                sortedData.forEach(b => selectedBattleIds.add(b.id));
+            }
+            // 如果超过10场且没有选中任何数据，不自动选择（让用户手动选择）
         }
 
         // 删除单场
         function deleteBattle(battleId) {
             if (!confirm('确定要删除这场帮战数据吗？')) return;
             multiBattleData = multiBattleData.filter(b => b.id !== battleId);
-            if (selectedBattleId === battleId) selectedBattleId = null;
+            selectedBattleIds.delete(battleId);
+            if (activeBattleId === battleId) activeBattleId = null;
             saveMultiBattleData();
             updateBattleListUI();
         }
@@ -622,39 +823,104 @@
         function clearAllBattleData() {
             if (!confirm('确定要清空所有帮战数据吗？此操作不可恢复。')) return;
             multiBattleData = [];
-            selectedBattleId = null;
+            selectedBattleIds.clear();
+            activeBattleId = null;
             saveMultiBattleData();
             updateBattleListUI();
             showStatus('所有数据已清空');
             setTimeout(hideStatus, 2000);
         }
 
-        // 导入选中场次到分析系统
+        // 导入选中到分析系统
         function loadSelectedToAnalysis() {
-            if (!selectedBattleId) return;
+            let battlesToImport = [];
+            const showCheckboxes = multiBattleData.length > MAX_BATTLE_SELECT;
+            // 按时间排序（最新的在前）
+            const sortedData = [...multiBattleData].sort((a, b) => b.timestamp - a.timestamp);
             
-            const battle = multiBattleData.find(b => b.id === selectedBattleId);
-            if (!battle) {
-                alert('未找到选中的场次数据');
+            if (showCheckboxes) {
+                // ≥10场：使用复选框勾选的场次作为导入数据
+                if (selectedBattleIds.size === 0) {
+                    alert('请至少勾选一场数据');
+                    return;
+                }
+                // 按时间顺序获取勾选的场次
+                battlesToImport = sortedData.filter(b => selectedBattleIds.has(b.id));
+                
+                // 如果勾选不足10场，按时间顺序从后往前补足到10场
+                if (battlesToImport.length < MAX_BATTLE_SELECT) {
+                    const needCount = MAX_BATTLE_SELECT - battlesToImport.length;
+                    const existingIds = new Set(battlesToImport.map(b => b.id));
+                    // 从已排序的数据中（时间倒序），从后往前取（时间较早的）
+                    for (let i = sortedData.length - 1; i >= 0 && needCount > 0; i--) {
+                        const battle = sortedData[i];
+                        if (!existingIds.has(battle.id)) {
+                            battlesToImport.unshift(battle); // 加到前面（时间较早的排前面）
+                            existingIds.add(battle.id);
+                        }
+                    }
+                }
+            } else {
+                // <10场：使用当前激活的单选那场
+                if (!activeBattleId) {
+                    alert('请点击选择一场数据');
+                    return;
+                }
+                const battle = multiBattleData.find(b => b.id === activeBattleId);
+                if (battle) battlesToImport = [battle];
+            }
+            
+            if (battlesToImport.length === 0) {
+                alert('请至少选择一场数据');
                 return;
             }
 
-            // 保存到原有的存储键，兼容现有分析系统
-            localStorage.setItem('battleData', JSON.stringify(battle.data));
+            // 获取帮会名称（优先使用手动输入的帮会名）- 使用最后选中那场的数据
+            const lastBattle = battlesToImport[battlesToImport.length - 1];
+            const guild1Name = lastBattle.guild1Name || (lastBattle.guildNames ? lastBattle.guildNames[0] : null) || '帮会1';
+            const guild2Name = lastBattle.guild2Name || (lastBattle.guildNames ? lastBattle.guildNames[1] : null) || '帮会2';
             
-            // 计算并保存联赛数据
-            const leagueData = calculateLeagueData(battle.data);
-            localStorage.setItem('leagueBattleData', JSON.stringify(leagueData));
+            // 保存帮会名称到分析系统使用的键
+            localStorage.setItem('xg_nsh_guild1Name', guild1Name);
+            localStorage.setItem('xg_nsh_guild2Name', guild2Name);
             
-            // 保存当前场次信息
-            localStorage.setItem('currentBattleInfo', JSON.stringify({
-                id: battle.id,
-                dateTime: battle.dateTime,
-                guild1Name: battle.guild1Name,
-                guild2Name: battle.guild2Name
-            }));
+            // 如果只选中一场，直接导入到分析系统
+            if (battlesToImport.length === 1) {
+                const battle = battlesToImport[0];
+                localStorage.setItem('battleData', JSON.stringify(battle.data));
+                const leagueData = calculateLeagueData(battle.data);
+                localStorage.setItem('leagueBattleData', JSON.stringify(leagueData));
+                localStorage.setItem('currentBattleInfo', JSON.stringify({
+                    id: battle.id,
+                    dateTime: battle.dateTime,
+                    guild1Name: battle.guild1Name,
+                    guild2Name: battle.guild2Name
+                }));
+            } else {
+                // 如果选中多场，保存为多场缓存
+                const multiCache = battlesToImport.map(b => ({
+                    id: b.id,
+                    dateTime: b.dateTime,
+                    timestamp: b.timestamp,
+                    guild1Name: b.guild1Name,
+                    guild2Name: b.guild2Name,
+                    guilds: b.data
+                }));
+                localStorage.setItem(MULTI_BATTLE_KEY, JSON.stringify(multiCache));
+                
+                // 同时保存最后一场为当前分析数据
+                const lastBattle = battlesToImport[battlesToImport.length - 1];
+                localStorage.setItem('battleData', JSON.stringify(lastBattle.data));
+                const leagueData = calculateLeagueData(lastBattle.data);
+                localStorage.setItem('leagueBattleData', JSON.stringify(leagueData));
+                localStorage.setItem('currentBattleInfo', JSON.stringify({
+                    id: lastBattle.id,
+                    dateTime: lastBattle.dateTime,
+                    guild1Name: lastBattle.guild1Name,
+                    guild2Name: lastBattle.guild2Name
+                }));
+            }
 
-            // 跳转到分析页面
             window.location.href = '../xg_guild_analysis/xg_guild_analysis_main.html';
         }
 
@@ -694,22 +960,31 @@
                     const importData = JSON.parse(e.target.result);
                     if (importData.battles && Array.isArray(importData.battles)) {
                         // 合并数据，避免重复
+                        let importedCount = 0;
                         importData.battles.forEach(battle => {
+                            // 数据格式兼容处理
+                            if (battle.guilds && !battle.data) {
+                                battle.data = battle.guilds;
+                            }
+                            if (!battle.data) {
+                                battle.data = {};
+                            }
+                            
                             const exists = multiBattleData.some(b => b.id === battle.id);
                             if (!exists) {
                                 multiBattleData.push(battle);
+                                importedCount++;
                             }
                         });
                         
-                        // 限制数量
+                        // 按时间排序（不再限制数量，可以无限存储）
                         multiBattleData.sort((a, b) => b.timestamp - a.timestamp);
-                        if (multiBattleData.length > MAX_BATTLE_COUNT) {
-                            multiBattleData = multiBattleData.slice(0, MAX_BATTLE_COUNT);
-                        }
                         
                         saveMultiBattleData();
+                        // 导入后自动选择
+                        autoSelectIfEmpty();
                         updateBattleListUI();
-                        showStatus(`成功导入 ${importData.battles.length} 场数据`);
+                        showStatus(`成功导入 ${importedCount} 场数据`);
                     } else {
                         alert('数据格式不正确');
                     }
@@ -721,21 +996,8 @@
             reader.readAsText(file);
         }
 
-        // 处理文件导入
-        async function handleFileImport(file) {
-            const dateTime = battleDateTimeInput.value;
-            const guild1Name = guild1NameInput.value.trim();
-            const guild2Name = guild2NameInput.value.trim();
-            
-            if (!dateTime) {
-                alert('请先填写帮战时间');
-                return;
-            }
-            if (!guild1Name || !guild2Name) {
-                alert('请填写双方帮会名称');
-                return;
-            }
-
+        // 处理文件解析（第一步：解析但不导入）
+        async function handleFileParse(file) {
             showStatus('正在解析CSV文件...');
             
             try {
@@ -745,60 +1007,143 @@
                     return;
                 }
 
-                // 创建场次数据
-                const battleTime = new Date(dateTime);
-                const battleId = `battle_${battleTime.getTime()}`;
-                
-                // 检查是否已存在相同时段的场次
-                const existingIndex = multiBattleData.findIndex(b => 
-                    Math.abs(b.timestamp - battleTime.getTime()) < 3600000
-                );
-                
-                const newBattle = {
-                    id: battleId,
-                    dateTime: dateTime,
-                    timestamp: battleTime.getTime(),
-                    fileName: file.name,
-                    guild1Name: guild1Name,
-                    guild2Name: guild2Name,
+                const guildNames = Object.keys(result);
+                parsedFileInfo = {
+                    file: file,
                     data: result,
-                    importTime: new Date().toISOString()
+                    guildNames: guildNames,
+                    totalPlayers: Object.values(result).reduce((sum, players) => sum + players.length, 0)
                 };
+
+                // 显示解析结果
+                parseResult.classList.remove('hidden');
+                detectedGuild1.textContent = guildNames[0] || '未识别';
+                detectedGuild2.textContent = guildNames[1] || '未识别';
+
+                // 判断是否识别到帮会名称
+                const hasValidGuildNames = guildNames.length >= 2 && 
+                    !guildNames.some(name => name.startsWith('帮会') && /^帮会\d+$/.test(name));
+
+                // 始终显示输入区域（时间必须手动确认）
+                battleInfoSection.classList.remove('hidden');
                 
-                if (existingIndex >= 0) {
-                    if (confirm('检测到相同时段已有数据，是否覆盖？')) {
-                        multiBattleData[existingIndex] = newBattle;
-                    } else {
-                        hideStatus();
-                        return;
-                    }
+                if (hasValidGuildNames) {
+                    // 识别到有效帮会名，自动填充
+                    manualInputHint.classList.add('hidden');
+                    guild1NameInput.value = guildNames[0] || '';
+                    guild2NameInput.value = guildNames[1] || '';
                 } else {
-                    multiBattleData.push(newBattle);
+                    // 未识别到帮会名，提示手动输入
+                    manualInputHint.classList.remove('hidden');
+                    guild1NameInput.value = '';
+                    guild2NameInput.value = '';
                 }
-                
-                // 排序并限制数量
-                multiBattleData.sort((a, b) => b.timestamp - a.timestamp);
-                if (multiBattleData.length > MAX_BATTLE_COUNT) {
-                    multiBattleData = multiBattleData.slice(0, MAX_BATTLE_COUNT);
-                }
-                
-                saveMultiBattleData();
-                updateBattleListUI();
-                
-                // 自动选中新导入的场次
-                selectedBattleId = battleId;
-                updateBattleListUI();
-                
-                showStatus(`成功导入！共 ${Object.values(result).reduce((a,b)=>a+b.length,0)} 条数据`);
-                
-                // 清空输入（保留时间）
-                guild1NameInput.value = '';
-                guild2NameInput.value = '';
+
+                // 启用导入按钮
+                importBtn.disabled = false;
+                hideStatus();
                 
             } catch (error) {
                 console.error('CSV文件解析失败:', error);
                 showStatus('文件解析失败: ' + error.message);
             }
+        }
+
+        // 处理导入点击（第二步：确认导入）
+        async function handleImportClick() {
+            if (!parsedFileInfo) return;
+
+            const dateTime = battleDateTimeInput.value;
+            let guild1Name = guild1NameInput.value.trim();
+            let guild2Name = guild2NameInput.value.trim();
+            
+            if (!dateTime) {
+                alert('请填写帮战时间');
+                battleInfoSection.classList.remove('hidden');
+                return;
+            }
+
+            // 如果没有手动输入帮会名，使用识别到的
+            if (!guild1Name && parsedFileInfo.guildNames[0]) {
+                guild1Name = parsedFileInfo.guildNames[0];
+            }
+            if (!guild2Name && parsedFileInfo.guildNames[1]) {
+                guild2Name = parsedFileInfo.guildNames[1];
+            }
+
+            if (!guild1Name || !guild2Name) {
+                alert('请填写双方帮会名称');
+                battleInfoSection.classList.remove('hidden');
+                return;
+            }
+
+            showStatus('正在导入数据...');
+
+            // 创建场次数据
+            const battleTime = new Date(dateTime);
+            const battleId = `battle_${battleTime.getTime()}`;
+            
+            // 检查是否已存在相同时段的场次
+            const existingIndex = multiBattleData.findIndex(b => 
+                Math.abs(b.timestamp - battleTime.getTime()) < 3600000
+            );
+            
+            const newBattle = {
+                id: battleId,
+                dateTime: dateTime,
+                timestamp: battleTime.getTime(),
+                fileName: parsedFileInfo.file.name,
+                guild1Name: guild1Name,
+                guild2Name: guild2Name,
+                guildNames: parsedFileInfo.guildNames, // 保存原始识别的帮会名
+                data: parsedFileInfo.data,
+                importTime: new Date().toISOString()
+            };
+            
+            if (existingIndex >= 0) {
+                if (confirm('检测到相同时段已有数据，是否覆盖？')) {
+                    multiBattleData[existingIndex] = newBattle;
+                } else {
+                    hideStatus();
+                    return;
+                }
+            } else {
+                multiBattleData.push(newBattle);
+            }
+            
+            // 按时间排序（不限制存储数量）
+            multiBattleData.sort((a, b) => b.timestamp - a.timestamp);
+            
+            saveMultiBattleData();
+            
+            // 新导入的数据自动添加到多选列表（如果未满10场）
+            if (selectedBattleIds.size < MAX_BATTLE_SELECT) {
+                selectedBattleIds.add(battleId);
+            }
+            
+            updateBattleListUI();
+            
+            // 重置表单
+            resetImportForm();
+            
+            showStatus(`成功导入！共 ${parsedFileInfo.totalPlayers} 条数据`);
+            setTimeout(hideStatus, 2000);
+        }
+
+        // 重置导入表单
+        function resetImportForm() {
+            parsedFileInfo = null;
+            parseResult.classList.add('hidden');
+            battleInfoSection.classList.add('hidden');
+            manualInputHint.classList.add('hidden');
+            importBtn.disabled = true;
+            guild1NameInput.value = '';
+            guild2NameInput.value = '';
+            
+            // 重置时间为当前
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            battleDateTimeInput.value = now.toISOString().slice(0, 16);
         }
 
         // 解析CSV行
@@ -887,7 +1232,7 @@
                                     player['破泉'] = 0;
                                     player['化羽'] = 0;
                                     player['清泉'] = 0;
-                                    player['复活'] = 0; // 新增：素问/鸿音的复活字段
+                                    player['复活'] = 0;
 
                                     numericFields.forEach(field => {
                                         if (player[field] !== undefined && player[field] !== '') {
@@ -907,28 +1252,22 @@
                                                     const part0 = parseInt(parts[0].trim()) || 0;
                                                     const part1 = parseInt(parts[1].trim()) || 0;
                                                     if (profession === '潮光') {
-                                                        // 潮光：第一部分是复活(0)，第二部分是清泉
                                                         player['复活'] = part0;
                                                         player['清泉'] = part1;
                                                     } else if (profession === '素问' || profession === '鸿音') {
-                                                        // 素问/鸿音：第一部分是复活，第二部分是清泉(0)
                                                         player['复活'] = part0;
                                                         player['清泉'] = part1;
                                                     } else {
-                                                        // 其他职业：第一部分是化羽，第二部分是清泉(0)
                                                         player['化羽'] = part0;
                                                         player['清泉'] = part1;
                                                     }
                                                 } else {
                                                     const singleValue = parseInt(value.trim()) || 0;
                                                     if (profession === '潮光') {
-                                                        // 潮光：这个值是清泉
                                                         player['清泉'] = singleValue;
                                                     } else if (profession === '素问' || profession === '鸿音') {
-                                                        // 素问/鸿音：这个值是复活
                                                         player['复活'] = singleValue;
                                                     } else {
-                                                        // 其他职业：默认当作化羽处理
                                                         player['化羽'] = singleValue;
                                                     }
                                                 }
