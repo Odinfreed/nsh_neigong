@@ -726,12 +726,25 @@
                 const leagueData = calculateLeagueData(result);
                 localStorage.setItem('leagueBattleData', JSON.stringify(leagueData));
 
-                showStatus('数据导入成功！正在跳转...');
+                showStatus('数据导入成功！请点击下方按钮跳转：');
 
-                // 直接跳转到帮会对比分析页面
-                setTimeout(() => {
-                    window.location.href = '../xg_guild_analysis/xg_guild_analysis_main.html';
-                }, 500);
+                // 显示跳转按钮
+                let jumpButtons = document.getElementById('jumpButtons');
+                
+                if (jumpButtons) {
+                    jumpButtons.remove();
+                }
+                
+                jumpButtons = document.createElement('div');
+                jumpButtons.id = 'jumpButtons';
+                jumpButtons.className = 'mt-4 flex flex-wrap gap-3 justify-center';
+                jumpButtons.innerHTML = `
+                    <a href="../xg_guild_analysis/xg_guild_analysis_main.html" class="jump-btn">
+                        <i class="fas fa-chart-line mr-2"></i>前往帮会对比分析
+                    </a>
+                `;
+                
+                statusIndicator.parentNode.insertBefore(jumpButtons, statusIndicator.nextSibling);
 
                 return true;
             } catch (error) {
