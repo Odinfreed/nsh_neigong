@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>帮会数据一键导入 - 逆水寒帮战系统</title>
+    <title>帮会数据一键导入 - 逆水寒帮战系统 v4.0.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
     <style>
@@ -20,9 +20,7 @@
             --cyan: #00b4d8;
         }
         
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
         
         body {
             font-family: 'Noto Sans SC', sans-serif;
@@ -33,13 +31,10 @@
             color: #e0e0e0;
         }
         
-        /* 水墨背景 */
         .ink-bg {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             z-index: -2;
             background: 
                 radial-gradient(ellipse at 20% 80%, rgba(0, 180, 216, 0.08) 0%, transparent 50%),
@@ -47,13 +42,10 @@
                 radial-gradient(ellipse at 40% 40%, rgba(201, 162, 39, 0.04) 0%, transparent 40%);
         }
         
-        /* 网格线 */
         .tech-grid {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             z-index: -1;
             background-image: 
                 linear-gradient(rgba(0, 212, 170, 0.03) 1px, transparent 1px),
@@ -61,31 +53,16 @@
             background-size: 50px 50px;
         }
         
-        /* 装饰角纹 */
         .corner-decoration {
             position: absolute;
-            width: 40px;
-            height: 40px;
+            width: 40px; height: 40px;
             border: 1px solid var(--jade-dim);
         }
-        .corner-decoration.top-left {
-            top: -1px; left: -1px;
-            border-right: none; border-bottom: none;
-        }
-        .corner-decoration.top-right {
-            top: -1px; right: -1px;
-            border-left: none; border-bottom: none;
-        }
-        .corner-decoration.bottom-left {
-            bottom: -1px; left: -1px;
-            border-right: none; border-top: none;
-        }
-        .corner-decoration.bottom-right {
-            bottom: -1px; right: -1px;
-            border-left: none; border-top: none;
-        }
+        .corner-decoration.top-left { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+        .corner-decoration.top-right { top: -1px; right: -1px; border-left: none; border-bottom: none; }
+        .corner-decoration.bottom-left { bottom: -1px; left: -1px; border-right: none; border-top: none; }
+        .corner-decoration.bottom-right { bottom: -1px; right: -1px; border-left: none; border-top: none; }
         
-        /* 主标题 */
         .main-title {
             font-family: 'Noto Serif SC', serif;
             font-weight: 700;
@@ -104,7 +81,6 @@
             color: #888;
         }
         
-        /* 分隔线 */
         .divider {
             display: flex;
             align-items: center;
@@ -112,15 +88,13 @@
             color: var(--jade);
             opacity: 0.6;
         }
-        .divider::before,
-        .divider::after {
+        .divider::before, .divider::after {
             content: '';
             flex: 1;
             height: 1px;
             background: linear-gradient(90deg, transparent, var(--jade-dim), transparent);
         }
         
-        /* 主卡片 */
         .main-card {
             background: linear-gradient(145deg, rgba(26, 26, 26, 0.9) 0%, rgba(13, 13, 13, 0.95) 100%);
             border: 1px solid var(--ink-gray);
@@ -129,31 +103,24 @@
             overflow: hidden;
         }
         
-        /* 输入区域 */
         .input-section {
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid var(--ink-gray);
             transition: all 0.3s ease;
         }
+        .input-section:focus-within { border-color: var(--jade-dim); }
         
-        .input-section:focus-within {
-            border-color: var(--jade-dim);
-        }
-        
-        /* 文件上传区 */
         .upload-zone {
             border: 2px dashed var(--ink-gray);
             background: rgba(0, 0, 0, 0.2);
             transition: all 0.3s ease;
             cursor: pointer;
         }
-        
         .upload-zone:hover, .upload-zone.dragover {
             border-color: var(--jade);
             background: rgba(0, 212, 170, 0.05);
         }
         
-        /* 按钮 */
         .action-btn {
             position: relative;
             background: transparent;
@@ -164,33 +131,21 @@
             font-family: 'Noto Sans SC', sans-serif;
             letter-spacing: 0.1em;
         }
-        
         .action-btn::before {
             content: '';
             position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 0;
+            bottom: 0; left: 0;
+            width: 100%; height: 0;
             background: linear-gradient(180deg, transparent, rgba(0, 212, 170, 0.1));
             transition: height 0.3s ease;
         }
-        
         .action-btn:hover {
             border-color: var(--jade);
             color: var(--jade);
         }
+        .action-btn:hover::before { height: 100%; }
+        .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        .action-btn:hover::before {
-            height: 100%;
-        }
-        
-        .action-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        /* 主按钮 */
         .primary-btn {
             position: relative;
             background: transparent;
@@ -201,7 +156,6 @@
             font-family: 'Noto Sans SC', sans-serif;
             letter-spacing: 0.15em;
         }
-        
         .primary-btn::before {
             content: '';
             position: absolute;
@@ -210,17 +164,12 @@
             opacity: 0;
             transition: opacity 0.3s ease;
         }
-        
         .primary-btn:hover {
             border-color: var(--jade);
             box-shadow: 0 0 20px rgba(0, 212, 170, 0.2);
         }
+        .primary-btn:hover::before { opacity: 1; }
         
-        .primary-btn:hover::before {
-            opacity: 1;
-        }
-        
-        /* 危险按钮 */
         .danger-btn {
             border-color: var(--ink-gray);
             color: #888;
@@ -230,27 +179,23 @@
             color: #c9404b;
         }
         
-        /* 输入框 */
         .custom-input {
             background: rgba(0, 0, 0, 0.4);
             border: 1px solid var(--ink-gray);
             color: #ccc;
             transition: all 0.3s ease;
         }
-        
         .custom-input:focus {
             outline: none;
             border-color: var(--jade-dim);
             box-shadow: 0 0 10px rgba(0, 212, 170, 0.1);
         }
         
-        /* 状态指示器 */
         .status-box {
             background: rgba(0, 0, 0, 0.4);
             border: 1px solid var(--ink-gray);
         }
         
-        /* 跳转按钮 */
         .jump-btn {
             display: inline-flex;
             align-items: center;
@@ -262,153 +207,223 @@
             transition: all 0.3s ease;
             font-size: 0.875rem;
         }
-        
         .jump-btn:hover {
             background: rgba(0, 212, 170, 0.2);
             border-color: var(--jade);
         }
         
-        /* 页脚 */
         .footer-divider {
             height: 1px;
             background: linear-gradient(90deg, transparent, var(--ink-gray), transparent);
         }
         
-        /* 扫描线 */
         .scan-line {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
+            top: 0; left: 0;
+            width: 100%; height: 2px;
             background: linear-gradient(90deg, transparent, var(--jade-dim), transparent);
             opacity: 0.3;
             animation: scan 8s linear infinite;
             pointer-events: none;
             z-index: 100;
         }
-        
         @keyframes scan {
             0% { transform: translateY(-100vh); }
             100% { transform: translateY(100vh); }
         }
         
-        /* 隐藏文件输入 */
-        .hidden-file-input {
-            display: none;
+        .hidden-file-input { display: none; }
+        
+        /* 多场数据列表样式 */
+        .battle-item {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--ink-gray);
+            transition: all 0.3s ease;
+            cursor: pointer;
         }
+        .battle-item:hover {
+            border-color: var(--jade-dim);
+            background: rgba(0, 212, 170, 0.05);
+        }
+        .battle-item.active {
+            border-color: var(--jade);
+            background: rgba(0, 212, 170, 0.1);
+        }
+        
+        /* 滚动条样式 */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--ink-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--ink-gray); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--jade-dim); }
     </style>
 </head>
-<body class="p-6 md:p-12">
-    <!-- 扫描线 -->
+<body class="p-6 md:p-8">
     <div class="scan-line"></div>
-    
-    <!-- 背景 -->
     <div class="ink-bg"></div>
     <div class="tech-grid"></div>
     
-    <div class="max-w-4xl mx-auto relative">
+    <div class="max-w-6xl mx-auto relative">
         <!-- 头部 -->
-        <header class="text-center mb-12">
-            <!-- 装饰图案 -->
-            <div class="flex justify-center mb-6 opacity-40">
+        <header class="text-center mb-8">
+            <div class="flex justify-center mb-4 opacity-40">
                 <svg width="120" height="24" viewBox="0 0 120 24" fill="none">
                     <path d="M0 12h40M80 12h40" stroke="#00d4aa" stroke-width="0.5" opacity="0.5"/>
                     <circle cx="60" cy="12" r="3" stroke="#00d4aa" stroke-width="0.5" fill="none"/>
                     <path d="M50 12l5-3v6l-5-3zm20 0l-5-3v6l5-3z" fill="#00d4aa" opacity="0.5"/>
                 </svg>
             </div>
-            
-            <h1 class="main-title text-2xl md:text-4xl mb-3">
-                帮会数据一键导入
-            </h1>
-            
-            <div class="divider text-sm mb-4 max-w-md mx-auto">
-                <i class="fas fa-yin-yang"></i>
-            </div>
-            
-            <p class="subtitle text-sm">
-                选择CSV文件，系统将自动处理并跳转到分析页面
-            </p>
+            <h1 class="main-title text-2xl md:text-3xl mb-2">帮会数据一键导入</h1>
+            <div class="divider text-sm mb-2 max-w-md mx-auto"><i class="fas fa-yin-yang"></i></div>
+            <p class="subtitle text-sm">支持导入多场帮战数据，自动整理供后续分析</p>
+            <p class="text-xs text-jade mt-2"><i class="fas fa-star mr-1"></i>v4.0.0 多场数据管理</p>
         </header>
 
-        <!-- 主导入区域 -->
-        <div class="main-card rounded-sm p-8">
+        <!-- v4.0.0: 多场数据导入管理 -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+            <!-- 左侧：多场数据列表 -->
+            <div class="lg:col-span-1">
+                <div class="main-card rounded-sm p-4 h-full">
+                    <div class="corner-decoration top-left"></div>
+                    <div class="corner-decoration top-right"></div>
+                    <div class="corner-decoration bottom-left"></div>
+                    <div class="corner-decoration bottom-right"></div>
+                    
+                    <div class="relative">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-base font-medium text-gray-300 flex items-center">
+                                <i class="fas fa-layer-group mr-2 text-jade"></i>
+                                多场数据列表
+                            </h3>
+                            <span id="battleCountBadge" class="text-xs bg-jade/20 text-jade px-2 py-0.5 rounded">0/5场</span>
+                        </div>
+                        
+                        <div id="multiBattleList" class="space-y-2 max-h-[350px] overflow-y-auto">
+                            <div class="text-center text-gray-500 py-6 text-sm">
+                                <i class="fas fa-inbox text-xl mb-2 block"></i>
+                                暂无导入数据
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3 pt-3 border-t border-gray-800 space-y-2">
+                            <button onclick="loadSelectedToAnalysis()" id="loadToAnalysisBtn" class="primary-btn w-full px-3 py-2 text-sm rounded-sm" disabled>
+                                <i class="fas fa-file-import mr-2"></i>导入选中场次到分析系统
+                            </button>
+                            <button onclick="clearAllBattleData()" class="action-btn danger-btn w-full px-3 py-2 text-sm rounded-sm">
+                                <i class="fas fa-trash-alt mr-2"></i>清空所有场次
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧：导入区域 -->
+            <div class="lg:col-span-2">
+                <div class="main-card rounded-sm p-6">
+                    <div class="corner-decoration top-left"></div>
+                    <div class="corner-decoration top-right"></div>
+                    <div class="corner-decoration bottom-left"></div>
+                    <div class="corner-decoration bottom-right"></div>
+                    
+                    <div class="relative">
+                        <div class="text-center mb-4">
+                            <div class="inline-flex items-center justify-center w-12 h-12 border border-gray-700 rounded-sm mb-2">
+                                <i class="fas fa-file-csv text-xl text-gray-500"></i>
+                            </div>
+                            <h2 class="text-base font-medium text-gray-300 mb-1">导入本场帮战数据</h2>
+                            <p class="text-gray-500 text-xs">填写信息后选择CSV文件导入</p>
+                        </div>
+
+                        <!-- 帮战信息输入 -->
+                        <div class="input-section rounded-sm p-3 mb-4">
+                            <h3 class="text-xs font-medium text-gray-400 mb-2 flex items-center">
+                                <i class="fas fa-info-circle mr-2"></i>本场帮战信息
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">帮战时间</label>
+                                    <input type="datetime-local" id="battleDateTime" class="custom-input w-full px-2 py-1.5 text-sm rounded-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">帮会 1</label>
+                                    <input type="text" id="guild1NameInput" placeholder="输入帮会1名称" class="custom-input w-full px-2 py-1.5 text-sm rounded-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">帮会 2</label>
+                                    <input type="text" id="guild2NameInput" placeholder="输入帮会2名称" class="custom-input w-full px-2 py-1.5 text-sm rounded-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 文件选择区域 -->
+                        <div class="upload-zone rounded-sm p-6 mb-4 text-center" id="uploadZone">
+                            <input type="file" id="csvFileInput" accept=".csv" class="hidden-file-input">
+                            <i class="fas fa-cloud-upload-alt text-3xl text-gray-600 mb-2"></i>
+                            <p class="text-gray-400 mb-1 text-sm">点击或拖拽CSV文件到此处</p>
+                            <p class="text-gray-600 text-xs">支持标准帮战CSV格式</p>
+                        </div>
+
+                        <!-- 导入按钮 -->
+                        <div class="text-center mb-3">
+                            <button id="importBtn" class="primary-btn text-sm font-medium py-2 px-6 rounded-sm inline-flex items-center">
+                                <i class="fas fa-plus mr-2"></i>添加本场数据
+                            </button>
+                        </div>
+
+                        <!-- 状态指示器 -->
+                        <div id="statusIndicator" class="hidden">
+                            <div class="status-box rounded-sm px-3 py-2 text-center">
+                                <i class="fas fa-spinner fa-spin text-jade mr-2"></i>
+                                <span id="statusText" class="text-gray-400 text-sm">正在处理文件...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 快捷操作 -->
+                <div class="mt-4 flex gap-2">
+                    <button onclick="exportAllBattleData()" class="action-btn flex-1 px-3 py-2 text-xs rounded-sm">
+                        <i class="fas fa-download mr-1"></i>导出全部数据备份
+                    </button>
+                    <button onclick="document.getElementById('importAllFileInput').click()" class="action-btn flex-1 px-3 py-2 text-xs rounded-sm">
+                        <i class="fas fa-upload mr-1"></i>导入备份数据
+                    </button>
+                    <input type="file" id="importAllFileInput" accept=".json" class="hidden" onchange="importAllBattleData(event)">
+                </div>
+            </div>
+        </div>
+        
+        <!-- 默认文件夹设置 -->
+        <div class="main-card rounded-sm p-4 mb-6">
             <div class="corner-decoration top-left"></div>
             <div class="corner-decoration top-right"></div>
             <div class="corner-decoration bottom-left"></div>
             <div class="corner-decoration bottom-right"></div>
             
             <div class="relative">
-                <!-- 文件上传图标 -->
-                <div class="text-center mb-8">
-                    <div class="inline-flex items-center justify-center w-16 h-16 border border-gray-700 rounded-sm mb-4">
-                        <i class="fas fa-file-csv text-3xl text-gray-500"></i>
-                    </div>
-                    <h2 class="text-xl font-medium text-gray-300 mb-2 tracking-wide">一键导入CSV数据</h2>
-                    <p class="text-gray-500 text-sm">选择帮战CSV文件，系统自动解析并跳转到分析界面</p>
-                </div>
-
-                <!-- 默认文件夹设置 -->
-                <div class="input-section rounded-sm p-4 mb-6">
-                    <h3 class="text-sm font-medium text-gray-400 mb-3 flex items-center tracking-wide">
-                        <i class="fas fa-folder-open mr-2 text-xs"></i>
-                        默认数据文件夹
-                    </h3>
-                    <div class="flex items-center gap-3">
-                        <input type="text" id="defaultFolder"
-                               class="custom-input flex-1 px-3 py-2 text-sm rounded-sm"
-                               value="C:/Users/31352/AppData/LocalLow/netease/逆水寒手游桌面版/"
-                               placeholder="输入默认文件夹路径...">
-                        <button id="saveFolderBtn" class="action-btn px-4 py-2 text-sm rounded-sm">
-                            <i class="fas fa-save mr-1"></i>保存
-                        </button>
-                        <button id="openFolderBtn" class="action-btn px-4 py-2 text-sm rounded-sm">
-                            <i class="fas fa-folder mr-1"></i>打开
-                        </button>
-                    </div>
-                    <p class="text-xs text-gray-600 mt-2">提示：保存后将记住您的默认文件夹位置</p>
-                </div>
-
-                <!-- 文件选择区域 -->
-                <div class="upload-zone rounded-sm p-8 mb-6 text-center" id="uploadZone">
-                    <input type="file" id="csvFileInput" accept=".csv" class="hidden-file-input">
-                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-600 mb-4"></i>
-                    <p class="text-gray-400 mb-2">点击或拖拽CSV文件到此处</p>
-                    <p class="text-gray-600 text-xs">支持标准帮战CSV格式</p>
-                </div>
-
-                <!-- 导入按钮 -->
-                <div class="text-center mb-6">
-                    <button id="importBtn" class="primary-btn text-lg font-medium py-3 px-8 rounded-sm inline-flex items-center">
-                        <i class="fas fa-upload mr-3"></i>
-                        选择CSV文件并导入
+                <h3 class="text-xs font-medium text-gray-400 mb-2 flex items-center">
+                    <i class="fas fa-folder-open mr-2"></i>默认数据文件夹
+                </h3>
+                <div class="flex items-center gap-2">
+                    <input type="text" id="defaultFolder" class="custom-input flex-1 px-3 py-2 text-sm rounded-sm"
+                           value="C:/Users/31352/AppData/LocalLow/netease/逆水寒手游桌面版/"
+                           placeholder="输入默认文件夹路径...">
+                    <button id="saveFolderBtn" class="action-btn px-3 py-2 text-xs rounded-sm">
+                        <i class="fas fa-save mr-1"></i>保存
+                    </button>
+                    <button id="openFolderBtn" class="action-btn px-3 py-2 text-xs rounded-sm">
+                        <i class="fas fa-folder mr-1"></i>打开
                     </button>
                 </div>
-
-                <!-- 状态指示器 -->
-                <div id="statusIndicator" class="hidden">
-                    <div class="status-box rounded-sm px-4 py-3 text-center">
-                        <i class="fas fa-spinner fa-spin text-jade mr-2"></i>
-                        <span id="statusText" class="text-gray-400 text-sm">正在处理文件...</span>
-                    </div>
-                </div>
-
-                <!-- 操作按钮组 -->
-                <div class="flex flex-wrap justify-center gap-3 mt-6 pt-6 border-t border-gray-800">
-                    <button onclick="clearData()" class="action-btn danger-btn px-4 py-2 text-sm rounded-sm">
-                        <i class="fas fa-trash mr-2"></i>清除旧数据
-                    </button>
-                </div>
+                <p class="text-xs text-gray-600 mt-1">提示：保存后将记住您的默认文件夹位置</p>
             </div>
         </div>
         
         <!-- 页脚 -->
-        <footer class="mt-12">
-            <div class="footer-divider mb-6"></div>
+        <footer class="mt-8">
+            <div class="footer-divider mb-4"></div>
             <div class="text-center text-gray-600 text-xs tracking-wider">
-                <p class="mb-2">逆水寒战斗分析系统 · 帮战数据导入</p>
-                <div class="flex justify-center gap-4 opacity-50">
+                <p class="mb-1">逆水寒战斗分析系统 v4.0.0 · 多场数据导入管理</p>
+                <div class="flex justify-center gap-3 opacity-50">
                     <i class="fas fa-feather-alt"></i>
                     <i class="fas fa-dragon"></i>
                     <i class="fas fa-fan"></i>
@@ -418,38 +433,392 @@
     </div>
 
     <script>
-        // 全局变量
-        let processedData = {};  // 处理后的帮会数据
+        // ==================== v4.0.0 多场数据管理 ====================
+        
+        const MULTI_BATTLE_KEY = 'multiBattleCache_v4';
+        const MAX_BATTLE_COUNT = 5;
+        let multiBattleData = [];
+        let selectedBattleId = null;
+        let processedData = {};
         const DEFAULT_FOLDER = 'C:/Users/31352/AppData/LocalLow/netease/逆水寒手游桌面版/';
 
         // DOM元素
         let importBtn, csvFileInput, statusIndicator, statusText, uploadZone;
         let defaultFolderInput, saveFolderBtn, openFolderBtn;
+        let battleDateTimeInput, guild1NameInput, guild2NameInput;
 
-        // 解析 CSV 行（处理引号）
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化DOM元素
+            importBtn = document.getElementById('importBtn');
+            csvFileInput = document.getElementById('csvFileInput');
+            statusIndicator = document.getElementById('statusIndicator');
+            statusText = document.getElementById('statusText');
+            uploadZone = document.getElementById('uploadZone');
+            defaultFolderInput = document.getElementById('defaultFolder');
+            saveFolderBtn = document.getElementById('saveFolderBtn');
+            openFolderBtn = document.getElementById('openFolderBtn');
+            battleDateTimeInput = document.getElementById('battleDateTime');
+            guild1NameInput = document.getElementById('guild1NameInput');
+            guild2NameInput = document.getElementById('guild2NameInput');
+
+            // 加载多场数据缓存
+            loadMultiBattleData();
+            
+            // 设置默认时间为当前时间
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            battleDateTimeInput.value = now.toISOString().slice(0, 16);
+
+            // 加载保存的文件夹路径
+            const savedFolder = localStorage.getItem('defaultDataFolder');
+            if (savedFolder) defaultFolderInput.value = savedFolder;
+
+            // 事件绑定
+            saveFolderBtn.addEventListener('click', () => {
+                const folderPath = defaultFolderInput.value.trim();
+                if (folderPath) {
+                    localStorage.setItem('defaultDataFolder', folderPath);
+                    alert('默认文件夹路径已保存！');
+                }
+            });
+
+            openFolderBtn.addEventListener('click', () => {
+                const folderPath = defaultFolderInput.value.trim();
+                if (folderPath) {
+                    alert('请手动打开文件夹：\n' + folderPath + '\n\n提示：将此路径复制到文件资源管理器地址栏中访问');
+                }
+            });
+
+            importBtn.addEventListener('click', () => csvFileInput.click());
+            
+            uploadZone.addEventListener('click', (e) => {
+                if (e.target !== csvFileInput) csvFileInput.click();
+            });
+
+            // 拖拽事件
+            uploadZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            });
+            uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+            uploadZone.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0 && files[0].name.endsWith('.csv')) {
+                    await handleFileImport(files[0]);
+                } else {
+                    alert('请上传CSV文件');
+                }
+            });
+
+            csvFileInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    await handleFileImport(file);
+                    csvFileInput.value = '';
+                }
+            });
+        });
+
+        // 加载多场数据
+        function loadMultiBattleData() {
+            try {
+                const cached = localStorage.getItem(MULTI_BATTLE_KEY);
+                if (cached) {
+                    multiBattleData = JSON.parse(cached);
+                }
+            } catch (e) {
+                console.error('加载多场数据失败:', e);
+                multiBattleData = [];
+            }
+            updateBattleListUI();
+        }
+
+        // 保存多场数据
+        function saveMultiBattleData() {
+            try {
+                localStorage.setItem(MULTI_BATTLE_KEY, JSON.stringify(multiBattleData));
+            } catch (e) {
+                console.error('保存多场数据失败:', e);
+            }
+        }
+
+        // 更新多场数据列表UI
+        function updateBattleListUI() {
+            const container = document.getElementById('multiBattleList');
+            const badge = document.getElementById('battleCountBadge');
+            const loadBtn = document.getElementById('loadToAnalysisBtn');
+            
+            badge.textContent = `${multiBattleData.length}/${MAX_BATTLE_COUNT}场`;
+            
+            if (multiBattleData.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-gray-500 py-6 text-sm">
+                        <i class="fas fa-inbox text-xl mb-2 block"></i>
+                        暂无导入数据
+                    </div>`;
+                loadBtn.disabled = true;
+                return;
+            }
+
+            // 按时间排序（最新的在前）
+            const sortedData = [...multiBattleData].sort((a, b) => b.timestamp - a.timestamp);
+            
+            container.innerHTML = sortedData.map((battle, index) => {
+                const date = new Date(battle.dateTime);
+                const dateStr = date.toLocaleString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const guildNames = Object.keys(battle.data || {}).join(' vs ');
+                const totalPlayers = Object.values(battle.data || {}).reduce((sum, players) => sum + players.length, 0);
+                const isSelected = battle.id === selectedBattleId;
+                const isLatest = index === 0;
+                
+                return `
+                    <div class="battle-item rounded-sm p-3 ${isSelected ? 'active' : ''}" onclick="selectBattle('${battle.id}')">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2">
+                                    ${isLatest ? '<span class="text-xs bg-jade/20 text-jade px-1.5 py-0.5 rounded">最新</span>' : ''}
+                                    <span class="text-xs text-gray-500">#${sortedData.length - index}</span>
+                                </div>
+                                <div class="text-sm text-gray-300 mt-1 truncate">${guildNames || '未命名帮会'}</div>
+                                <div class="text-xs text-gray-500 mt-0.5">
+                                    <i class="far fa-clock mr-1"></i>${dateStr}
+                                    <span class="mx-1">|</span>
+                                    <i class="fas fa-users mr-1"></i>${totalPlayers}人
+                                </div>
+                            </div>
+                            <div class="flex gap-1 ml-2">
+                                <button onclick="event.stopPropagation(); deleteBattle('${battle.id}')" 
+                                        class="p-1.5 text-gray-500 hover:text-red-400 rounded" title="删除">
+                                    <i class="fas fa-trash-alt text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            loadBtn.disabled = !selectedBattleId;
+        }
+
+        // 选择场次
+        function selectBattle(battleId) {
+            selectedBattleId = selectedBattleId === battleId ? null : battleId;
+            updateBattleListUI();
+        }
+
+        // 删除单场
+        function deleteBattle(battleId) {
+            if (!confirm('确定要删除这场帮战数据吗？')) return;
+            multiBattleData = multiBattleData.filter(b => b.id !== battleId);
+            if (selectedBattleId === battleId) selectedBattleId = null;
+            saveMultiBattleData();
+            updateBattleListUI();
+        }
+
+        // 清空所有场次
+        function clearAllBattleData() {
+            if (!confirm('确定要清空所有帮战数据吗？此操作不可恢复。')) return;
+            multiBattleData = [];
+            selectedBattleId = null;
+            saveMultiBattleData();
+            updateBattleListUI();
+            showStatus('所有数据已清空');
+            setTimeout(hideStatus, 2000);
+        }
+
+        // 导入选中场次到分析系统
+        function loadSelectedToAnalysis() {
+            if (!selectedBattleId) return;
+            
+            const battle = multiBattleData.find(b => b.id === selectedBattleId);
+            if (!battle) {
+                alert('未找到选中的场次数据');
+                return;
+            }
+
+            // 保存到原有的存储键，兼容现有分析系统
+            localStorage.setItem('battleData', JSON.stringify(battle.data));
+            
+            // 计算并保存联赛数据
+            const leagueData = calculateLeagueData(battle.data);
+            localStorage.setItem('leagueBattleData', JSON.stringify(leagueData));
+            
+            // 保存当前场次信息
+            localStorage.setItem('currentBattleInfo', JSON.stringify({
+                id: battle.id,
+                dateTime: battle.dateTime,
+                guild1Name: battle.guild1Name,
+                guild2Name: battle.guild2Name
+            }));
+
+            // 跳转到分析页面
+            window.location.href = '../xg_guild_analysis/xg_guild_analysis_main.html';
+        }
+
+        // 导出所有数据
+        function exportAllBattleData() {
+            if (multiBattleData.length === 0) {
+                alert('没有数据可导出');
+                return;
+            }
+            
+            const exportData = {
+                version: '4.0.0',
+                exportTime: new Date().toISOString(),
+                battles: multiBattleData
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `帮战数据备份_${new Date().toLocaleDateString('zh-CN')}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showStatus('数据导出成功');
+            setTimeout(hideStatus, 2000);
+        }
+
+        // 导入备份数据
+        function importAllBattleData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const importData = JSON.parse(e.target.result);
+                    if (importData.battles && Array.isArray(importData.battles)) {
+                        // 合并数据，避免重复
+                        importData.battles.forEach(battle => {
+                            const exists = multiBattleData.some(b => b.id === battle.id);
+                            if (!exists) {
+                                multiBattleData.push(battle);
+                            }
+                        });
+                        
+                        // 限制数量
+                        multiBattleData.sort((a, b) => b.timestamp - a.timestamp);
+                        if (multiBattleData.length > MAX_BATTLE_COUNT) {
+                            multiBattleData = multiBattleData.slice(0, MAX_BATTLE_COUNT);
+                        }
+                        
+                        saveMultiBattleData();
+                        updateBattleListUI();
+                        showStatus(`成功导入 ${importData.battles.length} 场数据`);
+                    } else {
+                        alert('数据格式不正确');
+                    }
+                } catch (err) {
+                    alert('文件解析失败: ' + err.message);
+                }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        // 处理文件导入
+        async function handleFileImport(file) {
+            const dateTime = battleDateTimeInput.value;
+            const guild1Name = guild1NameInput.value.trim();
+            const guild2Name = guild2NameInput.value.trim();
+            
+            if (!dateTime) {
+                alert('请先填写帮战时间');
+                return;
+            }
+            if (!guild1Name || !guild2Name) {
+                alert('请填写双方帮会名称');
+                return;
+            }
+
+            showStatus('正在解析CSV文件...');
+            
+            try {
+                const result = await loadDataFromCSV(file);
+                if (Object.keys(result).length === 0) {
+                    showStatus('未找到有效的帮会数据');
+                    return;
+                }
+
+                // 创建场次数据
+                const battleTime = new Date(dateTime);
+                const battleId = `battle_${battleTime.getTime()}`;
+                
+                // 检查是否已存在相同时段的场次
+                const existingIndex = multiBattleData.findIndex(b => 
+                    Math.abs(b.timestamp - battleTime.getTime()) < 3600000
+                );
+                
+                const newBattle = {
+                    id: battleId,
+                    dateTime: dateTime,
+                    timestamp: battleTime.getTime(),
+                    fileName: file.name,
+                    guild1Name: guild1Name,
+                    guild2Name: guild2Name,
+                    data: result,
+                    importTime: new Date().toISOString()
+                };
+                
+                if (existingIndex >= 0) {
+                    if (confirm('检测到相同时段已有数据，是否覆盖？')) {
+                        multiBattleData[existingIndex] = newBattle;
+                    } else {
+                        hideStatus();
+                        return;
+                    }
+                } else {
+                    multiBattleData.push(newBattle);
+                }
+                
+                // 排序并限制数量
+                multiBattleData.sort((a, b) => b.timestamp - a.timestamp);
+                if (multiBattleData.length > MAX_BATTLE_COUNT) {
+                    multiBattleData = multiBattleData.slice(0, MAX_BATTLE_COUNT);
+                }
+                
+                saveMultiBattleData();
+                updateBattleListUI();
+                
+                // 自动选中新导入的场次
+                selectedBattleId = battleId;
+                updateBattleListUI();
+                
+                showStatus(`成功导入！共 ${Object.values(result).reduce((a,b)=>a+b.length,0)} 条数据`);
+                
+                // 清空输入（保留时间）
+                guild1NameInput.value = '';
+                guild2NameInput.value = '';
+                
+            } catch (error) {
+                console.error('CSV文件解析失败:', error);
+                showStatus('文件解析失败: ' + error.message);
+            }
+        }
+
+        // 解析CSV行
         function parseCSVLine(line) {
             const result = [];
             let current = '';
             let inQuotes = false;
-
             for (let i = 0; i < line.length; i++) {
                 const char = line[i];
-
-                if (char === '"') {
-                    inQuotes = !inQuotes;
-                } else if (char === ',' && !inQuotes) {
+                if (char === '"') inQuotes = !inQuotes;
+                else if (char === ',' && !inQuotes) {
                     result.push(current);
                     current = '';
-                } else {
-                    current += char;
-                }
+                } else current += char;
             }
             result.push(current);
-
             return result;
         }
 
-        // 从 CSV 文件加载数据
+        // 从CSV加载数据
         function loadDataFromCSV(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -457,53 +826,38 @@
                     try {
                         const text = e.target.result;
                         const lines = text.split('\n').filter(line => line.trim());
-                        
-                        console.log(`解析文件 ${file.name}，行数：${lines.length}`);
-                        console.log('前3行:', lines.slice(0, 3));
-                        
                         const result = {};
                         let currentGuild = null;
                         let headers = null;
                         let guildData = [];
-                        let guildIndex = 0;  // 帮会序号，用于自动生成名称
+                        let guildIndex = 0;
 
                         for (let i = 0; i < lines.length; i++) {
                             const line = lines[i].trim();
                             if (!line) continue;
-
                             const values = parseCSVLine(line);
-                            console.log(`第${i+1}行，字段数：${values.length}，前2个字段：${values.slice(0,2)}`);
 
-                            // 检查是否是帮会标识行（格式："帮会名","人数"）或分隔符
+                            // 帮会标识行
                             if (values.length === 2) {
                                 const guildName = values[0].replace(/"/g, '').trim();
                                 const memberCount = values[1].replace(/"/g, '').trim();
                                 const isNumber = /^\d+$/.test(memberCount);
                                 
-                                // 处理 "nil","nil" 分隔符（保存当前帮会，准备解析新帮会）
                                 if (guildName === 'nil' && memberCount === 'nil') {
-                                    console.log('检测到帮会分隔符');
                                     if (currentGuild && guildData.length > 0) {
-                                        console.log(`保存帮会 ${currentGuild}，成员数：${guildData.length}`);
                                         result[currentGuild] = guildData;
                                     }
-                                    
-                                    // 生成下一个帮会名称
                                     guildIndex++;
                                     currentGuild = `帮会${guildIndex}`;
-                                    console.log(`创建新帮会：${currentGuild}`);
                                     guildData = [];
-                                    headers = null;  // 重置表头，允许识别新表头
+                                    headers = null;
                                     continue;
                                 }
                                 
                                 if (isNumber && guildName.length > 0 && guildName.length < 20) {
-                                    console.log(`检测到帮会标识行：${guildName}，人数：${memberCount}`);
                                     if (currentGuild && guildData.length > 0) {
-                                        console.log(`保存帮会 ${currentGuild}，成员数：${guildData.length}`);
                                         result[currentGuild] = guildData;
                                     }
-                                    
                                     currentGuild = guildName;
                                     guildData = [];
                                     headers = null;
@@ -511,11 +865,10 @@
                                 }
                             }
 
-                            // 检查是否是表头行
+                            // 表头行
                             if (!headers && values.length >= 2 && 
                                 (values[0].includes('玩家') || values[1].includes('职业'))) {
                                 headers = values.map(v => v.replace(/"/g, '').trim());
-                                console.log('检测到表头行:', headers);
                                 continue;
                             }
 
@@ -525,80 +878,77 @@
                                 headers.forEach((header, index) => {
                                     player[header] = values[index] ? values[index].replace(/"/g, '').trim() : '';
                                 });
-
                                 const nonEmptyValues = Object.values(player).filter(v => v && v.trim());
                                 if (nonEmptyValues.length > 2 && !player['玩家名字'].includes('玩家')) {
+                                    // 数值字段处理
                                     const numericFields = ['击败/清泉', '助攻', '资源', '对玩家伤害', '人伤卸甲',
                                                             '对建筑伤害', '破塔卸甲', '治疗值', '承受伤害', '重伤', '复活/清泉', '焚骨'];
-
-                                    // 初始化拆分字段
                                     player['击败'] = 0;
                                     player['破泉'] = 0;
                                     player['化羽'] = 0;
                                     player['清泉'] = 0;
+                                    player['复活'] = 0; // 新增：素问/鸿音的复活字段
 
                                     numericFields.forEach(field => {
                                         if (player[field] !== undefined && player[field] !== '') {
                                             const value = player[field].replace(/,/g, '');
-
-                                            // 特殊处理 "击败/清泉" 字段
                                             if (field === '击败/清泉') {
                                                 if (value.includes('/')) {
                                                     const parts = value.split('/');
-                                                    player['击败'] = (player['击败'] || 0) + (parseInt(parts[0].trim()) || 0);
-                                                    player['破泉'] = (player['破泉'] || 0) + (parseInt(parts[1].trim()) || 0);
+                                                    player['击败'] = parseInt(parts[0].trim()) || 0;
+                                                    player['破泉'] = parseInt(parts[1].trim()) || 0;
                                                 } else {
-                                                    player['击败'] = (player['击败'] || 0) + (parseInt(value.trim()) || 0);
+                                                    player['击败'] = parseInt(value.trim()) || 0;
                                                 }
-                                            }
-                                            // 特殊处理 "复活/清泉" 字段
-                                            else if (field === '复活/清泉') {
+                                            } else if (field === '复活/清泉') {
+                                                const profession = player['职业'];
                                                 if (value.includes('/')) {
                                                     const parts = value.split('/');
-                                                    player['化羽'] = (player['化羽'] || 0) + (parseInt(parts[0].trim()) || 0);
-                                                    player['清泉'] = (player['清泉'] || 0) + (parseInt(parts[1].trim()) || 0);
-                                                } else {
-                                                    const profession = player['职业'];
+                                                    const part0 = parseInt(parts[0].trim()) || 0;
+                                                    const part1 = parseInt(parts[1].trim()) || 0;
                                                     if (profession === '潮光') {
-                                                        player['清泉'] = (player['清泉'] || 0) + (parseInt(value.trim()) || 0);
-                                                        player['化羽'] = 0;
-                                                    } else if (profession === '素问') {
-                                                        player['化羽'] = (player['化羽'] || 0) + (parseInt(value.trim()) || 0);
-                                                        player['清泉'] = 0;
+                                                        // 潮光：第一部分是复活(0)，第二部分是清泉
+                                                        player['复活'] = part0;
+                                                        player['清泉'] = part1;
+                                                    } else if (profession === '素问' || profession === '鸿音') {
+                                                        // 素问/鸿音：第一部分是复活，第二部分是清泉(0)
+                                                        player['复活'] = part0;
+                                                        player['清泉'] = part1;
                                                     } else {
-                                                        player['化羽'] = (player['化羽'] || 0) + (parseInt(value.trim()) || 0);
-                                                        player['清泉'] = 0;
+                                                        // 其他职业：第一部分是化羽，第二部分是清泉(0)
+                                                        player['化羽'] = part0;
+                                                        player['清泉'] = part1;
+                                                    }
+                                                } else {
+                                                    const singleValue = parseInt(value.trim()) || 0;
+                                                    if (profession === '潮光') {
+                                                        // 潮光：这个值是清泉
+                                                        player['清泉'] = singleValue;
+                                                    } else if (profession === '素问' || profession === '鸿音') {
+                                                        // 素问/鸿音：这个值是复活
+                                                        player['复活'] = singleValue;
+                                                    } else {
+                                                        // 其他职业：默认当作化羽处理
+                                                        player['化羽'] = singleValue;
                                                     }
                                                 }
-                                            }
-                                            // 其他数值字段直接转换
-                                            else {
+                                            } else {
                                                 player[field] = isNaN(value) ? value : parseFloat(value);
                                             }
                                         }
                                     });
-
                                     guildData.push(player);
-                                    console.log(`添加玩家：${player['玩家名字']}，职业：${player['职业']}，击败：${player['击败'] || 0}，清泉：${player['清泉'] || 0}，化羽：${player['化羽'] || 0}，助攻：${player['助攻'] || 0}`);
-                                } else {
-                                    console.log('跳过行，非数据行或表头行');
                                 }
-                            } else if (!headers) {
-                                console.log('未检测到表头，跳过行');
                             }
                         }
 
-                        // 保存最后一个帮会的数据
                         if (guildData.length > 0) {
                             const saveGuildName = currentGuild || `帮会${guildIndex || 1}`;
-                            console.log(`保存最后一个帮会 ${saveGuildName}，成员数：${guildData.length}`);
                             result[saveGuildName] = guildData;
                         }
 
-                        console.log(`文件 ${file.name} 解析结果：`, result);
                         resolve(result);
                     } catch (error) {
-                        console.error(`解析文件 ${file.name} 时出错：`, error);
                         reject(error);
                     }
                 };
@@ -606,92 +956,38 @@
                 reader.readAsText(file);
             });
         }
-        
-        // 计算联赛数据（添加衍生字段）
+
+        // 计算联赛数据
         function calculateLeagueData(battleData) {
             const leagueData = {};
-            const guildNames = Object.keys(battleData);
-
-            guildNames.forEach(guildName => {
+            Object.keys(battleData).forEach(guildName => {
                 const players = battleData[guildName];
-
-                // 计算全服总和
                 const totals = {
                     defeat: players.reduce((sum, p) => sum + (p['击败'] || 0), 0),
                     assist: players.reduce((sum, p) => sum + (p['助攻'] || 0), 0),
                     playerDamage: players.reduce((sum, p) => sum + (p['对玩家伤害'] || 0), 0),
-                    playerArmorBreak: players.reduce((sum, p) => sum + (p['人伤卸甲'] || 0), 0),
                     buildingDamage: players.reduce((sum, p) => sum + (p['对建筑伤害'] || 0), 0),
-                    buildingArmorBreak: players.reduce((sum, p) => sum + (p['破塔卸甲'] || 0), 0),
                     healing: players.reduce((sum, p) => sum + (p['治疗值'] || 0), 0),
                     takenDamage: players.reduce((sum, p) => sum + (p['承受伤害'] || 0), 0),
-                    heavyInjury: players.reduce((sum, p) => sum + (p['重伤'] || 0), 0),
-                    revive: players.reduce((sum, p) => sum + (p['复活'] || 0), 0),
-                    qingquan: players.reduce((sum, p) => sum + (p['清泉'] || 0), 0),
-                    fengu: players.reduce((sum, p) => sum + (p['焚骨'] || 0), 0),
                     deaths: 0
                 };
 
-                // 计算每个玩家的衍生数据
-                const enrichedPlayers = players.map((player, index) => {
+                const enrichedPlayers = players.map(player => {
                     const deaths = Math.floor((player['承受伤害'] || 0) / 5000) || 0;
                     totals.deaths += deaths;
-
-                    const defeat = player['击败'] || 0;
-                    const qingquan = player['清泉'] || 0;
-                    const assist = player['助攻'] || 0;
-                    const playerDamage = player['对玩家伤害'] || 0;
-                    const playerArmorBreak = player['人伤卸甲'] || 0;
-                    const buildingDamage = player['对建筑伤害'] || 0;
-                    const buildingArmorBreak = player['破塔卸甲'] || 0;
-                    const healing = player['治疗值'] || 0;
-                    const takenDamage = player['承受伤害'] || 0;
-                    const resource = player['资源'] || 0;
-
+                    
                     return {
                         ...player,
-                        '击败': defeat,
-                        '清泉': qingquan,
-                        '助攻': assist,
-                        '资源': resource,
-                        '对玩家伤害': playerDamage,
-                        '人伤卸甲': playerArmorBreak,
-                        '对建筑伤害': buildingDamage,
-                        '破塔卸甲': buildingArmorBreak,
-                        '治疗值': healing,
-                        '承受伤害': takenDamage,
-                        '重伤': player['重伤'] || 0,
-                        '复活': player['复活'] || 0,
-                        '焚骨': player['焚骨'] || 0,
                         '死亡次数': deaths,
-                        'KDA': deaths > 0 ? ((defeat + assist) / deaths).toFixed(2) : (defeat + assist).toFixed(2),
-                        '秒伤': Math.round(playerDamage / 300),
-                        '秒奶': Math.round(healing / 300),
-                        '击败占比': totals.defeat > 0 ? ((defeat / totals.defeat) * 100).toFixed(2) + '%' : '0%',
-                        '清泉占比': totals.qingquan > 0 ? ((qingquan / totals.qingquan) * 100).toFixed(2) + '%' : '0%',
-                        '助攻占比': totals.assist > 0 ? ((assist / totals.assist) * 100).toFixed(2) + '%' : '0%',
-                        '人伤占比': totals.playerDamage > 0 ? ((playerDamage / totals.playerDamage) * 100).toFixed(2) + '%' : '0%',
-                        '人伤卸甲占比': totals.playerArmorBreak > 0 ? ((playerArmorBreak / totals.playerArmorBreak) * 100).toFixed(2) + '%' : '0%',
-                        '拆塔占比': totals.buildingDamage > 0 ? ((buildingDamage / totals.buildingDamage) * 100).toFixed(2) + '%' : '0%',
-                        '破塔卸甲占比': totals.buildingArmorBreak > 0 ? ((buildingArmorBreak / totals.buildingArmorBreak) * 100).toFixed(2) + '%' : '0%',
-                        '治疗占比': totals.healing > 0 ? ((healing / totals.healing) * 100).toFixed(2) + '%' : '0%',
-                        '承伤占比': totals.takenDamage > 0 ? ((takenDamage / totals.takenDamage) * 100).toFixed(2) + '%' : '0%',
-                        '死亡占比': totals.deaths > 0 ? ((deaths / totals.deaths) * 100).toFixed(2) + '%' : '0%',
-                        '参与击杀均伤': (defeat + assist) > 0 ? Math.round(playerDamage / (defeat + assist)) : 0,
-                        '每死输出值': deaths > 0 ? Math.round(playerDamage / deaths) : playerDamage,
-                        '每死承伤': deaths > 0 ? Math.round(takenDamage / deaths) : takenDamage,
-                        '每死治疗量': deaths > 0 ? Math.round(healing / deaths) : healing,
-                        '治疗转化率': playerDamage > 0 ? ((healing / playerDamage) * 100).toFixed(2) + '%' : '0%',
-                        '清泉使用率': defeat > 0 ? (qingquan / defeat).toFixed(2) : '0',
-                        '焚骨使用率': defeat > 0 ? ((player['焚骨'] || 0) / defeat).toFixed(2) : '0',
-                        '人伤卸甲率': playerDamage > 0 ? ((playerArmorBreak / playerDamage) * 100).toFixed(2) + '%' : '0%',
-                        '破塔卸甲率': buildingDamage > 0 ? ((buildingArmorBreak / buildingDamage) * 100).toFixed(2) + '%' : '0%'
+                        'KDA': deaths > 0 ? ((player['击败'] + player['助攻']) / deaths).toFixed(2) : (player['击败'] + player['助攻']).toFixed(2),
+                        '击败占比': totals.defeat > 0 ? ((player['击败'] / totals.defeat) * 100).toFixed(2) + '%' : '0%',
+                        '人伤占比': totals.playerDamage > 0 ? ((player['对玩家伤害'] / totals.playerDamage) * 100).toFixed(2) + '%' : '0%',
+                        '治疗占比': totals.healing > 0 ? ((player['治疗值'] / totals.healing) * 100).toFixed(2) + '%' : '0%'
                     };
                 });
 
                 leagueData[guildName] = enrichedPlayers;
             });
-
             return leagueData;
         }
 
@@ -706,165 +1002,10 @@
             statusIndicator.classList.add('hidden');
         }
 
-        // 处理文件导入
-        async function handleFileImport(file) {
-            if (!file) return false;
-            
-            showStatus('正在解析CSV文件...');
-            
-            try {
-                const result = await loadDataFromCSV(file);
-                if (Object.keys(result).length === 0) {
-                    showStatus('未找到有效的帮会数据');
-                    return false;
-                }
-                
-                // 保存数据到localStorage
-                localStorage.setItem('battleData', JSON.stringify(result));
-                
-                // 计算衍生数据并保存
-                const leagueData = calculateLeagueData(result);
-                localStorage.setItem('leagueBattleData', JSON.stringify(leagueData));
-
-                showStatus('数据导入成功！请点击下方按钮跳转：');
-
-                // 显示跳转按钮
-                let jumpButtons = document.getElementById('jumpButtons');
-                
-                if (jumpButtons) {
-                    jumpButtons.remove();
-                }
-                
-                jumpButtons = document.createElement('div');
-                jumpButtons.id = 'jumpButtons';
-                jumpButtons.className = 'mt-4 flex flex-wrap gap-3 justify-center';
-                jumpButtons.innerHTML = `
-                    <a href="../xg_guild_analysis/xg_guild_analysis_main.html" class="jump-btn">
-                        <i class="fas fa-chart-line mr-2"></i>前往帮会对比分析
-                    </a>
-                `;
-                
-                statusIndicator.parentNode.insertBefore(jumpButtons, statusIndicator.nextSibling);
-
-                return true;
-            } catch (error) {
-                console.error('CSV文件解析失败:', error);
-                showStatus('文件解析失败，请检查格式');
-                return false;
-            }
-        }
-
-        // 清除数据
+        // 清除数据（兼容旧函数）
         function clearData() {
-            if (confirm('确定要清除所有保存的数据吗？清除后需要重新导入CSV文件。')) {
-                localStorage.removeItem('battleData');
-                localStorage.removeItem('leagueBattleData');
-                alert('数据已清除！请重新导入CSV文件。');
-            }
+            clearAllBattleData();
         }
-
-        // 初始化
-        document.addEventListener('DOMContentLoaded', () => {
-            // 初始化DOM元素
-            importBtn = document.getElementById('importBtn');
-            csvFileInput = document.getElementById('csvFileInput');
-            statusIndicator = document.getElementById('statusIndicator');
-            statusText = document.getElementById('statusText');
-            uploadZone = document.getElementById('uploadZone');
-            defaultFolderInput = document.getElementById('defaultFolder');
-            saveFolderBtn = document.getElementById('saveFolderBtn');
-            openFolderBtn = document.getElementById('openFolderBtn');
-
-            // 加载保存的文件夹路径
-            const savedFolder = localStorage.getItem('defaultDataFolder');
-            if (savedFolder) {
-                defaultFolderInput.value = savedFolder;
-            } else {
-                defaultFolderInput.value = DEFAULT_FOLDER;
-            }
-
-            // 保存文件夹按钮事件
-            saveFolderBtn.addEventListener('click', () => {
-                const folderPath = defaultFolderInput.value.trim();
-                if (folderPath) {
-                    localStorage.setItem('defaultDataFolder', folderPath);
-                    alert('默认文件夹路径已保存！');
-                } else {
-                    alert('请输入有效的文件夹路径！');
-                }
-            });
-
-            // 打开文件夹按钮事件
-            openFolderBtn.addEventListener('click', () => {
-                const folderPath = defaultFolderInput.value.trim();
-                if (folderPath) {
-                    if (window.require && window.require('electron')) {
-                        const { shell } = window.require('electron');
-                        shell.openPath(folderPath);
-                    } else {
-                        alert('请手动打开文件夹：\n' + folderPath + '\n\n提示：将此路径复制到文件资源管理器地址栏中访问');
-                    }
-                } else {
-                    alert('请输入文件夹路径！');
-                }
-            });
-
-            // 导入按钮点击事件
-            importBtn.addEventListener('click', () => {
-                csvFileInput.click();
-            });
-
-            // 上传区点击事件
-            uploadZone.addEventListener('click', (e) => {
-                if (e.target !== csvFileInput) {
-                    csvFileInput.click();
-                }
-            });
-
-            // 拖拽事件
-            uploadZone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                uploadZone.classList.add('dragover');
-            });
-
-            uploadZone.addEventListener('dragleave', () => {
-                uploadZone.classList.remove('dragover');
-            });
-
-            uploadZone.addEventListener('drop', async (e) => {
-                e.preventDefault();
-                uploadZone.classList.remove('dragover');
-                
-                const files = e.dataTransfer.files;
-                if (files.length > 0 && files[0].name.endsWith('.csv')) {
-                    importBtn.disabled = true;
-                    importBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i>处理中...';
-                    
-                    await handleFileImport(files[0]);
-                    
-                    importBtn.disabled = false;
-                    importBtn.innerHTML = '<i class="fas fa-upload mr-3"></i>选择CSV文件并导入';
-                } else {
-                    alert('请上传CSV文件');
-                }
-            });
-
-            // 文件选择事件
-            csvFileInput.addEventListener('change', async (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-
-                importBtn.disabled = true;
-                importBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i>处理中...';
-                
-                await handleFileImport(file);
-                
-                importBtn.disabled = false;
-                importBtn.innerHTML = '<i class="fas fa-upload mr-3"></i>选择CSV文件并导入';
-                
-                csvFileInput.value = '';
-            });
-        });
     </script>
 </body>
 </html>
