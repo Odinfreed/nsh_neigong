@@ -436,11 +436,28 @@
                             <h3 class="text-xs font-medium text-gray-400 mb-2 flex items-center">
                                 <i class="fas fa-edit mr-2"></i>本场帮战信息
                             </h3>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                                 <div>
                                     <label class="block text-xs text-gray-500 mb-1">帮战时间</label>
                                     <input type="datetime-local" id="battleDateTime" class="custom-input w-full px-2 py-1.5 text-sm rounded-sm">
+                                    <div class="flex gap-2 mt-2">
+                                        <button onclick="setQuickTime('20:00')" class="action-btn px-2 py-1 text-xs rounded-sm flex-1">
+                                            <i class="far fa-clock mr-1"></i>20:00
+                                        </button>
+                                        <button onclick="setQuickTime('20:30')" class="action-btn px-2 py-1 text-xs rounded-sm flex-1">
+                                            <i class="far fa-clock mr-1"></i>20:30
+                                        </button>
+                                    </div>
                                 </div>
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">数据类型</label>
+                                    <select id="battleType" class="custom-input w-full px-2 py-1.5 text-sm rounded-sm">
+                                        <option value="guild" selected>帮战数据</option>
+                                        <option value="practice">约战数据</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div>
                                     <label class="block text-xs text-gray-500 mb-1">帮会 1</label>
                                     <input type="text" id="guild1NameInput" placeholder="输入帮会1名称" class="custom-input w-full px-2 py-1.5 text-sm rounded-sm">
@@ -449,6 +466,52 @@
                                     <label class="block text-xs text-gray-500 mb-1">帮会 2</label>
                                     <input type="text" id="guild2NameInput" placeholder="输入帮会2名称" class="custom-input w-full px-2 py-1.5 text-sm rounded-sm">
                                 </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 编辑模式按钮（选中左侧数据时显示） -->
+                        <div id="editModeSection" class="input-section rounded-sm p-3 mb-4 hidden">
+                            <h3 class="text-xs font-medium text-jade mb-2 flex items-center">
+                                <i class="fas fa-pen mr-2"></i>编辑场次信息
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">帮战时间</label>
+                                    <input type="datetime-local" id="editBattleDateTime" class="custom-input w-full px-2 py-1.5 text-sm rounded-sm">
+                                    <div class="flex gap-2 mt-2">
+                                        <button onclick="setEditQuickTime('20:00')" class="action-btn px-2 py-1 text-xs rounded-sm flex-1">
+                                            <i class="far fa-clock mr-1"></i>20:00
+                                        </button>
+                                        <button onclick="setEditQuickTime('20:30')" class="action-btn px-2 py-1 text-xs rounded-sm flex-1">
+                                            <i class="far fa-clock mr-1"></i>20:30
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">数据类型</label>
+                                    <select id="editBattleType" class="custom-input w-full px-2 py-1.5 text-sm rounded-sm">
+                                        <option value="guild">帮战数据</option>
+                                        <option value="practice">约战数据</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">帮会 1</label>
+                                    <input type="text" id="editGuild1Name" placeholder="输入帮会1名称" class="custom-input w-full px-2 py-1.5 text-sm rounded-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">帮会 2</label>
+                                    <input type="text" id="editGuild2Name" placeholder="输入帮会2名称" class="custom-input w-full px-2 py-1.5 text-sm rounded-sm">
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="saveEditBattle()" class="primary-btn px-4 py-2 text-sm rounded-sm flex-1">
+                                    <i class="fas fa-save mr-2"></i>保存修改
+                                </button>
+                                <button onclick="cancelEditBattle()" class="action-btn px-4 py-2 text-sm rounded-sm">
+                                    <i class="fas fa-times mr-2"></i>取消
+                                </button>
                             </div>
                         </div>
 
@@ -528,8 +591,10 @@
         // DOM元素
         let importBtn, csvFileInput, statusIndicator, statusText, uploadZone;
         let defaultFolderInput, saveFolderBtn, openFolderBtn;
-        let battleDateTimeInput, guild1NameInput, guild2NameInput;
+        let battleDateTimeInput, guild1NameInput, guild2NameInput, battleTypeInput;
         let parseResult, detectedGuild1, detectedGuild2, manualInputHint, battleInfoSection;
+        let editModeSection, editBattleDateTime, editBattleType, editGuild1Name, editGuild2Name;
+        let currentEditingBattleId = null;
 
         // 初始化
         document.addEventListener('DOMContentLoaded', () => {
@@ -545,19 +610,23 @@
             battleDateTimeInput = document.getElementById('battleDateTime');
             guild1NameInput = document.getElementById('guild1NameInput');
             guild2NameInput = document.getElementById('guild2NameInput');
+            battleTypeInput = document.getElementById('battleType');
             parseResult = document.getElementById('parseResult');
             detectedGuild1 = document.getElementById('detectedGuild1');
             detectedGuild2 = document.getElementById('detectedGuild2');
             manualInputHint = document.getElementById('manualInputHint');
             battleInfoSection = document.getElementById('battleInfoSection');
+            editModeSection = document.getElementById('editModeSection');
+            editBattleDateTime = document.getElementById('editBattleDateTime');
+            editBattleType = document.getElementById('editBattleType');
+            editGuild1Name = document.getElementById('editGuild1Name');
+            editGuild2Name = document.getElementById('editGuild2Name');
 
             // 加载多场数据缓存
             loadMultiBattleData();
             
-            // 设置默认时间为当前时间
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            battleDateTimeInput.value = now.toISOString().slice(0, 16);
+            // 设置默认时间为最近的周六 20:00
+            setDefaultSaturdayTime();
 
             // 加载保存的文件夹路径
             const savedFolder = localStorage.getItem('defaultDataFolder');
@@ -610,6 +679,47 @@
                 }
             });
         });
+
+        // 获取最近的周六日期
+        function getNearestSaturday() {
+            const now = new Date();
+            const dayOfWeek = now.getDay(); // 0是周日，6是周六
+            const daysUntilSaturday = (6 - dayOfWeek + 7) % 7;
+            const saturday = new Date(now);
+            saturday.setDate(now.getDate() + daysUntilSaturday);
+            return saturday;
+        }
+        
+        // 设置默认时间为最近周六 20:00
+        function setDefaultSaturdayTime() {
+            const saturday = getNearestSaturday();
+            saturday.setHours(20, 0, 0, 0);
+            saturday.setMinutes(saturday.getMinutes() - saturday.getTimezoneOffset());
+            battleDateTimeInput.value = saturday.toISOString().slice(0, 16);
+        }
+        
+        // 设置快捷时间
+        function setQuickTime(timeStr) {
+            const currentValue = battleDateTimeInput.value;
+            if (!currentValue) {
+                setDefaultSaturdayTime();
+            }
+            const date = new Date(battleDateTimeInput.value);
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            date.setHours(hours, minutes, 0, 0);
+            date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+            battleDateTimeInput.value = date.toISOString().slice(0, 16);
+        }
+        
+        // 设置编辑模式快捷时间
+        function setEditQuickTime(timeStr) {
+            if (!editBattleDateTime.value) return;
+            const date = new Date(editBattleDateTime.value);
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            date.setHours(hours, minutes, 0, 0);
+            date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+            editBattleDateTime.value = date.toISOString().slice(0, 16);
+        }
 
         // 加载多场数据
         function loadMultiBattleData() {
@@ -713,17 +823,24 @@
                 const isChecked = selectedBattleIds.has(battle.id);
                 const isActive = activeBattleId === battle.id;
                 const isLatest = index === 0;
+                const isEditing = currentEditingBattleId === battle.id;
+                // 数据类型标签
+                const typeLabel = battle.battleType === 'practice' ? 
+                    '<span class="text-xs bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded">约战</span>' :
+                    '<span class="text-xs bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded">帮战</span>';
                 
                 return `
-                    <div class="battle-item rounded-sm p-3 ${isActive ? 'active' : ''}">
+                    <div class="battle-item rounded-sm p-3 ${isActive ? 'active' : ''} ${isEditing ? 'border-jade' : ''}">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2 flex-1 min-w-0" onclick="setActiveBattle('${battle.id}')">
                                 ${showCheckboxes ? `<input type="checkbox" class="battle-checkbox" ${isChecked ? 'checked' : ''} 
                                        onclick="event.stopPropagation(); toggleMultiSelect('${battle.id}')">` : ''}
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center gap-2">
+                                        ${typeLabel}
                                         ${isLatest ? '<span class="text-xs bg-jade/20 text-jade px-1.5 py-0.5 rounded">最新</span>' : ''}
                                         ${isActive ? '<span class="text-xs bg-yellow-500/20 text-yellow-400 px-1.5 py-0.5 rounded">当前</span>' : ''}
+                                        ${isEditing ? '<span class="text-xs bg-jade/30 text-jade px-1.5 py-0.5 rounded"><i class="fas fa-pen mr-1"></i>编辑中</span>' : ''}
                                         <span class="text-xs text-gray-500">#${sortedData.length - index}</span>
                                     </div>
                                     <div class="text-sm text-gray-300 mt-1 truncate">${guildNames}</div>
@@ -735,6 +852,10 @@
                                 </div>
                             </div>
                             <div class="flex gap-1 ml-2">
+                                <button onclick="event.stopPropagation(); editBattle('${battle.id}')" 
+                                        class="p-1.5 text-gray-500 hover:text-jade rounded" title="编辑">
+                                    <i class="fas fa-pen text-xs"></i>
+                                </button>
                                 <button onclick="event.stopPropagation(); deleteBattle('${battle.id}')" 
                                         class="p-1.5 text-gray-500 hover:text-red-400 rounded" title="删除">
                                     <i class="fas fa-trash-alt text-xs"></i>
@@ -763,7 +884,88 @@
         // 设置当前激活的场次（单选，用于导入到分析系统）
         function setActiveBattle(battleId) {
             activeBattleId = activeBattleId === battleId ? null : battleId;
+            // 取消编辑模式
+            if (currentEditingBattleId && currentEditingBattleId !== battleId) {
+                cancelEditBattle();
+            }
             updateBattleListUI();
+        }
+        
+        // 编辑场次信息
+        function editBattle(battleId) {
+            const battle = multiBattleData.find(b => b.id === battleId);
+            if (!battle) return;
+            
+            currentEditingBattleId = battleId;
+            
+            // 填充编辑表单
+            const date = new Date(battle.dateTime);
+            date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+            editBattleDateTime.value = date.toISOString().slice(0, 16);
+            editBattleType.value = battle.battleType || 'guild';
+            editGuild1Name.value = battle.guild1Name || '';
+            editGuild2Name.value = battle.guild2Name || '';
+            
+            // 显示编辑区域，隐藏其他区域
+            editModeSection.classList.remove('hidden');
+            battleInfoSection.classList.add('hidden');
+            parseResult.classList.add('hidden');
+            
+            // 设置当前编辑的场次为激活状态
+            activeBattleId = battleId;
+            updateBattleListUI();
+        }
+        
+        // 保存编辑的场次
+        function saveEditBattle() {
+            if (!currentEditingBattleId) return;
+            
+            const battleIndex = multiBattleData.findIndex(b => b.id === currentEditingBattleId);
+            if (battleIndex === -1) return;
+            
+            const dateTime = editBattleDateTime.value;
+            const battleType = editBattleType.value;
+            const guild1Name = editGuild1Name.value.trim();
+            const guild2Name = editGuild2Name.value.trim();
+            
+            if (!dateTime) {
+                alert('请填写帮战时间');
+                return;
+            }
+            
+            if (!guild1Name || !guild2Name) {
+                alert('请填写双方帮会名称');
+                return;
+            }
+            
+            const battleTime = new Date(dateTime);
+            
+            // 更新数据
+            multiBattleData[battleIndex].dateTime = dateTime;
+            multiBattleData[battleIndex].timestamp = battleTime.getTime();
+            multiBattleData[battleIndex].battleType = battleType;
+            multiBattleData[battleIndex].guild1Name = guild1Name;
+            multiBattleData[battleIndex].guild2Name = guild2Name;
+            
+            // 重新排序
+            multiBattleData.sort((a, b) => b.timestamp - a.timestamp);
+            
+            saveMultiBattleData();
+            updateBattleListUI();
+            cancelEditBattle();
+            
+            showStatus('场次信息已更新');
+            setTimeout(hideStatus, 2000);
+        }
+        
+        // 取消编辑
+        function cancelEditBattle() {
+            currentEditingBattleId = null;
+            editModeSection.classList.add('hidden');
+            editBattleDateTime.value = '';
+            editBattleType.value = 'guild';
+            editGuild1Name.value = '';
+            editGuild2Name.value = '';
         }
 
         // 切换多选（用于批量导入）
@@ -1054,6 +1256,7 @@
             if (!parsedFileInfo) return;
 
             const dateTime = battleDateTimeInput.value;
+            const battleType = battleTypeInput.value;
             let guild1Name = guild1NameInput.value.trim();
             let guild2Name = guild2NameInput.value.trim();
             
@@ -1081,12 +1284,7 @@
 
             // 创建场次数据
             const battleTime = new Date(dateTime);
-            const battleId = `battle_${battleTime.getTime()}`;
-            
-            // 检查是否已存在相同时段的场次
-            const existingIndex = multiBattleData.findIndex(b => 
-                Math.abs(b.timestamp - battleTime.getTime()) < 3600000
-            );
+            const battleId = `battle_${battleTime.getTime()}_${Math.random().toString(36).substr(2, 9)}`;
             
             const newBattle = {
                 id: battleId,
@@ -1095,21 +1293,14 @@
                 fileName: parsedFileInfo.file.name,
                 guild1Name: guild1Name,
                 guild2Name: guild2Name,
+                battleType: battleType, // 数据类型：帮战/约战
                 guildNames: parsedFileInfo.guildNames, // 保存原始识别的帮会名
                 data: parsedFileInfo.data,
                 importTime: new Date().toISOString()
             };
             
-            if (existingIndex >= 0) {
-                if (confirm('检测到相同时段已有数据，是否覆盖？')) {
-                    multiBattleData[existingIndex] = newBattle;
-                } else {
-                    hideStatus();
-                    return;
-                }
-            } else {
-                multiBattleData.push(newBattle);
-            }
+            // 直接添加新数据，不检查同时间段（允许同一时间段有多场）
+            multiBattleData.push(newBattle);
             
             // 按时间排序（不限制存储数量）
             multiBattleData.sort((a, b) => b.timestamp - a.timestamp);
@@ -1136,14 +1327,15 @@
             parseResult.classList.add('hidden');
             battleInfoSection.classList.add('hidden');
             manualInputHint.classList.add('hidden');
+            editModeSection.classList.add('hidden');
+            currentEditingBattleId = null;
             importBtn.disabled = true;
             guild1NameInput.value = '';
             guild2NameInput.value = '';
+            battleTypeInput.value = 'guild'; // 重置为默认帮战
             
-            // 重置时间为当前
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            battleDateTimeInput.value = now.toISOString().slice(0, 16);
+            // 重置时间为最近的周六 20:00
+            setDefaultSaturdayTime();
         }
 
         // 解析CSV行
