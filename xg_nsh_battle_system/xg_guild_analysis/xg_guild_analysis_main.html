@@ -3056,39 +3056,31 @@
             }
 
             // 处理'复活/清泉'字段
-            // 根据职业区分：潮光=清泉，素问/鸿音=复活，其他=化羽
+            // 职业区分：素问/鸿音=化羽（复活），潮光=清泉，其他职业=0
             if (player['复活/清泉'] !== undefined && player['复活/清泉'] !== '') {
                 const value = String(player['复活/清泉']).trim();
+                const profession = player['职业'];
+                
                 if (value.includes('/')) {
                     const parts = value.split('/');
-                    // 分割后的值，根据职业判断
-                    const profession = player['职业'];
-                    if (profession === '潮光') {
-                        // 潮光：前面是复活（0），后面是清泉
-                        player['复活'] = player['复活'] + (parseInt(parts[0]) || 0);
-                        player['清泉'] = player['清泉'] + (parseInt(parts[1]) || 0);
-                    } else if (profession === '素问' || profession === '鸿音') {
-                        // 素问/鸿音：前面是复活，后面是清泉（0）
-                        player['复活'] = player['复活'] + (parseInt(parts[0]) || 0);
-                        player['清泉'] = player['清泉'] + (parseInt(parts[1]) || 0);
-                    } else {
-                        // 其他职业：前面是化羽，后面是清泉（0）
+                    if (profession === '素问' || profession === '鸿音') {
+                        // 素问/鸿音：前半部分是复活（显示为化羽），后半部分是0
                         player['化羽'] = player['化羽'] + (parseInt(parts[0]) || 0);
+                    } else if (profession === '潮光') {
+                        // 潮光：前半部分是0，后半部分是清泉
                         player['清泉'] = player['清泉'] + (parseInt(parts[1]) || 0);
                     }
+                    // 其他职业：化羽和清泉都保持0
                 } else {
-                    // 单个数值，根据职业判断归属
-                    const profession = player['职业'];
-                    if (profession === '潮光') {
+                    // 单个数值
+                    if (profession === '素问' || profession === '鸿音') {
+                        // 素问/鸿音：这个值是复活（显示为化羽）
+                        player['化羽'] = player['化羽'] + (parseInt(value) || 0);
+                    } else if (profession === '潮光') {
                         // 潮光：这个值是清泉
                         player['清泉'] = player['清泉'] + (parseInt(value) || 0);
-                    } else if (profession === '素问' || profession === '鸿音') {
-                        // 素问/鸿音：这个值是复活
-                        player['复活'] = player['复活'] + (parseInt(value) || 0);
-                    } else {
-                        // 其他职业：默认当作化羽处理
-                        player['化羽'] = player['化羽'] + (parseInt(value) || 0);
                     }
+                    // 其他职业：化羽和清泉都保持0
                 }
             }
 
