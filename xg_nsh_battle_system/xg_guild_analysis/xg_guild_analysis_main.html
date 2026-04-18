@@ -7320,6 +7320,11 @@
                     updatePlayerInfo();
                 }
                 
+                // 更新职业末位成员列表（如果当前在该视图）
+                if (activeTab === 'lowperform') {
+                    updateLowPerformMembers();
+                }
+                
                 // 显示提示
                 showNotification(`帮会名称已更新为: ${trimmedName}`, 'success');
             }
