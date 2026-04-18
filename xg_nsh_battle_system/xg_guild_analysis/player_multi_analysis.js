@@ -9,6 +9,30 @@
 
 const MULTI_BATTLE_CACHE_KEY = 'multiBattleCache_v4';
 
+// 格式化大数值为带计量单位的字符串（亿/万/千）
+function formatNumberCompact(num) {
+    if (num === undefined || num === null || isNaN(num)) return '0';
+    const n = Number(num);
+    
+    if (n >= 100000000) return (n / 100000000).toFixed(2) + '亿';
+    if (n >= 10000) return (n / 10000).toFixed(2) + '万';
+    if (n >= 1000) return (n / 1000).toFixed(1) + '千';
+    
+    return Math.round(n).toString();
+}
+
+// 格式化小数值（用于紧凑显示）
+function formatSmallNumber(num) {
+    if (num === undefined || num === null || isNaN(num)) return '0';
+    const n = Number(num);
+    
+    if (n >= 100000000) return (n / 100000000).toFixed(1) + '亿';
+    if (n >= 10000) return (n / 10000).toFixed(1) + '万';
+    if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+    
+    return Math.round(n).toString();
+}
+
 // ==================== 数据获取 ====================
 
 /**
@@ -182,6 +206,14 @@ function renderPlayerTimelineChart(canvasId, metricKey, metricName, color, multi
                     display: true,
                     labels: { color: '#888', font: { size: 10 }, boxWidth: 10 }
                 },
+                datalabels: {
+                    display: true,
+                    align: 'top',
+                    offset: 4,
+                    color: color,
+                    font: { size: 9 },
+                    formatter: (value) => formatSmallNumber(value)
+                },
                 tooltip: {
                     backgroundColor: 'rgba(0,0,0,0.8)',
                     titleColor: '#00d4aa',
@@ -190,10 +222,7 @@ function renderPlayerTimelineChart(canvasId, metricKey, metricName, color, multi
                     borderWidth: 1,
                     callbacks: {
                         label: (context) => {
-                            const val = context.raw;
-                            const displayVal = val >= 10000 ? (val/10000).toFixed(1) + 'w' : 
-                                              val >= 1000 ? (val/1000).toFixed(1) + 'k' : val;
-                            return `${context.dataset.label}: ${displayVal}`;
+                            return `${context.dataset.label}: ${formatNumberCompact(context.raw)}`;
                         }
                     }
                 }
@@ -207,7 +236,7 @@ function renderPlayerTimelineChart(canvasId, metricKey, metricName, color, multi
                     ticks: { 
                         color: '#666', 
                         font: { size: 9 },
-                        callback: (val) => val >= 10000 ? (val/10000).toFixed(0) + 'w' : val
+                        callback: (val) => formatSmallNumber(val)
                     }, 
                     grid: { color: '#222' } 
                 }
@@ -291,7 +320,7 @@ function renderFluctuationPanel(multiData) {
             基于 ${battleCount} 场同职业数据
             <span class="ml-2 text-gray-500">| CV = 变异系数，越低越稳定</span>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
     `;
 
     sortedMetrics.forEach(([metric, data]) => {
@@ -302,20 +331,18 @@ function renderFluctuationPanel(multiData) {
         const badgeColor = data.stability >= 0.8 ? 'bg-green-500/20 text-green-400' :
                           data.stability >= 0.6 ? 'bg-yellow-500/20 text-yellow-400' : 'bg-red-500/20 text-red-400';
 
-        const meanValue = data.mean >= 10000 ? (data.mean/10000).toFixed(1) + 'w' :
-                         data.mean >= 1000 ? (data.mean/1000).toFixed(1) + 'k' :
-                         Math.round(data.mean).toString();
+        const meanValue = formatNumberCompact(data.mean);
 
         html += `
-            <div class="${bgColor} border rounded p-2">
-                <div class="text-xs text-gray-400 mb-1 truncate">${metric}</div>
+            <div class="${bgColor} border rounded p-2 min-w-0">
+                <div class="text-xs text-gray-400 mb-1 truncate" title="${metric}">${metric}</div>
                 <div class="flex items-center justify-between mb-1">
-                    <span class="text-sm font-bold text-gray-200">${meanValue}</span>
+                    <span class="text-sm font-bold text-gray-200 whitespace-nowrap">${meanValue}</span>
                     <span class="text-xs ${stabilityColor}">${(data.stability * 100).toFixed(0)}%</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <span class="text-xs px-1.5 py-0.5 rounded ${badgeColor}">CV ${data.cv.toFixed(2)}</span>
-                    <span class="text-xs text-gray-500">σ${data.stdDev >= 1000 ? (data.stdDev/1000).toFixed(1)+'k' : Math.round(data.stdDev)}</span>
+                    <span class="text-xs text-gray-500">σ${formatSmallNumber(data.stdDev)}</span>
                 </div>
             </div>
         `;
@@ -342,12 +369,12 @@ function renderMultiBattleTable(multiData, activeMetrics) {
     ];
 
     let html = `
-        <table class="w-full text-xs">
+        <table class="w-full text-xs table-fixed">
             <thead class="text-gray-500 border-b border-gray-700">
                 <tr>
-                    <th class="text-left py-2">时间</th>
-                    <th class="text-left">帮会</th>
-                    ${metrics.map(m => `<th class="text-right">${m.label}</th>`).join('')}
+                    <th class="text-left py-2" style="width: 60px;">时间</th>
+                    <th class="text-left" style="width: 80px;">帮会</th>
+                    ${metrics.map(m => `<th class="text-right" style="width: 70px;">${m.label}</th>`).join('')}
                 </tr>
             </thead>
             <tbody>
@@ -360,13 +387,11 @@ function renderMultiBattleTable(multiData, activeMetrics) {
 
         html += `
             <tr class="border-b border-gray-800 ${isLatest ? 'bg-jade/10' : ''}">
-                <td class="py-2 text-gray-400">${dateStr}</td>
-                <td class="text-gray-300">${data.guildName || '-'}</td>
+                <td class="py-2 text-gray-400 whitespace-nowrap">${dateStr}</td>
+                <td class="text-gray-300 truncate" title="${data.guildName || '-'}">${data.guildName || '-'}</td>
                 ${metrics.map(m => {
                     const val = parseFloat(data[m.key]) || 0;
-                    const displayVal = val >= 10000 ? (val/10000).toFixed(1) + 'w' :
-                                      val >= 1000 ? (val/1000).toFixed(1) + 'k' : val;
-                    return `<td class="text-right text-gray-300">${displayVal}</td>`;
+                    return `<td class="text-right text-gray-300 whitespace-nowrap">${formatNumberCompact(val)}</td>`;
                 }).join('')}
             </tr>
         `;
