@@ -1849,7 +1849,7 @@
                                 <div class="space-y-6">
                                     <div class="glass-card rounded-none p-4 shadow-xl">
                                         <div class="flex items-center justify-between mb-3">
-                                            <h3 class="card-title mb-0 text-sm"><i class="fas fa-arrow-down mr-2 text-red-500"></i>帮会一 · 全职业后20%</h3>
+                                            <h3 class="card-title mb-0 text-sm"><i class="fas fa-arrow-down mr-2 text-red-500"></i><span id="lowperformGuild1Name">帮会一</span> · 全职业后20%</h3>
                                             <span class="px-2 py-0.5 bg-red-600/30 text-red-300 rounded text-xs">数据偏低</span>
                                         </div>
                                         <div class="mb-3 p-2 bg-red-500/10 border border-red-500/30 rounded-none text-xs">
@@ -1868,7 +1868,7 @@
                                 <div class="space-y-6">
                                     <div class="glass-card rounded-none p-4 shadow-xl">
                                         <div class="flex items-center justify-between mb-3">
-                                            <h3 class="card-title mb-0 text-sm"><i class="fas fa-arrow-up mr-2 text-green-500"></i>帮会二 · 全职业前20%</h3>
+                                            <h3 class="card-title mb-0 text-sm"><i class="fas fa-arrow-up mr-2 text-green-500"></i><span id="lowperformGuild2Name">帮会二</span> · 全职业前20%</h3>
                                             <span class="px-2 py-0.5 bg-green-600/30 text-green-300 rounded text-xs">数据优秀</span>
                                         </div>
                                         <div class="mb-3 p-2 bg-green-500/10 border border-green-500/30 rounded-none text-xs">
@@ -7540,9 +7540,38 @@
 
         // 初始化数据源管理
         function initDataSourceManager() {
+            // 加载保存的帮会名称
+            loadSavedGuildNames();
+            
             dataSourceManager.initFromCurrentData();
             updateDataSourceUI();
             updateGuildSelectOptions();
+        }
+        
+        // 加载保存的帮会名称
+        function loadSavedGuildNames() {
+            const savedGuild1Name = localStorage.getItem('xg_nsh_guild1Name');
+            const savedGuild2Name = localStorage.getItem('xg_nsh_guild2Name');
+            
+            if (savedGuild1Name && savedGuild1Name !== guild1Name) {
+                guild1Name = savedGuild1Name;
+                const guild1Display = document.getElementById('guild1NameDisplay');
+                if (guild1Display) guild1Display.textContent = guild1Name;
+                const lowperformGuild1NameEl = document.getElementById('lowperformGuild1Name');
+                if (lowperformGuild1NameEl) lowperformGuild1NameEl.textContent = guild1Name;
+            }
+            
+            if (savedGuild2Name && savedGuild2Name !== guild2Name) {
+                guild2Name = savedGuild2Name;
+                const guild2Display = document.getElementById('guild2NameDisplay');
+                if (guild2Display) guild2Display.textContent = guild2Name;
+                const lowperformGuild2NameEl = document.getElementById('lowperformGuild2Name');
+                if (lowperformGuild2NameEl) lowperformGuild2NameEl.textContent = guild2Name;
+            }
+            
+            if (savedGuild1Name || savedGuild2Name) {
+                console.log('已加载保存的帮会名称:', guild1Name, guild2Name);
+            }
         }
 
         // 双击编辑帮会名称
@@ -7609,6 +7638,16 @@
                 if (activeTab === 'lowperform') {
                     updateLowPerformMembers();
                 }
+                
+                // 更新职业末位界面标题
+                const lowperformGuild1NameEl = document.getElementById('lowperformGuild1Name');
+                const lowperformGuild2NameEl = document.getElementById('lowperformGuild2Name');
+                if (lowperformGuild1NameEl) lowperformGuild1NameEl.textContent = guild1Name;
+                if (lowperformGuild2NameEl) lowperformGuild2NameEl.textContent = guild2Name;
+                
+                // 保存到localStorage
+                localStorage.setItem('xg_nsh_guild1Name', guild1Name);
+                localStorage.setItem('xg_nsh_guild2Name', guild2Name);
                 
                 // 显示提示
                 showNotification(`帮会名称已更新为: ${trimmedName}`, 'success');
