@@ -5075,6 +5075,8 @@
         
         let fullscreenDamageChart = null;
         let fullscreenCombatChart = null;
+        let fullscreenProfessionDamageChart = null;
+        let fullscreenProfessionCombatChart = null;
 
         // 打开全屏详细分析
         function openFullscreenAnalysis() {
@@ -5179,6 +5181,14 @@
             if (fullscreenCombatChart) {
                 fullscreenCombatChart.destroy();
                 fullscreenCombatChart = null;
+            }
+            if (fullscreenProfessionDamageChart) {
+                fullscreenProfessionDamageChart.destroy();
+                fullscreenProfessionDamageChart = null;
+            }
+            if (fullscreenProfessionCombatChart) {
+                fullscreenProfessionCombatChart.destroy();
+                fullscreenProfessionCombatChart = null;
             }
         }
 
@@ -5446,6 +5456,276 @@
                                 font: { size: 10 },
                                 formatter: function(value) {
                                     return Math.round(value);
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 渲染职业对比图表
+            renderFullscreenProfessionCharts();
+        }
+
+        // 格式化大数值为简洁显示（万/百万）
+        function formatCompactNumber(value) {
+            if (value >= 1000000) {
+                return (value / 1000000).toFixed(1) + 'M';
+            } else if (value >= 10000) {
+                return (value / 10000).toFixed(1) + 'w';
+            } else if (value >= 1000) {
+                return (value / 1000).toFixed(1) + 'k';
+            }
+            return value.toString();
+        }
+
+        // 渲染全屏职业对比图表
+        function renderFullscreenProfessionCharts() {
+            if (!currentPlayer) return;
+
+            const playerProfession = (currentPlayer['职业'] || '').trim();
+            if (!playerProfession) return;
+
+            // 获取同职业玩家
+            const professionPlayers = guild1Data.filter(p => p['职业'] === playerProfession);
+            if (professionPlayers.length === 0) return;
+
+            // 计算该职业平均值
+            const professionAvg = {};
+            const metrics = ['对建筑伤害', '对玩家伤害', '人伤卸甲', '破塔卸甲', '治疗值', '承受伤害', '击败', '清泉', '资源', '助攻', '焚骨'];
+            metrics.forEach(key => {
+                professionAvg[key] = professionPlayers.reduce((sum, p) => sum + (p[key] || 0), 0) / professionPlayers.length;
+            });
+
+            // 计算帮会2该职业平均值
+            const guild2ProfessionPlayers = guild2Data.filter(p => p['职业'] === playerProfession);
+            const guild2ProfessionAvg = {};
+            metrics.forEach(key => {
+                guild2ProfessionAvg[key] = guild2ProfessionPlayers.length > 0 
+                    ? guild2ProfessionPlayers.reduce((sum, p) => sum + (p[key] || 0), 0) / guild2ProfessionPlayers.length 
+                    : 0;
+            });
+
+            // 取前8名玩家显示
+            const topPlayers = professionPlayers.slice(0, 8);
+            const playerNames = ['【对方平均】', ...topPlayers.map(p => p['玩家名字'])];
+
+            // 计算当前玩家在各指标中的排名
+            const playerRanks = {};
+            metrics.forEach(key => {
+                const sorted = [...professionPlayers].sort((a, b) => (b[key] || 0) - (a[key] || 0));
+                const rank = sorted.findIndex(p => p['玩家名字'] === currentPlayer['玩家名字']);
+                playerRanks[key] = rank >= 0 ? rank + 1 : '-';
+            });
+
+            // 1. 职业伤害对比图
+            if (fullscreenProfessionDamageChart) fullscreenProfessionDamageChart.destroy();
+            const profDamageCtx = document.getElementById('fullscreenProfessionDamageChart');
+            if (profDamageCtx) {
+                fullscreenProfessionDamageChart = new Chart(profDamageCtx, {
+                    data: {
+                        labels: playerNames,
+                        datasets: [
+                            {
+                                label: '对塔输出',
+                                data: [guild2ProfessionAvg['对建筑伤害'] || 0, ...topPlayers.map(p => p['对建筑伤害'] || 0)],
+                                type: 'bar',
+                                backgroundColor: 'rgba(34, 197, 94, 0.7)',
+                                borderColor: 'rgba(34, 197, 94, 1)',
+                                borderWidth: 1,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: '对人伤害',
+                                data: [guild2ProfessionAvg['对玩家伤害'] || 0, ...topPlayers.map(p => p['对玩家伤害'] || 0)],
+                                type: 'bar',
+                                backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                                borderColor: 'rgba(239, 68, 68, 1)',
+                                borderWidth: 1,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: '本职业平均',
+                                data: Array(playerNames.length).fill(professionAvg['对玩家伤害'] || 0),
+                                type: 'line',
+                                borderColor: 'rgba(251, 191, 36, 0.8)',
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                pointRadius: 0,
+                                yAxisID: 'y',
+                                tension: 0
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        scales: {
+                            x: {
+                                ticks: { color: '#9CA3AF', font: { size: 9 } },
+                                grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                            },
+                            y: {
+                                ticks: { 
+                                    color: '#9CA3AF', 
+                                    font: { size: 9 },
+                                    callback: function(value) {
+                                        return formatCompactNumber(value);
+                                    }
+                                },
+                                grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                            }
+                        },
+                        plugins: {
+                            legend: { 
+                                labels: { color: '#E5E7EB', font: { size: 10 } },
+                                position: 'top'
+                            },
+                            datalabels: {
+                                display: function(context) {
+                                    // 只显示当前玩家和对方平均的数据标签
+                                    const name = context.chart.data.labels[context.dataIndex];
+                                    return name === currentPlayer['玩家名字'] || name === '【对方平均】';
+                                },
+                                color: '#E5E7EB',
+                                font: { size: 9 },
+                                formatter: function(value) {
+                                    return formatCompactNumber(value);
+                                },
+                                anchor: 'end',
+                                align: 'top',
+                                offset: 2
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = Math.round(context.raw);
+                                        const name = context.label;
+                                        const formattedValue = formatCompactNumber(value);
+                                        if (name === currentPlayer['玩家名字']) {
+                                            const rank = playerRanks[context.dataset.label === '对塔输出' ? '对建筑伤害' : '对玩家伤害'];
+                                            return `${context.dataset.label}: ${formattedValue} (第${rank}名)`;
+                                        }
+                                        return `${context.dataset.label}: ${formattedValue}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 2. 职业战斗对比图
+            if (fullscreenProfessionCombatChart) fullscreenProfessionCombatChart.destroy();
+            const profCombatCtx = document.getElementById('fullscreenProfessionCombatChart');
+            if (profCombatCtx) {
+                fullscreenProfessionCombatChart = new Chart(profCombatCtx, {
+                    data: {
+                        labels: playerNames,
+                        datasets: [
+                            {
+                                label: '击败',
+                                data: [guild2ProfessionAvg['击败'] || 0, ...topPlayers.map(p => p['击败'] || 0)],
+                                type: 'bar',
+                                backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                                borderColor: 'rgba(59, 130, 246, 1)',
+                                borderWidth: 1,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: '助攻',
+                                data: [guild2ProfessionAvg['助攻'] || 0, ...topPlayers.map(p => p['助攻'] || 0)],
+                                type: 'bar',
+                                backgroundColor: 'rgba(139, 92, 246, 0.7)',
+                                borderColor: 'rgba(139, 92, 246, 1)',
+                                borderWidth: 1,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: '治疗',
+                                data: [guild2ProfessionAvg['治疗值'] || 0, ...topPlayers.map(p => p['治疗值'] || 0)],
+                                type: 'line',
+                                borderColor: 'rgba(34, 197, 94, 0.8)',
+                                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                                borderWidth: 2,
+                                fill: false,
+                                pointRadius: 3,
+                                yAxisID: 'y1',
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        scales: {
+                            x: {
+                                ticks: { color: '#9CA3AF', font: { size: 9 } },
+                                grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                            },
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                ticks: { 
+                                    color: '#9CA3AF', 
+                                    font: { size: 9 },
+                                    callback: function(value) {
+                                        return formatCompactNumber(value);
+                                    }
+                                },
+                                grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                ticks: { 
+                                    color: '#22C55E', 
+                                    font: { size: 9 },
+                                    callback: function(value) {
+                                        return formatCompactNumber(value);
+                                    }
+                                },
+                                grid: { drawOnChartArea: false }
+                            }
+                        },
+                        plugins: {
+                            legend: { 
+                                labels: { color: '#E5E7EB', font: { size: 10 } },
+                                position: 'top'
+                            },
+                            datalabels: {
+                                display: function(context) {
+                                    // 只显示当前玩家和对方平均的数据标签
+                                    const name = context.chart.data.labels[context.dataIndex];
+                                    return name === currentPlayer['玩家名字'] || name === '【对方平均】';
+                                },
+                                color: '#E5E7EB',
+                                font: { size: 9 },
+                                formatter: function(value) {
+                                    return formatCompactNumber(value);
+                                },
+                                anchor: 'end',
+                                align: 'top',
+                                offset: 2
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = Math.round(context.raw);
+                                        const name = context.label;
+                                        let metricKey = context.dataset.label === '击败' ? '击败' : 
+                                                       context.dataset.label === '助攻' ? '助攻' : '治疗值';
+                                        const formattedValue = formatCompactNumber(value);
+                                        if (name === currentPlayer['玩家名字']) {
+                                            const rank = playerRanks[metricKey];
+                                            return `${context.dataset.label}: ${formattedValue} (第${rank}名)`;
+                                        }
+                                        return `${context.dataset.label}: ${formattedValue}`;
+                                    }
                                 }
                             }
                         }
@@ -9195,22 +9475,38 @@
                 </div>
             </div>
 
-            <!-- 雷达图区域 -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-6">
-                    <h3 class="text-lg font-bold mb-4 flex items-center">
+            <!-- 图表区域 - 4个图一排 -->
+            <div class="grid grid-cols-1 xl:grid-cols-4 gap-4 mb-6">
+                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4">
+                    <h3 class="text-sm font-bold mb-2 flex items-center">
                         <i class="fas fa-chart-radar mr-2 text-primary"></i>伤害与治疗雷达图
                     </h3>
-                    <div class="relative" style="height: 450px;">
+                    <div class="relative" style="height: 280px;">
                         <canvas id="fullscreenDamageHealingChart"></canvas>
                     </div>
                 </div>
-                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-6">
-                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4">
+                    <h3 class="text-sm font-bold mb-2 flex items-center">
                         <i class="fas fa-chart-radar mr-2 text-secondary"></i>战斗数据雷达图
                     </h3>
-                    <div class="relative" style="height: 450px;">
+                    <div class="relative" style="height: 280px;">
                         <canvas id="fullscreenCombatChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4">
+                    <h3 class="text-sm font-bold mb-2 flex items-center">
+                        <i class="fas fa-chart-bar mr-2 text-warning"></i>职业伤害对比
+                    </h3>
+                    <div class="relative" style="height: 280px;">
+                        <canvas id="fullscreenProfessionDamageChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4">
+                    <h3 class="text-sm font-bold mb-2 flex items-center">
+                        <i class="fas fa-chart-line mr-2 text-success"></i>职业战斗对比
+                    </h3>
+                    <div class="relative" style="height: 280px;">
+                        <canvas id="fullscreenProfessionCombatChart"></canvas>
                     </div>
                 </div>
             </div>
