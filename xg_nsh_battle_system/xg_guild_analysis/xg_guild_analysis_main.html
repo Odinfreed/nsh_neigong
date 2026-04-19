@@ -26,12 +26,12 @@
     
     <!-- 个人分析多场数据对比模块 v4.0.0 -->
     <script src="player_multi_analysis.js"></script>
-    <!-- 档案码多轮映射表系统 -->
+    <!-- 档案码系统已禁用 - 2024
     <script src="xg_card_code_mappings.js"></script>
-    <!-- 玩家档案码系统 -->
     <script src="xg_player_card_system.js"></script>
-    <!-- GitHub Gist 8位短码档案系统 -->
     <script src="xg_archive_gist.js"></script>
+    <script src="xg_archive_qrcode.js"></script>
+    -->
     
     <script>
         tailwind.config = {
@@ -1399,25 +1399,7 @@
                                             <button onclick="filterPlayerByProfession('鸿音')" class="px-2 py-1 text-xs bg-gradient-to-r from-yellow-600/30 to-orange-600/30 hover:from-yellow-600/50 hover:to-orange-600/50 text-yellow-200 rounded transition-colors">鸿音</button>
                                         </div>
 
-                                        <!-- 档案码导入区域 -->
-                                        <!-- 本地档案码导入 -->
-                                        <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded p-3 mb-3 border border-purple-500/30">
-                                            <div class="text-xs text-purple-300 mb-2 flex items-center justify-between">
-                                                <span><i class="fas fa-id-card mr-1"></i>本地档案码</span>
-                                                <span class="text-[10px] text-gray-500">离线</span>
-                                            </div>
-                                            <div class="flex gap-2">
-                                                <input type="text" id="cardCodeInput" placeholder="输入8位档案码..."
-                                                       class="flex-1 p-2 bg-dark border border-gray-600 rounded text-xs text-gray-100 uppercase tracking-wider"
-                                                       maxlength="8">
-                                                <button onclick="importPlayerCard()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded text-xs transition-colors">
-                                                    <i class="fas fa-download mr-1"></i>导入
-                                                </button>
-                                            </div>
-                                            <div id="cardCodeStatus" class="mt-2 text-[10px] hidden"></div>
-                                        </div>
-                                        
-                                        <!-- 云端档案码导入 -->
+                                        <!-- 档案码导入区域 - 已禁用
                                         <div class="bg-gradient-to-r from-green-900/30 to-teal-900/30 rounded p-3 mb-4 border border-green-500/30">
                                             <div class="text-xs text-green-300 mb-2 flex items-center justify-between">
                                                 <span><i class="fab fa-github mr-1"></i>云端档案码</span>
@@ -1434,8 +1416,27 @@
                                             <div id="playerGistCodeStatus" class="mt-2 text-[10px] hidden"></div>
                                         </div>
                                         
+                                        <div class="bg-gradient-to-r from-blue-900/30 to-indigo-900/30 rounded p-3 mb-4 border border-blue-500/30">
+                                            <div class="text-xs text-blue-300 mb-2 flex items-center justify-between">
+                                                <span><i class="fas fa-qrcode mr-1"></i>二维码档案</span>
+                                                <span class="text-[10px] text-gray-500">推荐</span>
+                                            </div>
+                                            <div class="space-y-2">
+                                                <input type="file" id="playerQRInput" accept="image/*" class="hidden" onchange="importPlayerQRArchive(event)">
+                                                <button onclick="document.getElementById('playerQRInput').click()" class="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs transition-colors">
+                                                    <i class="fas fa-image mr-1"></i>选择二维码图片
+                                                </button>
+                                                <button onclick="openQRScanner('player')" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs transition-colors">
+                                                    <i class="fas fa-camera mr-1"></i>摄像头扫描
+                                                </button>
+                                            </div>
+                                            <div id="playerQRCodeStatus" class="mt-2 text-[10px] hidden"></div>
+                                        </div>
+                                        
                                         <div class="mt-2 text-[10px] text-gray-500 mb-4">
-                                            <i class="fas fa-info-circle mr-1"></i>输入他人分享的档案码，查看完整数据
+                                            <i class="fas fa-info-circle mr-1"></i>支持文本档案码或二维码图片导入
+                                        </div>
+                                        -->
                                         </div>
 
                                         <div class="relative mb-4">
@@ -1578,9 +1579,11 @@
                                                 <button onclick="openFullscreenAnalysis()" id="btnFullscreen" class="px-3 py-1 text-xs rounded bg-purple-600/30 text-purple-300 border border-purple-500/50 hover:bg-purple-600/50 transition-colors" title="全屏详细分析">
                                                     <i class="fas fa-expand mr-1"></i>全屏
                                                 </button>
+                                                <!-- 档案码功能已禁用
                                                 <button onclick="exportPKCode()" id="btnExportPK" class="px-3 py-1 text-xs rounded bg-yellow-600/30 text-yellow-300 border border-yellow-500/50 hover:bg-yellow-600/50 transition-colors" title="导出PK码分享">
                                                     <i class="fas fa-key mr-1"></i>档案码
                                                 </button>
+                                                -->
                                             </div>
                                         </div>
                                         <div id="professionRankings" class="space-y-2 text-sm">
@@ -2691,25 +2694,8 @@
                             </div>
                         </div>
                         
-                        <!-- 档案码导入 -->
-                        <!-- 本地档案码导入 -->
-                        <div class="bg-gray-800/50 rounded p-2 border border-purple-500/30 mb-2">
-                            <div class="text-xs text-gray-400 mb-1 flex items-center justify-between">
-                                <span><i class="fas fa-id-card mr-1 text-purple-400"></i>本地档案码</span>
-                                <span class="text-[10px] text-gray-500">离线</span>
-                            </div>
-                            <div class="flex gap-1">
-                                <input type="text" id="compareCardCodeInput" placeholder="输入8位档案码..."
-                                       class="flex-1 p-1.5 bg-dark border border-gray-600 rounded text-xs text-gray-100 uppercase tracking-wider"
-                                       maxlength="8">
-                                <button onclick="importCardForCompare()" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded text-xs transition-colors">
-                                    <i class="fas fa-download mr-1"></i>导入
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <!-- 云端档案码导入 -->
-                        <div class="bg-gray-800/50 rounded p-2 border border-green-500/30">
+                        <!-- 档案码导入 - 已禁用
+                        <div class="bg-gray-800/50 rounded p-2 border border-green-500/30 mb-2">
                             <div class="text-xs text-gray-400 mb-1 flex items-center justify-between">
                                 <span><i class="fab fa-github mr-1 text-green-400"></i>云端档案码</span>
                                 <span class="text-[10px] text-gray-500">GitHub Gist</span>
@@ -2725,7 +2711,25 @@
                             <div id="compareGistCodeStatus" class="mt-1 text-[10px] hidden"></div>
                         </div>
                         
+                        <div class="bg-gray-800/50 rounded p-2 border border-blue-500/30">
+                            <div class="text-xs text-gray-400 mb-1 flex items-center justify-between">
+                                <span><i class="fas fa-qrcode mr-1 text-blue-400"></i>二维码档案</span>
+                                <span class="text-[10px] text-gray-500">推荐</span>
+                            </div>
+                            <div class="space-y-1">
+                                <input type="file" id="compareQRInput" accept="image/*" class="hidden" onchange="importCompareQRArchive(event)">
+                                <button onclick="document.getElementById('compareQRInput').click()" class="w-full py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs transition-colors">
+                                    <i class="fas fa-image mr-1"></i>选择二维码图片
+                                </button>
+                                <button onclick="openQRScanner('compare')" class="w-full py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs transition-colors">
+                                    <i class="fas fa-camera mr-1"></i>摄像头扫描
+                                </button>
+                            </div>
+                            <div id="compareQRCodeStatus" class="mt-1 text-[10px] hidden"></div>
+                        </div>
+                        
                         <div id="compareCardCodeStatus" class="mt-1 text-[10px] hidden"></div>
+                        -->
                         
                         <!-- 分隔线 -->
                         <div class="relative flex items-center py-2">
@@ -4890,6 +4894,7 @@
             }
         }
 
+        /* 档案码系统功能已禁用 - 2024
         // ==================== 档案码系统功能 ====================
 
         // 存储导入的玩家档案数据
@@ -4971,11 +4976,13 @@
                         </div>
 
                         <div class="space-y-2">
-                            <button onclick="generateCardCode()" class="w-full py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded text-sm transition-colors font-medium">
-                                <i class="fas fa-key mr-1"></i>生成本地档案码
+                            <button onclick="generateQRArchiveCode()" class="w-full py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded text-sm transition-colors font-medium">
+                                <i class="fas fa-qrcode mr-1"></i>生成二维码档案
                             </button>
+                            <div class="text-xs text-gray-500 text-center">支持大数据量，无需网络</div>
+                            <div class="border-t border-gray-700 my-2"></div>
                             <button onclick="generateGistArchiveCode()" class="w-full py-2 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500 text-white rounded text-sm transition-colors font-medium">
-                                <i class="fab fa-github mr-1"></i>生成云端档案码 (8位短码)
+                                <i class="fab fa-github mr-1"></i>生成云端档案码
                             </button>
                             <button onclick="closeCardCodeExportModal()" class="w-full py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-colors">
                                 取消
@@ -5684,6 +5691,220 @@
             if (modal) modal.remove();
         }
 
+        // ==================== 二维码档案码功能 ====================
+
+        // 生成二维码档案码
+        async function generateQRArchiveCode() {
+            const options = window.cardExportOptions;
+            if (!options) return;
+
+            // 先使用现有系统生成档案码文本
+            const result = generateCardCodeInternal();
+            if (!result || !result.success) {
+                alert('生成档案码失败');
+                return;
+            }
+
+            // 显示加载中
+            const loadingHtml = `
+                <div id="qrLoadingModal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
+                    <div class="bg-gray-800 border border-blue-500/50 rounded-lg p-6 text-center">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                        <p class="text-blue-400">正在生成二维码...</p>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', loadingHtml);
+
+            try {
+                // 初始化二维码系统
+                await ArchiveQRCodeSystem.init();
+                
+                // 生成二维码（直接使用档案码文本）
+                const qrDataURL = await ArchiveQRCodeSystem.generateQR(result.code);
+                
+                // 关闭加载弹窗
+                const loadingModal = document.getElementById('qrLoadingModal');
+                if (loadingModal) loadingModal.remove();
+                closeCardCodeExportModal();
+                
+                // 显示结果
+                showQRArchiveResult(qrDataURL, result, options.nameMode === 'anonymous');
+                
+            } catch (error) {
+                // 关闭加载弹窗
+                const loadingModal = document.getElementById('qrLoadingModal');
+                if (loadingModal) loadingModal.remove();
+                
+                console.error('生成二维码失败:', error);
+                alert('生成二维码失败: ' + error.message);
+            }
+        }
+
+        // 内部生成档案码（不显示弹窗，返回结果）
+        function generateCardCodeInternal() {
+            const options = window.cardExportOptions;
+            if (!options) return null;
+
+            const isAnonymous = options.nameMode === 'anonymous';
+            const isPKMode = options.dataMode === 'pk';
+
+            // 准备导出数据（复用 generateCardCode 的逻辑）
+            let exportData = {};
+            let exportOptions = {};
+
+            if (isPKMode) {
+                // PK模式导出
+                exportOptions = {
+                    includeHistory: false,
+                    mode: 'pk',
+                    fields: ['对建筑伤害', '对玩家伤害', '击败', '助攻']
+                };
+
+                const settings = loadUserProfileSettings();
+                exportData = {
+                    playerName: isAnonymous ? '匿名玩家' : currentPlayer['玩家名字'],
+                    profession: currentPlayer['职业'],
+                    region: isAnonymous ? '***' : (settings.region || ''),
+                    userGuild: isAnonymous ? '***' : (settings.guildName || ''),
+                    '玩家名字': isAnonymous ? '匿名玩家' : currentPlayer['玩家名字'],
+                    '职业': currentPlayer['职业'],
+                    '对建筑伤害': currentPlayer['对建筑伤害'],
+                    '对玩家伤害': currentPlayer['对玩家伤害'],
+                    '击败': currentPlayer['击败'],
+                    '助攻': currentPlayer['助攻']
+                };
+            } else {
+                // 完整数据导出
+                exportOptions = {
+                    includeHistory: true,
+                    mode: 'full'
+                };
+
+                let multiBattleData = options.multiBattleData || [];
+                const hasMultiData = multiBattleData && multiBattleData.length > 1;
+
+                if (hasMultiData) {
+                    // 多场数据导出
+                    exportData = {
+                        playerName: isAnonymous ? '匿名玩家' : currentPlayer['玩家名字'],
+                        profession: currentPlayer['职业'],
+                        region: isAnonymous ? '***' : (loadUserProfileSettings().region || ''),
+                        userGuild: isAnonymous ? '***' : (loadUserProfileSettings().guildName || ''),
+                        battles: multiBattleData.map(battle => ({
+                            '玩家名字': isAnonymous ? '匿名玩家' : (battle['玩家名字'] || currentPlayer['玩家名字']),
+                            '职业': battle['职业'] || currentPlayer['职业'],
+                            '对建筑伤害': battle['对建筑伤害'],
+                            '对玩家伤害': battle['对玩家伤害'],
+                            '击败': battle['击败'],
+                            '助攻': battle['助攻'],
+                            '治疗值': battle['治疗值'],
+                            '承受伤害': battle['承受伤害'],
+                            '重伤': battle['重伤'],
+                            '破泉': battle['破泉'],
+                            '化羽': battle['化羽'],
+                            '清泉': battle['清泉']
+                        })),
+                        ...currentPlayer
+                    };
+                } else {
+                    // 单场数据导出
+                    const settings = loadUserProfileSettings();
+                    exportData = {
+                        playerName: isAnonymous ? '匿名玩家' : currentPlayer['玩家名字'],
+                        profession: currentPlayer['职业'],
+                        region: isAnonymous ? '***' : (settings.region || ''),
+                        userGuild: isAnonymous ? '***' : (settings.guildName || ''),
+                        ...currentPlayer
+                    };
+                }
+            }
+
+            // 调用档案码系统导出
+            const result = PlayerCardSystem.exportCard(exportData, exportOptions);
+            return result;
+        }
+
+        // 显示二维码档案结果
+        function showQRArchiveResult(qrDataURL, cardResult, isAnonymous) {
+            const playerName = cardResult.playerName || currentPlayer['玩家名字'] || 'Unknown';
+            const profession = currentPlayer['职业'] || 'Unknown';
+            const isMultiBattle = cardResult.isMultiBattle;
+            const battleCount = cardResult.battleCount || 1;
+            
+            const modalHtml = `
+                <div id="qrArchiveModal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100]" onclick="if(event.target.id==='qrArchiveModal')closeQRArchiveModal()">
+                    <div class="bg-gray-800 border border-blue-500/50 rounded-lg p-6 max-w-md w-full mx-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+                        <h3 class="text-lg font-bold text-blue-400 mb-4 flex items-center">
+                            <i class="fas fa-qrcode mr-2"></i>二维码档案
+                        </h3>
+                        
+                        <!-- 二维码展示 -->
+                        <div class="flex justify-center mb-4">
+                            <div class="bg-white p-3 rounded-lg">
+                                <img src="${qrDataURL}" alt="档案二维码" class="w-64 h-64">
+                            </div>
+                        </div>
+                        
+                        <!-- 档案信息 -->
+                        <div class="bg-gray-900/50 rounded p-3 mb-4 text-xs space-y-1">
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">玩家:</span>
+                                <span class="text-white">${playerName}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">职业:</span>
+                                <span class="text-jade">${profession}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">数据类型:</span>
+                                <span class="text-blue-400">${isMultiBattle ? battleCount + '场数据' : '单场数据'}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 操作按钮 -->
+                        <div class="space-y-2">
+                            <button onclick="downloadQRCode()" class="w-full py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded text-sm transition-colors font-medium">
+                                <i class="fas fa-download mr-1"></i>下载二维码图片
+                            </button>
+                            <button onclick="closeQRArchiveModal()" class="w-full py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-colors">
+                                关闭
+                            </button>
+                        </div>
+                        
+                        <!-- 使用说明 -->
+                        <div class="mt-4 text-xs text-gray-500 bg-gray-900/30 rounded p-2">
+                            <p class="mb-1"><i class="fas fa-info-circle mr-1 text-blue-400"></i>他人导入方法：</p>
+                            <p>• 点击"导入二维码"按钮</p>
+                            <p>• 选择二维码图片或摄像头扫描</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // 存储二维码数据供下载使用
+            window.currentQRDataURL = qrDataURL;
+        }
+
+        // 下载二维码
+        function downloadQRCode() {
+            if (!window.currentQRDataURL) return;
+            const timestamp = new Date().toISOString().slice(0, 10);
+            ArchiveQRCodeSystem.downloadQRCode(
+                window.currentQRDataURL, 
+                `archive-${timestamp}.png`
+            );
+        }
+
+        // 关闭二维码档案弹窗
+        function closeQRArchiveModal() {
+            const modal = document.getElementById('qrArchiveModal');
+            if (modal) modal.remove();
+            window.currentQRDataURL = null;
+        }
+
         // 在个人分析面板导入档案码
         function importPlayerCard() {
             const input = document.getElementById('cardCodeInput');
@@ -5955,8 +6176,10 @@
             }
 
             // 隐藏选择器，显示信息面板
-            document.getElementById('playerInfo').style.display = 'block';
-            document.getElementById('analysisSection').style.display = 'block';
+            const playerInfo = document.getElementById('playerInfo');
+            const analysisSection = document.getElementById('analysisSection');
+            if (playerInfo) playerInfo.style.display = 'block';
+            if (analysisSection) analysisSection.style.display = 'block';
 
             // 自动折叠选择器
             collapsePlayerSelector();
@@ -6101,6 +6324,284 @@
             }, 5000);
         }
 
+        // ==================== 二维码档案导入功能 ====================
+
+        let qrScanTarget = 'player'; // 'player' 或 'compare'
+
+        // 在个人分析面板导入二维码档案
+        async function importPlayerQRArchive(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            await processQRFile(file, 'player');
+            event.target.value = '';
+        }
+
+        // 在对比面板导入二维码档案
+        async function importCompareQRArchive(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            await processQRFile(file, 'compare');
+            event.target.value = '';
+        }
+
+        // 处理二维码文件 - 直接解析为档案码文本并导入
+        async function processQRFile(file, target) {
+            const statusId = target === 'player' ? 'playerQRCodeStatus' : 'compareQRCodeStatus';
+            
+            try {
+                showCardCodeStatus('正在识别二维码...', 'info', statusId);
+                
+                // 初始化系统
+                await ArchiveQRCodeSystem.init();
+                
+                // 解析二维码获取档案码文本
+                const cardCode = await ArchiveQRCodeSystem.importFromFile(file);
+                
+                if (!cardCode || cardCode.length < 8) {
+                    throw new Error('无效的二维码');
+                }
+                
+                showCardCodeStatus('识别成功，正在导入...', 'info', statusId);
+                
+                // 使用现有的档案码导入系统
+                const settings = loadUserProfileSettings();
+                const result = PlayerCardSystem.importCard(cardCode, settings);
+                
+                if (!result.success) {
+                    throw new Error(result.error || '导入失败');
+                }
+                
+                // 导入成功，处理数据
+                await handleQRCodeImportResult(result, target, statusId);
+                
+            } catch (error) {
+                console.error('二维码导入失败:', error);
+                showCardCodeStatus('导入失败: ' + error.message, 'error', statusId);
+            }
+        }
+
+        // 处理档案码导入结果（复用现有逻辑）
+        async function handleQRCodeImportResult(result, target, statusId) {
+            const playerData = {
+                ...result.data,
+                isMultiBattle: result.isMultiBattle,
+                battleCount: result.battleCount,
+                includeHistory: result.includeHistory,
+                isAnonymous: result.isAnonymous,
+                isPKMode: result.isPKMode,
+                _importedFrom: 'qr',
+                _importedAt: Date.now()
+            };
+            
+            // 处理多场数据缓存
+            if (result.isMultiBattle && result.battleCount > 0) {
+                const mockMultiCache = [{
+                    id: 'qr_import_' + Date.now(),
+                    timestamp: Date.now(),
+                    dateTime: new Date().toISOString(),
+                    guilds: {
+                        [playerData['帮会'] || '导入数据']: [playerData]
+                    },
+                    data: {
+                        [playerData['帮会'] || '导入数据']: [playerData]
+                    }
+                }];
+                localStorage.setItem('importedCardMultiCache', JSON.stringify(mockMultiCache));
+            }
+            
+            if (target === 'player') {
+                // 个人分析面板导入
+                importedPlayerCard = playerData;
+                displayImportedPlayerCard();
+                
+                const nameType = result.isAnonymous ? '匿名' : '实名';
+                let dataType;
+                if (result.isPKMode) {
+                    dataType = 'PK模式';
+                } else if (result.isMultiBattle) {
+                    dataType = `${result.battleCount}场数据`;
+                } else {
+                    dataType = '单场数据';
+                }
+                showCardCodeStatus(`成功导入: ${result.playerName} [${nameType}|${dataType}]`, 'success', statusId);
+                
+            } else {
+                // 对比面板导入
+                comparePlayer = playerData;
+                compareBattleId = 'qr_import';
+                
+                // 更新对比UI
+                const selectedDiv = document.getElementById('selectedComparePlayer');
+                const nameEl = document.getElementById('selectedCompareName');
+                const infoEl = document.getElementById('selectedCompareInfo');
+                const basicDataEl = document.getElementById('selectedCompareBasicData');
+
+                if (selectedDiv) selectedDiv.classList.remove('hidden');
+                
+                const playerName = playerData['玩家名字'] || '未知玩家';
+                const profession = playerData['职业'] || '未知职业';
+                
+                if (result.isAnonymous) {
+                    if (nameEl) nameEl.innerHTML = `未知玩家 <span class="text-xs text-gray-400">档案码导入</span>`;
+                    if (infoEl) infoEl.innerHTML = `<span class="text-gray-500">未知信息</span>`;
+                } else {
+                    const region = playerData.region || playerData['区服'] || '未知区服';
+                    const userGuild = playerData.userGuild || playerData['帮会'] || '未知帮会';
+                    if (nameEl) nameEl.innerHTML = `${playerName} <span class="text-xs text-gray-400">档案码导入</span>`;
+                    if (infoEl) infoEl.innerHTML = `<span class="text-jade">${region}</span> <span class="text-cyan-400">${userGuild}</span> <span class="text-yellow-400">${profession}</span>`;
+                }
+
+                // 填充基础数据
+                if (basicDataEl) {
+                    const basicData = [
+                        { label: '对塔', value: playerData['对建筑伤害'] || 0, color: 'text-purple-400' },
+                        { label: '对人', value: playerData['对玩家伤害'] || 0, color: 'text-red-400' },
+                        { label: '击败', value: playerData['击败'] || 0, color: 'text-yellow-400' },
+                        { label: '治疗', value: playerData['治疗值'] || 0, color: 'text-green-400' }
+                    ];
+                    basicDataEl.innerHTML = basicData.map(d => `
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-500">${d.label}:</span>
+                            <span class="${d.color} font-medium">${formatNumber(d.value)}</span>
+                        </div>
+                    `).join('');
+                }
+                
+                // 更新图表
+                updatePlayerCharts();
+                updateCompareBarChart();
+                updatePKDataTable();
+                updateCompareChart();
+                
+                const nameType = result.isAnonymous ? '匿名' : '实名';
+                let dataType;
+                if (result.isPKMode) {
+                    dataType = 'PK模式';
+                } else if (result.isMultiBattle) {
+                    dataType = `${result.battleCount}场数据`;
+                } else {
+                    dataType = '单场数据';
+                }
+                showNotification(`已导入二维码档案: ${result.playerName} [${nameType}|${dataType}]`, 'success');
+            }
+        }
+
+        // 打开二维码扫描器
+        async function openQRScanner(target) {
+            qrScanTarget = target;
+            
+            const modalHtml = `
+                <div id="qrScannerModal" class="fixed inset-0 bg-black/90 flex items-center justify-center z-[200]">
+                    <div class="bg-gray-800 border border-blue-500/50 rounded-lg p-4 max-w-md w-full mx-4">
+                        <h3 class="text-lg font-bold text-blue-400 mb-4 flex items-center">
+                            <i class="fas fa-camera mr-2"></i>扫描二维码
+                        </h3>
+                        
+                        <div class="relative bg-black rounded overflow-hidden" style="height: 300px;">
+                            <video id="qrScannerVideo" class="w-full h-full object-cover" autoplay playsinline></video>
+                            <canvas id="qrScannerCanvas" class="hidden"></canvas>
+                            
+                            <!-- 扫描框 -->
+                            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <div class="w-48 h-48 border-2 border-blue-500/50 rounded-lg relative">
+                                    <div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-blue-500"></div>
+                                    <div class="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-blue-500"></div>
+                                    <div class="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-blue-500"></div>
+                                    <div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-blue-500"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="absolute bottom-2 left-0 right-0 text-center">
+                                <span class="text-xs text-gray-400">将二维码放入框内自动扫描</span>
+                            </div>
+                        </div>
+                        
+                        <div id="qrScanStatus" class="mt-3 text-center text-sm hidden"></div>
+                        
+                        <div class="flex gap-2 mt-4">
+                            <button onclick="closeQRScanner()" class="flex-1 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors">
+                                取消
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            try {
+                // 初始化系统
+                await ArchiveQRCodeSystem.init();
+                
+                const video = document.getElementById('qrScannerVideo');
+                const canvas = document.getElementById('qrScannerCanvas');
+                
+                // 启动扫描
+                await ArchiveQRCodeSystem.startScan(video, canvas, (data) => {
+                    // 检测到二维码，直接处理
+                    handleScannedQR(data);
+                });
+                
+            } catch (error) {
+                console.error('启动摄像头失败:', error);
+                document.getElementById('qrScanStatus').textContent = '无法访问摄像头: ' + error.message;
+                document.getElementById('qrScanStatus').classList.remove('hidden');
+                document.getElementById('qrScanStatus').className = 'mt-3 text-center text-sm text-red-400';
+            }
+        }
+
+        // 处理扫描到的二维码
+        async function handleScannedQR(data) {
+            const statusEl = document.getElementById('qrScanStatus');
+            const statusId = qrScanTarget === 'player' ? 'playerQRCodeStatus' : 'compareQRCodeStatus';
+            
+            try {
+                statusEl.textContent = '识别成功，正在导入...';
+                statusEl.classList.remove('hidden');
+                statusEl.className = 'mt-3 text-center text-sm text-green-400';
+                
+                // 停止扫描
+                ArchiveQRCodeSystem.stopScan();
+                
+                // 验证数据
+                if (!data || data.length < 8) {
+                    throw new Error('无效的二维码');
+                }
+                
+                // 使用现有的档案码导入系统
+                const settings = loadUserProfileSettings();
+                const result = PlayerCardSystem.importCard(data, settings);
+                
+                if (!result.success) {
+                    throw new Error(result.error || '导入失败');
+                }
+                
+                closeQRScanner();
+                await handleQRCodeImportResult(result, qrScanTarget, statusId);
+                
+            } catch (error) {
+                console.error('二维码处理失败:', error);
+                statusEl.textContent = '处理失败: ' + error.message + '，请重试';
+                statusEl.className = 'mt-3 text-center text-sm text-red-400';
+                
+                // 继续扫描
+                setTimeout(async () => {
+                    const video = document.getElementById('qrScannerVideo');
+                    const canvas = document.getElementById('qrScannerCanvas');
+                    await ArchiveQRCodeSystem.startScan(video, canvas, handleScannedQR);
+                }, 2000);
+            }
+        }
+
+        // 关闭二维码扫描器
+        function closeQRScanner() {
+            ArchiveQRCodeSystem.stopScan();
+            const modal = document.getElementById('qrScannerModal');
+            if (modal) modal.remove();
+        }
+
         // ==================== 页面加载时自动解析 URL 参数 ====================
         
         // 初始化 Gist 档案码 URL 解析
@@ -6183,6 +6684,7 @@
                 showNotification('档案码加载失败: ' + error.message, 'error');
             }
         }
+        档案码系统功能已禁用 - 2024 */
 
         // ==================== 对比系统功能 ====================
 
@@ -7932,14 +8434,12 @@
 
         // 渲染全屏雷达图
         function renderFullscreenCharts() {
-            // 检查是否是导入的档案数据
-            const isImportedData = importedPlayerCard && currentPlayer && 
-                currentPlayer['玩家名字'] === importedPlayerCard['玩家名字'];
+            // 档案码功能已禁用
+            const isImportedData = false;
             
-            // 计算最大值用于归一化（导入数据时使用导入的数据作为参考）
+            // 计算最大值用于归一化
             let referencePlayers = allPlayers;
-            if (isImportedData && (!allPlayers || allPlayers.length === 0)) {
-                // 导入数据时没有本地数据，使用当前玩家数据
+            if (!allPlayers || allPlayers.length === 0) {
                 referencePlayers = [currentPlayer];
             }
             
@@ -8260,14 +8760,14 @@
             const playerProfession = (currentPlayer['职业'] || '').trim();
             if (!playerProfession) return;
 
-            // 检查是否是导入的档案数据
-            const isImportedData = importedPlayerCard && currentPlayer['玩家名字'] === importedPlayerCard['玩家名字'];
+            // 档案码功能已禁用
+            const isImportedData = false;
 
             // 获取同职业玩家
             let professionPlayers = guild1Data.filter(p => p['职业'] === playerProfession);
             
-            // 如果是导入的数据且没有本地同职业数据，创建仅包含该玩家的数组
-            if (professionPlayers.length === 0 && isImportedData) {
+            // 如果没有同职业数据，使用当前玩家作为参考
+            if (professionPlayers.length === 0) {
                 professionPlayers = [currentPlayer];
             }
             
@@ -8300,7 +8800,14 @@
 
             // 取前8名玩家显示
             const topPlayers = professionPlayers.slice(0, 8);
-            const playerNames = ['【对方平均】', ...topPlayers.map(p => p['玩家名字'])];
+            const currentPlayerName = currentPlayer['玩家名字'];
+            // 生成匿名玩家名称：当前玩家显示真实名，其他显示"玩家1"、"玩家2"...
+            const playerNames = ['【对方平均】', ...topPlayers.map((p, index) => {
+                if (p['玩家名字'] === currentPlayerName) {
+                    return currentPlayerName; // 当前玩家显示真实名字
+                }
+                return `玩家${index + 1}`; // 其他玩家显示匿名编号
+            })];
 
             // 计算当前玩家在各指标中的排名
             const playerRanks = {};
@@ -9545,8 +10052,8 @@
 
             const ctx = canvas.getContext('2d');
             const topPlayers = players.slice(0, 8);
-            // X轴标签：对方平均 + 玩家ID
-            const playerNames = ['【对方平均】', ...topPlayers.map(p => p['玩家名字'])];
+            // X轴标签：对方平均 + 匿名玩家编号（玩家1、玩家2...）
+            const playerNames = ['【对方平均】', ...topPlayers.map((p, index) => `玩家${index + 1}`)];
 
             const datasets = [
                 // === 柱状图：主要伤害输出 ===
@@ -9745,8 +10252,8 @@
 
             const ctx = canvas.getContext('2d');
             const topPlayers = players.slice(0, 8);
-            // X轴标签：对方平均 + 玩家ID
-            const playerNames = ['【对方平均】', ...topPlayers.map(p => p['玩家名字'])];
+            // X轴标签：对方平均 + 匿名玩家编号（玩家1、玩家2...）
+            const playerNames = ['【对方平均】', ...topPlayers.map((p, index) => `玩家${index + 1}`)];
 
             const datasets = [
                 // === 柱状图：主要战斗数据 ===
@@ -10893,6 +11400,7 @@
                     
                     let totalImported = 0;
                     const importedGuilds = [];
+                    const processedGuildsData = {}; // 存储处理后的数据
                     
                     // 生成场次ID（基于文件名和时间）
                     const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
@@ -10918,6 +11426,9 @@
                             return { ...player, '帮会': guildName };
                         });
                         
+                        // 保存处理后的数据
+                        processedGuildsData[guildName] = processedPlayers;
+                        
                         // 添加到数据源管理器（带场次信息）
                         dataSourceManager.addGuildData(guildName, processedPlayers, sessionId, {
                             fileName: file.name,
@@ -10928,9 +11439,36 @@
                         importedGuilds.push(`${guildName}(${processedPlayers.length}人)`);
                     });
                     
+                    // 构建场次数据并保存到 multiBattleCache
+                    const battleSession = {
+                        id: sessionId,
+                        dateTime: timestamp,
+                        timestamp: Date.now(),
+                        fileName: file.name,
+                        guilds: {},
+                        importTime: new Date().toISOString()
+                    };
+                    
+                    // 使用处理后的数据（已转换数字字段）
+                    guildNames.forEach(guildName => {
+                        const processedPlayers = processedGuildsData[guildName];
+                        battleSession.guilds[guildName] = processedPlayers.map(p => ({
+                            ...p,
+                            '帮会': guildName,
+                            '_sessionId': sessionId,
+                            '_battleTime': timestamp
+                        }));
+                    });
+                    
+                    // 添加到 multiBattleCache
+                    multiBattleCache.push(battleSession);
+                    multiBattleCache.sort((a, b) => b.timestamp - a.timestamp);
+                    saveMultiBattleCache();
+                    
                     // 更新UI
                     updateDataSourceUI();
                     updateGuildSelectOptions();
+                    updateMultiBattleUI();
                     
                     alert(`成功导入 ${totalImported} 条数据:\n${importedGuilds.join('\n')}`);
                     
@@ -11610,12 +12148,18 @@
                             });
                         });
                     });
+                    
+                    // 同步到 window，供 player_multi_analysis.js 使用
+                    window.multiBattleCache = multiBattleCache;
+                    console.log(`已加载 ${multiBattleCache.length} 场缓存数据到看板`);
                 } else {
                     multiBattleCache = [];
+                    window.multiBattleCache = [];
                 }
             } catch (e) {
                 console.error('加载多场数据缓存失败:', e);
                 multiBattleCache = [];
+                window.multiBattleCache = [];
             }
         }
         
