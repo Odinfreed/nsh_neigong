@@ -716,6 +716,29 @@
         }
         .profession-pie-container-player {
             position: relative;
+        }
+        
+        /* 职业对比图表全屏样式 */
+        .profession-fullscreen {
+            position: fixed !important;
+            top: 0;
+            left: 0;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 9999;
+            background: linear-gradient(145deg, rgba(13, 13, 13, 0.98) 0%, rgba(26, 26, 26, 0.99) 100%) !important;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .profession-fullscreen .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+        .profession-fullscreen .profession-chart-container {
+            flex: 1;
+            height: auto !important;
+            min-height: calc(100vh - 100px);
             height: 250px;
         }
 
@@ -1523,17 +1546,17 @@
                             <div id="professionComparisonContent" class="hidden">
                                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     <!-- 伤害与治疗雷达图 -->
-                                    <div class="card">
-                                        <h3 class="card-title"><i class="fas fa-chart-radar mr-2"></i>伤害与治疗</h3>
-                                        <div class="radar-chart-container-player" style="height: 350px;">
+                                    <div class="card" ondblclick="toggleProfessionChartFullscreen('damageHealing')" title="双击全屏查看">
+                                        <h3 class="card-title"><i class="fas fa-chart-radar mr-2"></i>伤害与治疗 <span class="text-xs text-gray-500 font-normal ml-2">(双击全屏)</span></h3>
+                                        <div class="radar-chart-container-player profession-chart-container" id="professionDamageHealingContainer" style="height: 350px;">
                                             <canvas id="professionDamageHealingChart"></canvas>
                                         </div>
                                     </div>
 
                                     <!-- 战斗数据雷达图 -->
-                                    <div class="card">
-                                        <h3 class="card-title"><i class="fas fa-chart-radar mr-2"></i>战斗数据</h3>
-                                        <div class="radar-chart-container-player" style="height: 350px;">
+                                    <div class="card" ondblclick="toggleProfessionChartFullscreen('combat')" title="双击全屏查看">
+                                        <h3 class="card-title"><i class="fas fa-chart-radar mr-2"></i>战斗数据 <span class="text-xs text-gray-500 font-normal ml-2">(双击全屏)</span></h3>
+                                        <div class="radar-chart-container-player profession-chart-container" id="professionCombatContainer" style="height: 350px;">
                                             <canvas id="professionCombatChart"></canvas>
                                         </div>
                                     </div>
@@ -1543,18 +1566,24 @@
                                 <div class="card mt-6">
                                     <h3 class="card-title"><i class="fas fa-list mr-2"></i>职业玩家详情</h3>
                                     <div class="overflow-x-auto">
-                                        <table class="data-table">
+                                        <table class="data-table text-xs">
                                             <thead>
                                                 <tr>
                                                     <th>排名</th>
                                                     <th>玩家名字</th>
                                                     <th>击败</th>
+                                                    <th>破泉</th>
+                                                    <th>化羽</th>
                                                     <th>助攻</th>
+                                                    <th>焚骨</th>
                                                     <th>对玩家伤害</th>
                                                     <th>对建筑伤害</th>
+                                                    <th>人伤卸甲</th>
+                                                    <th>破塔卸甲</th>
                                                     <th>治疗值</th>
+                                                    <th>承受伤害</th>
+                                                    <th>重伤</th>
                                                     <th>清泉</th>
-                                                    <th>焚骨</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="professionPlayersTable">
@@ -2463,6 +2492,9 @@
                         <button class="action-button" onclick="window.location.href='../xg_data_import/index.html'">
                             <i class="fas fa-arrow-left"></i>返回
                         </button>
+                        <button class="action-button" id="compareSystemBtn" onclick="toggleCompareSystem()" style="display: none;">
+                            <i class="fas fa-exchange-alt"></i>对比系统
+                        </button>
                     </div>
                 </div>
 
@@ -2496,7 +2528,7 @@
                     </div>
                 </div>
 
-                <!-- 综合评分权重分配卡片（多场看板时隐藏） -->
+                <!-- 综合评分权重分配卡片（多场看板时隐藏，对比模式时隐藏） -->
                 <div id="weightScoreCard" class="card" style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
                     <div class="card-header" style="flex-shrink: 0;">
                         <h2 class="text-lg font-bold flex items-center">
@@ -2550,6 +2582,88 @@
                             </div>
                             <div class="text-xs mt-1">得分: <span class="text-primary" id="score-g1-damage">-</span> vs <span class="text-secondary" id="score-g2-damage">-</span></div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- 对比系统面板（个人分析对比模式时显示） -->
+                <div id="compareSystemPanel" class="card hidden" style="flex: 1; display: none; flex-direction: column; min-height: 0;">
+                    <div class="card-header" style="flex-shrink: 0;">
+                        <h2 class="text-lg font-bold flex items-center">
+                            <i class="fas fa-exchange-alt mr-2 text-yellow-400"></i>
+                            对比人员选择
+                        </h2>
+                    </div>
+                    <div class="space-y-3" style="flex: 1; overflow-y: auto;">
+                        <!-- 场次选择 -->
+                        <div>
+                            <label class="text-xs text-gray-400 mb-1 block">选择场次</label>
+                            <select id="compareBattleSelect" class="w-full p-2 bg-dark border border-gray-600 rounded-none text-xs text-gray-100" onchange="onCompareBattleChange()">
+                                <option value="">请选择场次</option>
+                            </select>
+                        </div>
+                        
+                        <!-- 帮会筛选 -->
+                        <div>
+                            <label class="text-xs text-gray-400 mb-1 block">所属帮会</label>
+                            <div class="flex gap-1" id="compareGuildFilter">
+                                <button onclick="filterCompareByGuild('all')" class="flex-1 px-2 py-1 text-xs bg-gradient-to-r from-red-600 to-blue-600 text-white rounded transition-colors">全部</button>
+                            </div>
+                        </div>
+                        
+                        <!-- 职业筛选 -->
+                        <div>
+                            <label class="text-xs text-gray-400 mb-1 block">职业筛选</label>
+                            <div class="flex flex-wrap gap-1" id="compareProfessionFilter">
+                                <button onclick="filterCompareByProfession('')" class="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 rounded transition-colors">全部</button>
+                                <button onclick="filterCompareByProfession('铁衣')" class="px-2 py-1 text-xs bg-orange-600/30 hover:bg-orange-600/50 text-orange-300 rounded transition-colors">铁衣</button>
+                                <button onclick="filterCompareByProfession('血河')" class="px-2 py-1 text-xs bg-red-600/30 hover:bg-red-600/50 text-red-300 rounded transition-colors">血河</button>
+                                <button onclick="filterCompareByProfession('素问')" class="px-2 py-1 text-xs bg-pink-600/30 hover:bg-pink-600/50 text-pink-300 rounded transition-colors">素问</button>
+                                <button onclick="filterCompareByProfession('九灵')" class="px-2 py-1 text-xs bg-purple-600/30 hover:bg-purple-600/50 text-purple-300 rounded transition-colors">九灵</button>
+                                <button onclick="filterCompareByProfession('龙吟')" class="px-2 py-1 text-xs bg-green-600/30 hover:bg-green-600/50 text-green-300 rounded transition-colors">龙吟</button>
+                                <button onclick="filterCompareByProfession('碎梦')" class="px-2 py-1 text-xs bg-cyan-600/30 hover:bg-cyan-600/50 text-cyan-300 rounded transition-colors">碎梦</button>
+                                <button onclick="filterCompareByProfession('神相')" class="px-2 py-1 text-xs bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 rounded transition-colors">神相</button>
+                                <button onclick="filterCompareByProfession('玄机')" class="px-2 py-1 text-xs bg-yellow-600/30 hover:bg-yellow-600/50 text-yellow-300 rounded transition-colors">玄机</button>
+                                <button onclick="filterCompareByProfession('潮光')" class="px-2 py-1 text-xs bg-sky-600/30 hover:bg-sky-600/50 text-sky-300 rounded transition-colors">潮光</button>
+                                <button onclick="filterCompareByProfession('沧澜')" class="px-2 py-1 text-xs bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 rounded transition-colors">沧澜</button>
+                                <button onclick="filterCompareByProfession('鸿音')" class="px-2 py-1 text-xs bg-gradient-to-r from-yellow-600/30 to-orange-600/30 hover:from-yellow-600/50 hover:to-orange-600/50 text-yellow-200 rounded transition-colors">鸿音</button>
+                            </div>
+                        </div>
+                        
+                        <!-- 搜索框 -->
+                        <div class="relative">
+                            <input type="text" id="compareSearchInput" placeholder="搜索玩家名称..." 
+                                   class="w-full p-2 pl-8 bg-dark border border-gray-600 rounded-none text-xs text-gray-100"
+                                   oninput="filterComparePlayers()">
+                            <i class="fas fa-search absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs"></i>
+                        </div>
+                        
+                        <!-- 玩家列表 -->
+                        <div id="comparePlayerList" class="space-y-1 max-h-48 overflow-y-auto">
+                            <div class="text-center text-gray-500 py-4 text-xs">请先选择场次</div>
+                        </div>
+                        
+                        <!-- 已选对比玩家 -->
+                        <div id="selectedComparePlayer" class="hidden bg-gray-800/50 rounded p-2 border border-yellow-500/30">
+                            <div class="text-xs text-gray-400 mb-1">已选对比玩家</div>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span id="selectedCompareName" class="font-bold text-yellow-400">-</span>
+                                    <span id="selectedCompareInfo" class="text-xs text-gray-400 ml-2">-</span>
+                                </div>
+                                <button onclick="clearComparePlayer()" class="text-red-400 hover:text-red-300 text-xs">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <!-- 基础数据展示 -->
+                            <div id="selectedCompareBasicData" class="mt-2 pt-2 border-t border-gray-700/50 grid grid-cols-2 gap-1 text-xs">
+                                <!-- 动态填充 -->
+                            </div>
+                        </div>
+                        
+                        <!-- 关闭对比模式按钮 -->
+                        <button onclick="closeCompareSystem()" class="w-full py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-xs transition-colors">
+                            <i class="fas fa-times mr-1"></i>退出对比模式
+                        </button>
                     </div>
                 </div>
 
@@ -2942,6 +3056,20 @@
                 setTimeout(() => {
                     updatePlayerCharts();
                 }, 100);
+            }
+
+            // 控制对比系统按钮显示（仅在个人分析模块显示）
+            const compareBtn = document.getElementById('compareSystemBtn');
+            if (compareBtn) {
+                if (tab === 'player') {
+                    compareBtn.style.display = 'inline-flex';
+                } else {
+                    compareBtn.style.display = 'none';
+                    // 退出对比模式
+                    if (isCompareMode) {
+                        closeCompareSystem();
+                    }
+                }
             }
         }
 
@@ -4452,7 +4580,514 @@
         let currentPlayer = null;
         let damageHealRadarChart = null;
         let combatRadarChart = null;
+        
+        // 对比系统状态
+        let isCompareMode = false;
+        let comparePlayer = null; // 对比玩家数据
+        let compareBattleId = null; // 对比场次ID
+        let selectedDimensions = ['对建筑伤害', '对玩家伤害', '击败', '治疗值']; // 条形图默认选中维度
         let professionPieChart = null;
+        
+        // 对比系统筛选状态
+        let compareFilterState = {
+            guild: 'all',
+            profession: '',
+            search: ''
+        };
+
+        // ==================== 对比系统功能 ====================
+
+        // 获取当前玩家所在的场次ID
+        function getCurrentBattleId() {
+            if (!currentPlayer) return null;
+            
+            const playerName = currentPlayer['玩家名字'];
+            
+            // 在multiBattleCache中查找包含当前玩家的最近场次
+            for (const battle of multiBattleCache) {
+                const guildsData = battle.guilds || battle.data || {};
+                for (const players of Object.values(guildsData)) {
+                    if (players.find(p => p['玩家名字'] === playerName)) {
+                        return battle.id;
+                    }
+                }
+            }
+            
+            // 如果没找到（可能是刚导入的数据），返回null
+            return null;
+        }
+
+        // 切换对比系统
+        function toggleCompareSystem() {
+            if (!currentPlayer) {
+                alert('请先选择一名玩家作为对比基准');
+                return;
+            }
+            
+            isCompareMode = true;
+            
+            // 显示对比系统面板，隐藏权重分配卡片
+            document.getElementById('weightScoreCard').style.display = 'none';
+            const comparePanel = document.getElementById('compareSystemPanel');
+            comparePanel.classList.remove('hidden');
+            comparePanel.style.display = 'flex';
+            
+            // 更新按钮样式
+            const btn = document.getElementById('compareSystemBtn');
+            if (btn) {
+                btn.classList.add('bg-yellow-600');
+                btn.innerHTML = '<i class="fas fa-exchange-alt mr-1"></i>对比中';
+            }
+            
+            // 初始化对比系统数据
+            initCompareSystem();
+            
+            // 更新图表（移除top15/16，改为对比模式）
+            updatePlayerCharts();
+            
+            // 更新排名区域为条形统计图
+            updateCompareBarChart();
+        }
+
+        // 关闭对比系统
+        function closeCompareSystem() {
+            isCompareMode = false;
+            comparePlayer = null;
+            compareBattleId = null;
+            
+            // 隐藏对比系统面板，显示权重分配卡片
+            document.getElementById('compareSystemPanel').style.display = 'none';
+            document.getElementById('compareSystemPanel').classList.add('hidden');
+            document.getElementById('weightScoreCard').style.display = 'flex';
+            
+            // 更新按钮样式
+            const btn = document.getElementById('compareSystemBtn');
+            if (btn) {
+                btn.classList.remove('bg-yellow-600');
+                btn.innerHTML = '<i class="fas fa-exchange-alt mr-1"></i>对比系统';
+            }
+            
+            // 恢复雷达图和排名显示
+            updatePlayerCharts();
+            updateProfessionRankings();
+        }
+
+        // 初始化对比系统
+        function initCompareSystem() {
+            // 加载多场缓存数据
+            loadMultiBattleCacheForDashboard();
+            
+            // 初始化场次选择
+            initCompareBattleSelect();
+            
+            // 重置筛选状态
+            compareFilterState = { guild: 'all', profession: '', search: '' };
+            
+            // 更新帮会筛选按钮
+            updateCompareGuildButtons();
+        }
+
+        // 初始化场次选择下拉框
+        function initCompareBattleSelect() {
+            const select = document.getElementById('compareBattleSelect');
+            if (!select) return;
+            
+            if (multiBattleCache.length === 0) {
+                select.innerHTML = '<option value="">暂无场次数据</option>';
+                return;
+            }
+            
+            // 按时间倒序排列
+            const sortedBattles = [...multiBattleCache].sort((a, b) => b.timestamp - a.timestamp);
+            
+            let html = '<option value="">请选择场次</option>';
+            sortedBattles.forEach((battle, index) => {
+                const guildsData = battle.guilds || battle.data || {};
+                const guildNames = Object.keys(guildsData);
+                const g1 = battle.guild1Name || guildNames[0] || '帮会1';
+                const g2 = battle.guild2Name || guildNames[1] || '帮会2';
+                const date = new Date(battle.dateTime);
+                const dateStr = date.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' });
+                
+                html += `<option value="${battle.id}">#${sortedBattles.length - index} ${dateStr} ${g1} vs ${g2}</option>`;
+            });
+            
+            select.innerHTML = html;
+        }
+
+        // 场次选择变化
+        function onCompareBattleChange() {
+            const select = document.getElementById('compareBattleSelect');
+            compareBattleId = select ? select.value : null;
+            
+            if (compareBattleId) {
+                // 更新帮会筛选按钮（基于选择的场次）
+                updateCompareGuildButtons();
+                // 刷新玩家列表
+                refreshComparePlayerList();
+            } else {
+                document.getElementById('comparePlayerList').innerHTML = '<div class="text-center text-gray-500 py-4 text-xs">请先选择场次</div>';
+            }
+        }
+
+        // 更新帮会筛选按钮
+        function updateCompareGuildButtons() {
+            const container = document.getElementById('compareGuildFilter');
+            if (!container) return;
+            
+            if (!compareBattleId) {
+                container.innerHTML = `
+                    <button onclick="filterCompareByGuild('all')" class="flex-1 px-2 py-1 text-xs bg-gradient-to-r from-red-600 to-blue-600 text-white rounded transition-colors">全部</button>
+                `;
+                return;
+            }
+            
+            const battle = multiBattleCache.find(b => b.id === compareBattleId);
+            if (!battle) return;
+            
+            const guildsData = battle.guilds || battle.data || {};
+            const guildNames = Object.keys(guildsData);
+            const g1 = battle.guild1Name || guildNames[0] || '帮会1';
+            const g2 = battle.guild2Name || guildNames[1] || '帮会2';
+            
+            container.innerHTML = `
+                <button onclick="filterCompareByGuild('all')" class="flex-1 px-2 py-1 text-xs ${compareFilterState.guild === 'all' ? 'bg-gradient-to-r from-red-600 to-blue-600 text-white' : 'bg-gray-700 text-gray-300'} rounded transition-colors">全部</button>
+                <button onclick="filterCompareByGuild('${g1}')" class="flex-1 px-2 py-1 text-xs ${compareFilterState.guild === g1 ? 'bg-red-600 text-white' : 'bg-red-600/30 text-red-300'} rounded transition-colors">${g1}</button>
+                <button onclick="filterCompareByGuild('${g2}')" class="flex-1 px-2 py-1 text-xs ${compareFilterState.guild === g2 ? 'bg-blue-600 text-white' : 'bg-blue-600/30 text-blue-300'} rounded transition-colors">${g2}</button>
+            `;
+        }
+
+        // 帮会筛选
+        function filterCompareByGuild(guild) {
+            compareFilterState.guild = guild;
+            updateCompareGuildButtons();
+            refreshComparePlayerList();
+        }
+
+        // 职业筛选
+        function filterCompareByProfession(profession) {
+            compareFilterState.profession = profession;
+            
+            // 更新按钮样式
+            const buttons = document.querySelectorAll('#compareProfessionFilter button');
+            buttons.forEach(btn => {
+                const btnProf = btn.getAttribute('onclick')?.match(/'([^']+)'/)?.[1] || '';
+                if (btnProf === profession) {
+                    btn.classList.add('ring-1', 'ring-white');
+                } else {
+                    btn.classList.remove('ring-1', 'ring-white');
+                }
+            });
+            
+            refreshComparePlayerList();
+        }
+
+        // 搜索筛选
+        function filterComparePlayers() {
+            const input = document.getElementById('compareSearchInput');
+            compareFilterState.search = input ? input.value.toLowerCase() : '';
+            refreshComparePlayerList();
+        }
+
+        // 刷新对比玩家列表
+        function refreshComparePlayerList() {
+            const listContainer = document.getElementById('comparePlayerList');
+            if (!listContainer) return;
+            
+            if (!compareBattleId) {
+                listContainer.innerHTML = '<div class="text-center text-gray-500 py-4 text-xs">请先选择场次</div>';
+                return;
+            }
+            
+            const battle = multiBattleCache.find(b => b.id === compareBattleId);
+            if (!battle) {
+                listContainer.innerHTML = '<div class="text-center text-gray-500 py-4 text-xs">场次数据不存在</div>';
+                return;
+            }
+            
+            const guildsData = battle.guilds || battle.data || {};
+            const dataGuildNames = Object.keys(guildsData);
+            
+            // 收集所有玩家
+            let allPlayers = [];
+            dataGuildNames.forEach(rawName => {
+                let displayName;
+                if (rawName === dataGuildNames[0] && battle.guild1Name) {
+                    displayName = battle.guild1Name;
+                } else if (rawName === dataGuildNames[1] && battle.guild2Name) {
+                    displayName = battle.guild2Name;
+                } else {
+                    displayName = rawName;
+                }
+                
+                const players = guildsData[rawName] || [];
+                players.forEach(p => {
+                    allPlayers.push({
+                        ...p,
+                        _guildName: displayName,
+                        _rawGuildName: rawName
+                    });
+                });
+            });
+            
+            // 应用筛选
+            let filtered = allPlayers;
+            
+            // 帮会筛选
+            if (compareFilterState.guild !== 'all') {
+                filtered = filtered.filter(p => p._guildName === compareFilterState.guild);
+            }
+            
+            // 职业筛选
+            if (compareFilterState.profession) {
+                filtered = filtered.filter(p => p['职业'] === compareFilterState.profession);
+            }
+            
+            // 搜索筛选
+            if (compareFilterState.search) {
+                filtered = filtered.filter(p => p['玩家名字'].toLowerCase().includes(compareFilterState.search));
+            }
+            
+            // 排除同一场次中的当前玩家自己（但允许跨场次对比自己）
+            if (currentPlayer) {
+                // 获取当前玩家所在的场次ID（从当前加载的数据判断）
+                const currentBattleId = getCurrentBattleId();
+                // 只排除同一场次的同名玩家，不同场次的自己可以被选中
+                filtered = filtered.filter(p => {
+                    if (p['玩家名字'] !== currentPlayer['玩家名字']) return true;
+                    // 同名时，检查是否是同一场次
+                    return compareBattleId !== currentBattleId;
+                });
+            }
+            
+            // 渲染列表
+            if (filtered.length === 0) {
+                listContainer.innerHTML = '<div class="text-center text-gray-500 py-4 text-xs">无匹配玩家</div>';
+                return;
+            }
+            
+            // 获取场次显示信息
+            const guild1Display = battle.guild1Name || dataGuildNames[0] || '帮会1';
+            const guild2Display = battle.guild2Name || dataGuildNames[1] || '帮会2';
+            const battleDisplayName = battle.name || `${guild1Display} vs ${guild2Display}`;
+            
+            listContainer.innerHTML = filtered.slice(0, 50).map(p => {
+                const guildColorClass = p._guildName === guild1Display ? 'bg-red-600/30 text-red-300' : 'bg-blue-600/30 text-blue-300';
+                return `
+                <div onclick="selectComparePlayer('${compareBattleId}', '${p['玩家名字']}')" 
+                     class="p-2 bg-dark border border-gray-700 rounded cursor-pointer hover:bg-gray-800 hover:border-gray-500 transition-all">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-200">${p['玩家名字']}</span>
+                        <span class="text-xs text-gray-400">${p['职业']}</span>
+                    </div>
+                    <div class="flex items-center justify-between mt-1">
+                        <span class="text-xs text-gray-500" title="${battleDisplayName}">${battleDisplayName}</span>
+                        <span class="text-xs px-1.5 py-0.5 rounded ${guildColorClass}">${p._guildName}</span>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        // 选择对比玩家
+        function selectComparePlayer(battleId, playerName) {
+            const battle = multiBattleCache.find(b => b.id === battleId);
+            if (!battle) return;
+            
+            const guildsData = battle.guilds || battle.data || {};
+            let foundPlayer = null;
+            let foundGuild = '';
+            
+            for (const [guildName, players] of Object.entries(guildsData)) {
+                const player = players.find(p => p['玩家名字'] === playerName);
+                if (player) {
+                    foundPlayer = player;
+                    foundGuild = guildName;
+                    break;
+                }
+            }
+            
+            if (!foundPlayer) return;
+            
+            comparePlayer = foundPlayer;
+            compareBattleId = battleId;
+            
+            // 显示已选玩家信息
+            const selectedDiv = document.getElementById('selectedComparePlayer');
+            const nameEl = document.getElementById('selectedCompareName');
+            const infoEl = document.getElementById('selectedCompareInfo');
+            const basicDataEl = document.getElementById('selectedCompareBasicData');
+            
+            if (selectedDiv) selectedDiv.classList.remove('hidden');
+            if (nameEl) nameEl.textContent = foundPlayer['玩家名字'];
+            
+            // 获取帮会显示名称
+            const dataGuildNames = Object.keys(guildsData);
+            let guildDisplayName = foundGuild;
+            if (foundGuild === dataGuildNames[0] && battle.guild1Name) {
+                guildDisplayName = battle.guild1Name;
+            } else if (foundGuild === dataGuildNames[1] && battle.guild2Name) {
+                guildDisplayName = battle.guild2Name;
+            }
+            
+            if (infoEl) infoEl.textContent = `${guildDisplayName} | ${foundPlayer['职业']}`;
+            
+            // 填充基础数据
+            if (basicDataEl) {
+                const basicData = [
+                    { label: '对塔', value: foundPlayer['对建筑伤害'] || 0, color: 'text-purple-400' },
+                    { label: '对人', value: foundPlayer['对玩家伤害'] || 0, color: 'text-red-400' },
+                    { label: '击败', value: foundPlayer['击败'] || 0, color: 'text-yellow-400' },
+                    { label: '治疗', value: foundPlayer['治疗值'] || 0, color: 'text-green-400' }
+                ];
+                basicDataEl.innerHTML = basicData.map(d => `
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500">${d.label}:</span>
+                        <span class="${d.color} font-medium">${formatNumber(d.value)}</span>
+                    </div>
+                `).join('');
+            }
+            
+            // 更新图表
+            updatePlayerCharts();
+            updateCompareBarChart();
+        }
+
+        // 清除对比玩家
+        function clearComparePlayer() {
+            comparePlayer = null;
+            
+            document.getElementById('selectedComparePlayer').classList.add('hidden');
+            document.getElementById('selectedCompareName').textContent = '-';
+            document.getElementById('selectedCompareInfo').textContent = '-';
+            
+            updatePlayerCharts();
+            updateCompareBarChart();
+        }
+
+        // 更新对比条形统计图
+        let compareBarChart = null;
+        function updateCompareBarChart() {
+            const container = document.getElementById('professionRankings');
+            if (!container) return;
+            
+            if (!currentPlayer) {
+                container.innerHTML = '<p class="text-gray-400 text-center py-4">请选择玩家查看数据</p>';
+                return;
+            }
+            
+            // 如果没有选择对比玩家，显示提示
+            if (!comparePlayer) {
+                container.innerHTML = '<p class="text-gray-400 text-center py-4">请在右侧面板选择一名对比玩家</p>';
+                return;
+            }
+            
+            // 所有可选维度配置
+            const allDimensions = [
+                { key: '对建筑伤害', label: '对塔输出', icon: 'fa-building', color: '#a855f7' },
+                { key: '对玩家伤害', label: '对人伤害', icon: 'fa-user-slash', color: '#ef4444' },
+                { key: '击败', label: '击败', icon: 'fa-skull', color: '#eab308' },
+                { key: '治疗值', label: '治疗量', icon: 'fa-heart', color: '#22c55e' },
+                { key: '助攻', label: '助攻', icon: 'fa-hands-helping', color: '#3b82f6' },
+                { key: '承受伤害', label: '承受伤害', icon: 'fa-shield-alt', color: '#f97316' },
+                { key: '破泉', label: '破泉', icon: 'fa-water', color: '#06b6d4' },
+                { key: '化羽', label: '化羽', icon: 'fa-feather-alt', color: '#14b8a6' }
+            ];
+            
+            // 使用选中的维度（默认为前4个）
+            const selectedDims = selectedDimensions && selectedDimensions.length > 0 
+                ? allDimensions.filter(d => selectedDimensions.includes(d.key))
+                : allDimensions.slice(0, 4);
+            
+            // 计算最大值用于比例
+            const maxValues = {};
+            selectedDims.forEach(dim => {
+                const v1 = parseFloat(currentPlayer[dim.key]) || 0;
+                const v2 = parseFloat(comparePlayer[dim.key]) || 0;
+                maxValues[dim.key] = Math.max(v1, v2, 1);
+            });
+            
+            let html = `
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-sm font-bold text-gray-200">数据对比</h4>
+                        <div class="flex items-center gap-3 text-xs">
+                            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded" style="background:#3B82F6"></span>${currentPlayer['玩家名字']}</span>
+                            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded" style="background:#EF4444"></span>${comparePlayer['玩家名字']}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 维度选择器 -->
+                    <div class="mb-3">
+                        <div class="text-xs text-gray-400 mb-1">选择显示维度</div>
+                        <div class="flex flex-wrap gap-1">
+                            ${allDimensions.map(dim => `
+                                <button onclick="toggleCompareDimension('${dim.key}')" 
+                                        class="px-2 py-1 text-xs rounded transition-all ${selectedDimensions.includes(dim.key) ? 'bg-yellow-600 text-white' : 'bg-gray-700 text-gray-400 hover:bg-gray-600'}">
+                                    <i class="fas ${dim.icon} mr-1"></i>${dim.label}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+            `;
+            
+            selectedDims.forEach(dim => {
+                const v1 = parseFloat(currentPlayer[dim.key]) || 0;
+                const v2 = parseFloat(comparePlayer[dim.key]) || 0;
+                const max = maxValues[dim.key];
+                const p1 = (v1 / max * 100).toFixed(1);
+                const p2 = (v2 / max * 100).toFixed(1);
+                
+                const formattedV1 = v1 >= 10000 ? (v1/10000).toFixed(1) + '万' : v1.toLocaleString();
+                const formattedV2 = v2 >= 10000 ? (v2/10000).toFixed(1) + '万' : v2.toLocaleString();
+                
+                html += `
+                    <div class="bg-gray-800/50 rounded p-2">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs text-gray-400"><i class="fas ${dim.icon} mr-1"></i>${dim.label}</span>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-blue-400 w-16 truncate">${currentPlayer['玩家名字']}</span>
+                                <div class="flex-1 bg-gray-700 rounded-full h-2 overflow-hidden">
+                                    <div class="h-full rounded-full transition-all" style="width: ${p1}%; background: #3B82F6;"></div>
+                                </div>
+                                <span class="text-xs text-gray-300 w-16 text-right">${formattedV1}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-red-400 w-16 truncate">${comparePlayer['玩家名字']}</span>
+                                <div class="flex-1 bg-gray-700 rounded-full h-2 overflow-hidden">
+                                    <div class="h-full rounded-full transition-all" style="width: ${p2}%; background: #EF4444;"></div>
+                                </div>
+                                <span class="text-xs text-gray-300 w-16 text-right">${formattedV2}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // 切换对比维度
+        function toggleCompareDimension(dimKey) {
+            if (!selectedDimensions) {
+                selectedDimensions = ['对建筑伤害', '对玩家伤害', '击败', '治疗值'];
+            }
+            
+            const index = selectedDimensions.indexOf(dimKey);
+            if (index > -1) {
+                // 至少保留一个维度
+                if (selectedDimensions.length > 1) {
+                    selectedDimensions.splice(index, 1);
+                }
+            } else {
+                selectedDimensions.push(dimKey);
+            }
+            
+            // 刷新条形图
+            updateCompareBarChart();
+        }
 
         function initPlayerAnalysis() {
             const playerSelect = document.getElementById('playerSelect');
@@ -4800,6 +5435,12 @@
                 rankingsContainer.innerHTML = '<p class="text-gray-400 text-center py-4">请选择玩家查看排名</p>';
                 return;
             }
+            
+            // 对比模式下显示条形统计图
+            if (isCompareMode && comparePlayer) {
+                updateCompareBarChart();
+                return;
+            }
 
             const playerProfession = currentPlayer['职业'];
             const playerName = currentPlayer['玩家名字'];
@@ -4974,23 +5615,46 @@
                 return;
             }
             
-            // 计算帮会最大值（用于归一化）
-            const maxValues = {
-                buildingDmg: Math.max(...allPlayers.map(p => p['对建筑伤害'] || 0), 1),
-                playerDmg: Math.max(...allPlayers.map(p => p['对玩家伤害'] || 0), 1),
-                playerArmorBreak: Math.max(...allPlayers.map(p => p['人伤卸甲'] || 0), 1),
-                buildingArmorBreak: Math.max(...allPlayers.map(p => p['破塔卸甲'] || 0), 1),
-                healing: Math.max(...allPlayers.map(p => p['治疗值'] || 0), 1),
-                takenDmg: Math.max(...allPlayers.map(p => p['承受伤害'] || 0), 1),
-                kills: Math.max(...allPlayers.map(p => p['击败'] || 0), 1),
-                poquan: Math.max(...allPlayers.map(p => p['破泉'] || 0), 1),
-                huayu: Math.max(...allPlayers.map(p => p['化羽'] || 0), 1),
-                qingquan: Math.max(...allPlayers.map(p => p['清泉'] || 0), 1),
-                assists: Math.max(...allPlayers.map(p => p['助攻'] || 0), 1),
-                resource: Math.max(...allPlayers.map(p => p['资源'] || 0), 1),
-                fenGu: Math.max(...allPlayers.map(p => p['焚骨'] || 0), 1),
-                zhongShang: Math.max(...allPlayers.map(p => p['重伤'] || 0), 1)
-            };
+            // 判断是否为对比模式
+            const isInCompareMode = isCompareMode && comparePlayer;
+            
+            // 计算最大值（用于归一化）- 对比模式下使用当前玩家和对比玩家的最大值
+            let maxValues;
+            if (isInCompareMode) {
+                maxValues = {
+                    buildingDmg: Math.max(currentPlayer['对建筑伤害'] || 0, comparePlayer['对建筑伤害'] || 0, 1),
+                    playerDmg: Math.max(currentPlayer['对玩家伤害'] || 0, comparePlayer['对玩家伤害'] || 0, 1),
+                    playerArmorBreak: Math.max(currentPlayer['人伤卸甲'] || 0, comparePlayer['人伤卸甲'] || 0, 1),
+                    buildingArmorBreak: Math.max(currentPlayer['破塔卸甲'] || 0, comparePlayer['破塔卸甲'] || 0, 1),
+                    healing: Math.max(currentPlayer['治疗值'] || 0, comparePlayer['治疗值'] || 0, 1),
+                    takenDmg: Math.max(currentPlayer['承受伤害'] || 0, comparePlayer['承受伤害'] || 0, 1),
+                    kills: Math.max(currentPlayer['击败'] || 0, comparePlayer['击败'] || 0, 1),
+                    poquan: Math.max(currentPlayer['破泉'] || 0, comparePlayer['破泉'] || 0, 1),
+                    huayu: Math.max(currentPlayer['化羽'] || 0, comparePlayer['化羽'] || 0, 1),
+                    qingquan: Math.max(currentPlayer['清泉'] || 0, comparePlayer['清泉'] || 0, 1),
+                    assists: Math.max(currentPlayer['助攻'] || 0, comparePlayer['助攻'] || 0, 1),
+                    resource: Math.max(currentPlayer['资源'] || 0, comparePlayer['资源'] || 0, 1),
+                    fenGu: Math.max(currentPlayer['焚骨'] || 0, comparePlayer['焚骨'] || 0, 1),
+                    zhongShang: Math.max(currentPlayer['重伤'] || 0, comparePlayer['重伤'] || 0, 1)
+                };
+            } else {
+                maxValues = {
+                    buildingDmg: Math.max(...allPlayers.map(p => p['对建筑伤害'] || 0), 1),
+                    playerDmg: Math.max(...allPlayers.map(p => p['对玩家伤害'] || 0), 1),
+                    playerArmorBreak: Math.max(...allPlayers.map(p => p['人伤卸甲'] || 0), 1),
+                    buildingArmorBreak: Math.max(...allPlayers.map(p => p['破塔卸甲'] || 0), 1),
+                    healing: Math.max(...allPlayers.map(p => p['治疗值'] || 0), 1),
+                    takenDmg: Math.max(...allPlayers.map(p => p['承受伤害'] || 0), 1),
+                    kills: Math.max(...allPlayers.map(p => p['击败'] || 0), 1),
+                    poquan: Math.max(...allPlayers.map(p => p['破泉'] || 0), 1),
+                    huayu: Math.max(...allPlayers.map(p => p['化羽'] || 0), 1),
+                    qingquan: Math.max(...allPlayers.map(p => p['清泉'] || 0), 1),
+                    assists: Math.max(...allPlayers.map(p => p['助攻'] || 0), 1),
+                    resource: Math.max(...allPlayers.map(p => p['资源'] || 0), 1),
+                    fenGu: Math.max(...allPlayers.map(p => p['焚骨'] || 0), 1),
+                    zhongShang: Math.max(...allPlayers.map(p => p['重伤'] || 0), 1)
+                };
+            }
 
             // 我帮会（帮会1）前15平均值
             const myGuildStats = {
@@ -5028,15 +5692,101 @@
                 重伤: calculateTopNAverage(guild2Data, '重伤', 16)
             };
 
-            // 存储原始数据用于显示标签
-            const playerOriginalData1 = [
-                currentPlayer['对建筑伤害'] || 0,
-                currentPlayer['对玩家伤害'] || 0,
-                currentPlayer['人伤卸甲'] || 0,
-                currentPlayer['破塔卸甲'] || 0,
-                currentPlayer['治疗值'] || 0,
-                currentPlayer['承受伤害'] || 0
-            ];
+            // 准备数据集 - 对比模式下只显示当前玩家和对比玩家
+            let damageDatasets;
+            if (isInCompareMode) {
+                damageDatasets = [
+                    {
+                        label: currentPlayer['玩家名字'],
+                        data: [
+                            normalizeValue(currentPlayer['对建筑伤害'] || 0, maxValues.buildingDmg),
+                            normalizeValue(currentPlayer['对玩家伤害'] || 0, maxValues.playerDmg),
+                            normalizeValue(currentPlayer['人伤卸甲'] || 0, maxValues.playerArmorBreak),
+                            normalizeValue(currentPlayer['破塔卸甲'] || 0, maxValues.buildingArmorBreak),
+                            normalizeValue(currentPlayer['治疗值'] || 0, maxValues.healing),
+                            normalizeValue(currentPlayer['承受伤害'] || 0, maxValues.takenDmg)
+                        ],
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: '#3B82F6',
+                        pointBackgroundColor: '#3B82F6',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#3B82F6'
+                    },
+                    {
+                        label: comparePlayer['玩家名字'],
+                        data: [
+                            normalizeValue(comparePlayer['对建筑伤害'] || 0, maxValues.buildingDmg),
+                            normalizeValue(comparePlayer['对玩家伤害'] || 0, maxValues.playerDmg),
+                            normalizeValue(comparePlayer['人伤卸甲'] || 0, maxValues.playerArmorBreak),
+                            normalizeValue(comparePlayer['破塔卸甲'] || 0, maxValues.buildingArmorBreak),
+                            normalizeValue(comparePlayer['治疗值'] || 0, maxValues.healing),
+                            normalizeValue(comparePlayer['承受伤害'] || 0, maxValues.takenDmg)
+                        ],
+                        backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                        borderColor: '#EF4444',
+                        pointBackgroundColor: '#EF4444',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#EF4444'
+                    }
+                ];
+            } else {
+                damageDatasets = [
+                    {
+                        label: '玩家数据',
+                        data: [
+                            normalizeValue(currentPlayer['对建筑伤害'] || 0, maxValues.buildingDmg),
+                            normalizeValue(currentPlayer['对玩家伤害'] || 0, maxValues.playerDmg),
+                            normalizeValue(currentPlayer['人伤卸甲'] || 0, maxValues.playerArmorBreak),
+                            normalizeValue(currentPlayer['破塔卸甲'] || 0, maxValues.buildingArmorBreak),
+                            normalizeValue(currentPlayer['治疗值'] || 0, maxValues.healing),
+                            normalizeValue(currentPlayer['承受伤害'] || 0, maxValues.takenDmg)
+                        ],
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: '#3B82F6',
+                        pointBackgroundColor: '#3B82F6',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#3B82F6'
+                    },
+                    {
+                        label: guild1Name + '前15',
+                        data: [
+                            normalizeValue(myGuildStats['对建筑伤害'] || 0, maxValues.buildingDmg),
+                            normalizeValue(myGuildStats['对玩家伤害'] || 0, maxValues.playerDmg),
+                            normalizeValue(myGuildStats['人伤卸甲'] || 0, maxValues.playerArmorBreak),
+                            normalizeValue(myGuildStats['破塔卸甲'] || 0, maxValues.buildingArmorBreak),
+                            normalizeValue(myGuildStats['治疗值'] || 0, maxValues.healing),
+                            normalizeValue(myGuildStats['承受伤害'] || 0, maxValues.takenDmg)
+                        ],
+                        backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                        borderColor: '#EF4444',
+                        pointBackgroundColor: '#EF4444',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#EF4444'
+                    },
+                    {
+                        label: guild2Name + '前16',
+                        data: [
+                            normalizeValue(enemyGuildStats['对建筑伤害'] || 0, maxValues.buildingDmg),
+                            normalizeValue(enemyGuildStats['对玩家伤害'] || 0, maxValues.playerDmg),
+                            normalizeValue(enemyGuildStats['人伤卸甲'] || 0, maxValues.playerArmorBreak),
+                            normalizeValue(enemyGuildStats['破塔卸甲'] || 0, maxValues.buildingArmorBreak),
+                            normalizeValue(enemyGuildStats['治疗值'] || 0, maxValues.healing),
+                            normalizeValue(enemyGuildStats['承受伤害'] || 0, maxValues.takenDmg)
+                        ],
+                        backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                        borderColor: '#8B5CF6',
+                        pointBackgroundColor: '#8B5CF6',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#8B5CF6'
+                    }
+                ];
+            }
+            
             // 伤害与治疗雷达图
             if (damageHealRadarChart) damageHealRadarChart.destroy();
             const damageHealingCtx = document.getElementById('playerDamageHealingChart');
@@ -5045,59 +5795,7 @@
                     type: 'radar',
                     data: {
                         labels: ['对塔输出', '对人伤害', '人伤卸甲', '破塔卸甲', '治疗量', '承受伤害'],
-                        datasets: [
-                            {
-                                label: '玩家数据',
-                                data: [
-                                    normalizeValue(currentPlayer['对建筑伤害'] || 0, maxValues.buildingDmg),
-                                    normalizeValue(currentPlayer['对玩家伤害'] || 0, maxValues.playerDmg),
-                                    normalizeValue(currentPlayer['人伤卸甲'] || 0, maxValues.playerArmorBreak),
-                                    normalizeValue(currentPlayer['破塔卸甲'] || 0, maxValues.buildingArmorBreak),
-                                    normalizeValue(currentPlayer['治疗值'] || 0, maxValues.healing),
-                                    normalizeValue(currentPlayer['承受伤害'] || 0, maxValues.takenDmg)
-                                ],
-                                backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                                borderColor: '#3B82F6',
-                                pointBackgroundColor: '#3B82F6',
-                                pointBorderColor: '#fff',
-                                pointHoverBackgroundColor: '#fff',
-                                pointHoverBorderColor: '#3B82F6'
-                            },
-                            {
-                                label: guild1Name + '前15',
-                                data: [
-                                    normalizeValue(myGuildStats['对建筑伤害'] || 0, maxValues.buildingDmg),
-                                    normalizeValue(myGuildStats['对玩家伤害'] || 0, maxValues.playerDmg),
-                                    normalizeValue(myGuildStats['人伤卸甲'] || 0, maxValues.playerArmorBreak),
-                                    normalizeValue(myGuildStats['破塔卸甲'] || 0, maxValues.buildingArmorBreak),
-                                    normalizeValue(myGuildStats['治疗值'] || 0, maxValues.healing),
-                                    normalizeValue(myGuildStats['承受伤害'] || 0, maxValues.takenDmg)
-                                ],
-                                backgroundColor: 'rgba(239, 68, 68, 0.2)',
-                                borderColor: '#EF4444',
-                                pointBackgroundColor: '#EF4444',
-                                pointBorderColor: '#fff',
-                                pointHoverBackgroundColor: '#fff',
-                                pointHoverBorderColor: '#EF4444'
-                            },
-                            {
-                                label: guild2Name + '前16',
-                                data: [
-                                    normalizeValue(enemyGuildStats['对建筑伤害'] || 0, maxValues.buildingDmg),
-                                    normalizeValue(enemyGuildStats['对玩家伤害'] || 0, maxValues.playerDmg),
-                                    normalizeValue(enemyGuildStats['人伤卸甲'] || 0, maxValues.playerArmorBreak),
-                                    normalizeValue(enemyGuildStats['破塔卸甲'] || 0, maxValues.buildingArmorBreak),
-                                    normalizeValue(enemyGuildStats['治疗值'] || 0, maxValues.healing),
-                                    normalizeValue(enemyGuildStats['承受伤害'] || 0, maxValues.takenDmg)
-                                ],
-                                backgroundColor: 'rgba(139, 92, 246, 0.2)',
-                                borderColor: '#8B5CF6',
-                                pointBackgroundColor: '#8B5CF6',
-                                pointBorderColor: '#fff',
-                                pointHoverBackgroundColor: '#fff',
-                                pointHoverBorderColor: '#8B5CF6'
-                            }
-                        ]
+                        datasets: damageDatasets
                     },
                     options: {
                         responsive: true,
@@ -5118,19 +5816,18 @@
                                         const label = context.dataset.label;
                                         const dataIndex = context.dataIndex;
                                         const labels = ['对塔输出', '对人伤害', '人伤卸甲', '破塔卸甲', '治疗量', '承受伤害'];
-
-                                        // 获取原始数值
-                                        let originalValue;
-                                        if (context.datasetIndex === 0) {
-                                            const values = [currentPlayer['对建筑伤害'] || 0, currentPlayer['对玩家伤害'] || 0, currentPlayer['人伤卸甲'] || 0, currentPlayer['破塔卸甲'] || 0, currentPlayer['治疗值'] || 0, currentPlayer['承受伤害'] || 0];
-                                            originalValue = values[dataIndex];
-                                        } else if (context.datasetIndex === 1) {
-                                            const values = [myGuildStats['对建筑伤害'] || 0, myGuildStats['对玩家伤害'] || 0, myGuildStats['人伤卸甲'] || 0, myGuildStats['破塔卸甲'] || 0, myGuildStats['治疗值'] || 0, myGuildStats['承受伤害'] || 0];
-                                            originalValue = values[dataIndex];
+                                        
+                                        let player;
+                                        if (isInCompareMode) {
+                                            player = context.datasetIndex === 0 ? currentPlayer : comparePlayer;
                                         } else {
-                                            const values = [enemyGuildStats['对建筑伤害'] || 0, enemyGuildStats['对玩家伤害'] || 0, enemyGuildStats['人伤卸甲'] || 0, enemyGuildStats['破塔卸甲'] || 0, enemyGuildStats['治疗值'] || 0, enemyGuildStats['承受伤害'] || 0];
-                                            originalValue = values[dataIndex];
+                                            if (context.datasetIndex === 0) player = currentPlayer;
+                                            else if (context.datasetIndex === 1) player = myGuildStats;
+                                            else player = enemyGuildStats;
                                         }
+                                        
+                                        const keyMap = ['对建筑伤害', '对玩家伤害', '人伤卸甲', '破塔卸甲', '治疗值', '承受伤害'];
+                                        const originalValue = player[keyMap[dataIndex]] || 0;
                                         return `${label} ${labels[dataIndex]}: ${formatNumber(originalValue)}`;
                                     }
                                 }
@@ -5141,7 +5838,106 @@
                 });
             }
 
-            // 存储原始数据用于显示标签
+            // 准备战斗数据集 - 对比模式下只显示当前玩家和对比玩家
+            let combatDatasets;
+            if (isInCompareMode) {
+                combatDatasets = [
+                    {
+                        label: currentPlayer['玩家名字'],
+                        data: [
+                            normalizeValue(currentPlayer['击败'] || 0, maxValues.kills),
+                            normalizeValue(currentPlayer['破泉'] || 0, maxValues.poquan),
+                            normalizeValue(currentPlayer['化羽'] || 0, maxValues.huayu),
+                            normalizeValue(currentPlayer['清泉'] || 0, maxValues.qingquan),
+                            normalizeValue(currentPlayer['资源'] || 0, maxValues.resource),
+                            normalizeValue(currentPlayer['助攻'] || 0, maxValues.assists),
+                            normalizeValue(currentPlayer['焚骨'] || 0, maxValues.fenGu)
+                        ],
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: '#3B82F6',
+                        pointBackgroundColor: '#3B82F6',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#3B82F6'
+                    },
+                    {
+                        label: comparePlayer['玩家名字'],
+                        data: [
+                            normalizeValue(comparePlayer['击败'] || 0, maxValues.kills),
+                            normalizeValue(comparePlayer['破泉'] || 0, maxValues.poquan),
+                            normalizeValue(comparePlayer['化羽'] || 0, maxValues.huayu),
+                            normalizeValue(comparePlayer['清泉'] || 0, maxValues.qingquan),
+                            normalizeValue(comparePlayer['资源'] || 0, maxValues.resource),
+                            normalizeValue(comparePlayer['助攻'] || 0, maxValues.assists),
+                            normalizeValue(comparePlayer['焚骨'] || 0, maxValues.fenGu)
+                        ],
+                        backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                        borderColor: '#EF4444',
+                        pointBackgroundColor: '#EF4444',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#EF4444'
+                    }
+                ];
+            } else {
+                combatDatasets = [
+                    {
+                        label: '玩家数据',
+                        data: [
+                            normalizeValue(currentPlayer['击败'] || 0, maxValues.kills),
+                            normalizeValue(currentPlayer['破泉'] || 0, maxValues.poquan),
+                            normalizeValue(currentPlayer['化羽'] || 0, maxValues.huayu),
+                            normalizeValue(currentPlayer['清泉'] || 0, maxValues.qingquan),
+                            normalizeValue(currentPlayer['资源'] || 0, maxValues.resource),
+                            normalizeValue(currentPlayer['助攻'] || 0, maxValues.assists),
+                            normalizeValue(currentPlayer['焚骨'] || 0, maxValues.fenGu)
+                        ],
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: '#3B82F6',
+                        pointBackgroundColor: '#3B82F6',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#3B82F6'
+                    },
+                    {
+                        label: guild1Name + '前15',
+                        data: [
+                            normalizeValue(myGuildStats['击败'] || 0, maxValues.kills),
+                            normalizeValue(myGuildStats['破泉'] || 0, maxValues.poquan),
+                            normalizeValue(myGuildStats['化羽'] || 0, maxValues.huayu),
+                            normalizeValue(myGuildStats['清泉'] || 0, maxValues.qingquan),
+                            normalizeValue(myGuildStats['资源'] || 0, maxValues.resource),
+                            normalizeValue(myGuildStats['助攻'] || 0, maxValues.assists),
+                            normalizeValue(myGuildStats['焚骨'] || 0, maxValues.fenGu)
+                        ],
+                        backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                        borderColor: '#EF4444',
+                        pointBackgroundColor: '#EF4444',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#EF4444'
+                    },
+                    {
+                        label: guild2Name + '前16',
+                        data: [
+                            normalizeValue(enemyGuildStats['击败'] || 0, maxValues.kills),
+                            normalizeValue(enemyGuildStats['破泉'] || 0, maxValues.poquan),
+                            normalizeValue(enemyGuildStats['化羽'] || 0, maxValues.huayu),
+                            normalizeValue(enemyGuildStats['清泉'] || 0, maxValues.qingquan),
+                            normalizeValue(enemyGuildStats['资源'] || 0, maxValues.resource),
+                            normalizeValue(enemyGuildStats['助攻'] || 0, maxValues.assists),
+                            normalizeValue(enemyGuildStats['焚骨'] || 0, maxValues.fenGu)
+                        ],
+                        backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                        borderColor: '#8B5CF6',
+                        pointBackgroundColor: '#8B5CF6',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#8B5CF6'
+                    }
+                ];
+            }
+            
             // 战斗数据雷达图
             if (combatRadarChart) combatRadarChart.destroy();
             const combatCtx = document.getElementById('playerCombatChart');
@@ -5150,62 +5946,7 @@
                     type: 'radar',
                     data: {
                         labels: ['击败', '破泉', '化羽', '清泉', '资源', '助攻', '焚骨'],
-                        datasets: [
-                            {
-                                label: '玩家数据',
-                                data: [
-                                    normalizeValue(currentPlayer['击败'] || 0, maxValues.kills),
-                                    normalizeValue(currentPlayer['破泉'] || 0, maxValues.poquan),
-                                    normalizeValue(currentPlayer['化羽'] || 0, maxValues.huayu),
-                                    normalizeValue(currentPlayer['清泉'] || 0, maxValues.qingquan),
-                                    normalizeValue(currentPlayer['资源'] || 0, maxValues.resource),
-                                    normalizeValue(currentPlayer['助攻'] || 0, maxValues.assists),
-                                    normalizeValue(currentPlayer['焚骨'] || 0, maxValues.fenGu)
-                                ],
-                                backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                                borderColor: '#3B82F6',
-                                pointBackgroundColor: '#3B82F6',
-                                pointBorderColor: '#fff',
-                                pointHoverBackgroundColor: '#fff',
-                                pointHoverBorderColor: '#3B82F6'
-                            },
-                            {
-                                label: guild1Name + '前15',
-                                data: [
-                                    normalizeValue(myGuildStats['击败'] || 0, maxValues.kills),
-                                    normalizeValue(myGuildStats['破泉'] || 0, maxValues.poquan),
-                                    normalizeValue(myGuildStats['化羽'] || 0, maxValues.huayu),
-                                    normalizeValue(myGuildStats['清泉'] || 0, maxValues.qingquan),
-                                    normalizeValue(myGuildStats['资源'] || 0, maxValues.resource),
-                                    normalizeValue(myGuildStats['助攻'] || 0, maxValues.assists),
-                                    normalizeValue(myGuildStats['焚骨'] || 0, maxValues.fenGu)
-                                ],
-                                backgroundColor: 'rgba(239, 68, 68, 0.2)',
-                                borderColor: '#EF4444',
-                                pointBackgroundColor: '#EF4444',
-                                pointBorderColor: '#fff',
-                                pointHoverBackgroundColor: '#fff',
-                                pointHoverBorderColor: '#EF4444'
-                            },
-                            {
-                                label: guild2Name + '前16',
-                                data: [
-                                    normalizeValue(enemyGuildStats['击败'] || 0, maxValues.kills),
-                                    normalizeValue(enemyGuildStats['破泉'] || 0, maxValues.poquan),
-                                    normalizeValue(enemyGuildStats['化羽'] || 0, maxValues.huayu),
-                                    normalizeValue(enemyGuildStats['清泉'] || 0, maxValues.qingquan),
-                                    normalizeValue(enemyGuildStats['资源'] || 0, maxValues.resource),
-                                    normalizeValue(enemyGuildStats['助攻'] || 0, maxValues.assists),
-                                    normalizeValue(enemyGuildStats['焚骨'] || 0, maxValues.fenGu)
-                                ],
-                                backgroundColor: 'rgba(139, 92, 246, 0.2)',
-                                borderColor: '#8B5CF6',
-                                pointBackgroundColor: '#8B5CF6',
-                                pointBorderColor: '#fff',
-                                pointHoverBackgroundColor: '#fff',
-                                pointHoverBorderColor: '#8B5CF6'
-                            }
-                        ]
+                        datasets: combatDatasets
                     },
                     options: {
                         responsive: true,
@@ -5226,19 +5967,18 @@
                                         const label = context.dataset.label;
                                         const dataIndex = context.dataIndex;
                                         const labels = ['击败', '破泉', '化羽', '清泉', '资源', '助攻', '焚骨'];
-
-                                        // 获取原始数值
-                                        let originalValue;
-                                        if (context.datasetIndex === 0) {
-                                            const values = [currentPlayer['击败'] || 0, currentPlayer['破泉'] || 0, currentPlayer['化羽'] || 0, currentPlayer['清泉'] || 0, currentPlayer['资源'] || 0, currentPlayer['助攻'] || 0, currentPlayer['焚骨'] || 0];
-                                            originalValue = values[dataIndex];
-                                        } else if (context.datasetIndex === 1) {
-                                            const values = [myGuildStats['击败'] || 0, myGuildStats['破泉'] || 0, myGuildStats['化羽'] || 0, myGuildStats['清泉'] || 0, myGuildStats['资源'] || 0, myGuildStats['助攻'] || 0, myGuildStats['焚骨'] || 0];
-                                            originalValue = values[dataIndex];
+                                        
+                                        let player;
+                                        if (isInCompareMode) {
+                                            player = context.datasetIndex === 0 ? currentPlayer : comparePlayer;
                                         } else {
-                                            const values = [enemyGuildStats['击败'] || 0, enemyGuildStats['破泉'] || 0, enemyGuildStats['化羽'] || 0, enemyGuildStats['清泉'] || 0, enemyGuildStats['资源'] || 0, enemyGuildStats['助攻'] || 0, enemyGuildStats['焚骨'] || 0];
-                                            originalValue = values[dataIndex];
+                                            if (context.datasetIndex === 0) player = currentPlayer;
+                                            else if (context.datasetIndex === 1) player = myGuildStats;
+                                            else player = enemyGuildStats;
                                         }
+                                        
+                                        const keyMap = ['击败', '破泉', '化羽', '清泉', '资源', '助攻', '焚骨'];
+                                        const originalValue = player[keyMap[dataIndex]] || 0;
                                         return `${label} ${labels[dataIndex]}: ${formatNumber(originalValue)}`;
                                     }
                                 }
@@ -5857,9 +6597,9 @@
             const professionPlayers = guild1Data.filter(p => p['职业'] === playerProfession);
             if (professionPlayers.length === 0) return;
 
-            // 计算该职业平均值
+            // 计算该职业平均值（全维度）
             const professionAvg = {};
-            const metrics = ['对建筑伤害', '对玩家伤害', '人伤卸甲', '破塔卸甲', '治疗值', '承受伤害', '击败', '清泉', '资源', '助攻', '焚骨'];
+            const metrics = ['对建筑伤害', '对玩家伤害', '人伤卸甲', '破塔卸甲', '治疗值', '承受伤害', '击败', '破泉', '化羽', '清泉', '资源', '助攻', '焚骨', '重伤'];
             metrics.forEach(key => {
                 professionAvg[key] = professionPlayers.reduce((sum, p) => sum + (p[key] || 0), 0) / professionPlayers.length;
             });
@@ -5885,7 +6625,7 @@
                 playerRanks[key] = rank >= 0 ? rank + 1 : '-';
             });
 
-            // 1. 职业伤害对比图
+            // 1. 职业伤害对比图（全维度）
             if (fullscreenProfessionDamageChart) fullscreenProfessionDamageChart.destroy();
             const profDamageCtx = document.getElementById('fullscreenProfessionDamageChart');
             if (profDamageCtx) {
@@ -5912,15 +6652,34 @@
                                 yAxisID: 'y'
                             },
                             {
-                                label: '本职业平均',
-                                data: Array(playerNames.length).fill(professionAvg['对玩家伤害'] || 0),
+                                label: '人伤卸甲',
+                                data: [guild2ProfessionAvg['人伤卸甲'] || 0, ...topPlayers.map(p => p['人伤卸甲'] || 0)],
+                                type: 'bar',
+                                backgroundColor: 'rgba(251, 191, 36, 0.7)',
+                                borderColor: 'rgba(251, 191, 36, 1)',
+                                borderWidth: 1,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: '破塔卸甲',
+                                data: [guild2ProfessionAvg['破塔卸甲'] || 0, ...topPlayers.map(p => p['破塔卸甲'] || 0)],
+                                type: 'bar',
+                                backgroundColor: 'rgba(168, 85, 247, 0.7)',
+                                borderColor: 'rgba(168, 85, 247, 1)',
+                                borderWidth: 1,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: '承受伤害',
+                                data: [guild2ProfessionAvg['承受伤害'] || 0, ...topPlayers.map(p => p['承受伤害'] || 0)],
                                 type: 'line',
-                                borderColor: 'rgba(251, 191, 36, 0.8)',
+                                borderColor: 'rgba(107, 114, 128, 0.8)',
+                                backgroundColor: 'rgba(107, 114, 128, 0.1)',
                                 borderWidth: 2,
-                                borderDash: [5, 5],
-                                pointRadius: 0,
+                                fill: false,
+                                pointRadius: 3,
                                 yAxisID: 'y',
-                                tension: 0
+                                tension: 0.3
                             }
                         ]
                     },
@@ -5970,8 +6729,15 @@
                                         const value = Math.round(context.raw);
                                         const name = context.label;
                                         const formattedValue = formatCompactNumber(value);
+                                        const metricMap = {
+                                            '对塔输出': '对建筑伤害',
+                                            '对人伤害': '对玩家伤害',
+                                            '人伤卸甲': '人伤卸甲',
+                                            '破塔卸甲': '破塔卸甲',
+                                            '承受伤害': '承受伤害'
+                                        };
                                         if (name === currentPlayer['玩家名字']) {
-                                            const rank = playerRanks[context.dataset.label === '对塔输出' ? '对建筑伤害' : '对玩家伤害'];
+                                            const rank = playerRanks[metricMap[context.dataset.label]];
                                             return `${context.dataset.label}: ${formattedValue} (第${rank}名)`;
                                         }
                                         return `${context.dataset.label}: ${formattedValue}`;
@@ -5983,7 +6749,7 @@
                 });
             }
 
-            // 2. 职业战斗对比图
+            // 2. 职业战斗对比图（全维度）
             if (fullscreenProfessionCombatChart) fullscreenProfessionCombatChart.destroy();
             const profCombatCtx = document.getElementById('fullscreenProfessionCombatChart');
             if (profCombatCtx) {
@@ -6001,11 +6767,56 @@
                                 yAxisID: 'y'
                             },
                             {
+                                label: '破泉',
+                                data: [guild2ProfessionAvg['破泉'] || 0, ...topPlayers.map(p => p['破泉'] || 0)],
+                                type: 'bar',
+                                backgroundColor: 'rgba(6, 182, 212, 0.7)',
+                                borderColor: 'rgba(6, 182, 212, 1)',
+                                borderWidth: 1,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: '化羽',
+                                data: [guild2ProfessionAvg['化羽'] || 0, ...topPlayers.map(p => p['化羽'] || 0)],
+                                type: 'bar',
+                                backgroundColor: 'rgba(20, 184, 166, 0.7)',
+                                borderColor: 'rgba(20, 184, 166, 1)',
+                                borderWidth: 1,
+                                yAxisID: 'y'
+                            },
+                            {
                                 label: '助攻',
                                 data: [guild2ProfessionAvg['助攻'] || 0, ...topPlayers.map(p => p['助攻'] || 0)],
                                 type: 'bar',
                                 backgroundColor: 'rgba(139, 92, 246, 0.7)',
                                 borderColor: 'rgba(139, 92, 246, 1)',
+                                borderWidth: 1,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: '焚骨',
+                                data: [guild2ProfessionAvg['焚骨'] || 0, ...topPlayers.map(p => p['焚骨'] || 0)],
+                                type: 'bar',
+                                backgroundColor: 'rgba(236, 72, 153, 0.7)',
+                                borderColor: 'rgba(236, 72, 153, 1)',
+                                borderWidth: 1,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: '清泉',
+                                data: [guild2ProfessionAvg['清泉'] || 0, ...topPlayers.map(p => p['清泉'] || 0)],
+                                type: 'bar',
+                                backgroundColor: 'rgba(14, 165, 233, 0.7)',
+                                borderColor: 'rgba(14, 165, 233, 1)',
+                                borderWidth: 1,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: '重伤',
+                                data: [guild2ProfessionAvg['重伤'] || 0, ...topPlayers.map(p => p['重伤'] || 0)],
+                                type: 'bar',
+                                backgroundColor: 'rgba(249, 115, 22, 0.7)',
+                                borderColor: 'rgba(249, 115, 22, 1)',
                                 borderWidth: 1,
                                 yAxisID: 'y'
                             },
@@ -6084,8 +6895,17 @@
                                     label: function(context) {
                                         const value = Math.round(context.raw);
                                         const name = context.label;
-                                        let metricKey = context.dataset.label === '击败' ? '击败' : 
-                                                       context.dataset.label === '助攻' ? '助攻' : '治疗值';
+                                        const metricMap = {
+                                            '击败': '击败',
+                                            '破泉': '破泉',
+                                            '化羽': '化羽',
+                                            '助攻': '助攻',
+                                            '焚骨': '焚骨',
+                                            '清泉': '清泉',
+                                            '重伤': '重伤',
+                                            '治疗': '治疗值'
+                                        };
+                                        let metricKey = metricMap[context.dataset.label] || context.dataset.label;
                                         const formattedValue = formatCompactNumber(value);
                                         if (name === currentPlayer['玩家名字']) {
                                             const rank = playerRanks[metricKey];
@@ -6917,10 +7737,13 @@
                 治疗值: 0,
                 承受伤害: 0,
                 击败: 0,
+                破泉: 0,
+                化羽: 0,
                 清泉: 0,
                 资源: 0,
                 助攻: 0,
-                焚骨: 0
+                焚骨: 0,
+                重伤: 0
             };
 
                 professionPlayers.forEach(p => {
@@ -6931,10 +7754,13 @@
                 professionAvg.治疗值 += p['治疗值'] || 0;
                 professionAvg.承受伤害 += p['承受伤害'] || 0;
                 professionAvg.击败 += p['击败'] || 0;
+                professionAvg.破泉 += p['破泉'] || 0;
+                professionAvg.化羽 += p['化羽'] || 0;
                 professionAvg.清泉 += p['清泉'] || 0;
                 professionAvg.资源 += p['资源'] || 0;
                 professionAvg.助攻 += p['助攻'] || 0;
                 professionAvg.焚骨 += p['焚骨'] || 0;
+                professionAvg.重伤 += p['重伤'] || 0;
             });
 
                 Object.keys(professionAvg).forEach(key => {
@@ -6954,10 +7780,13 @@
                     治疗值: 0,
                     承受伤害: 0,
                     击败: 0,
+                    破泉: 0,
+                    化羽: 0,
                     清泉: 0,
                     资源: 0,
                     助攻: 0,
-                    焚骨: 0
+                    焚骨: 0,
+                    重伤: 0
                 };
 
                 guild2ProfessionPlayers.forEach(p => {
@@ -6968,10 +7797,13 @@
                     g2Avg.治疗值 += p['治疗值'] || 0;
                     g2Avg.承受伤害 += p['承受伤害'] || 0;
                     g2Avg.击败 += p['击败'] || 0;
+                    g2Avg.破泉 += p['破泉'] || 0;
+                    g2Avg.化羽 += p['化羽'] || 0;
                     g2Avg.清泉 += p['清泉'] || 0;
                     g2Avg.资源 += p['资源'] || 0;
                     g2Avg.助攻 += p['助攻'] || 0;
                     g2Avg.焚骨 += p['焚骨'] || 0;
+                    g2Avg.重伤 += p['重伤'] || 0;
                 });
 
                 Object.keys(g2Avg).forEach(key => {
@@ -6990,10 +7822,13 @@
                 healing: Math.max(...allPlayers.map(p => p['治疗值'] || 0), 1),
                 takenDmg: Math.max(...allPlayers.map(p => p['承受伤害'] || 0), 1),
                 kills: Math.max(...allPlayers.map(p => p['击败'] || 0), 1),
+                poquan: Math.max(...allPlayers.map(p => p['破泉'] || 0), 1),
+                huayu: Math.max(...allPlayers.map(p => p['化羽'] || 0), 1),
                 qingquan: Math.max(...allPlayers.map(p => p['清泉'] || 0), 1),
                 resource: Math.max(...allPlayers.map(p => p['资源'] || 0), 1),
                 assists: Math.max(...allPlayers.map(p => p['助攻'] || 0), 1),
-                fenGu: Math.max(...allPlayers.map(p => p['焚骨'] || 0), 1)
+                fenGu: Math.max(...allPlayers.map(p => p['焚骨'] || 0), 1),
+                heavyInjury: Math.max(...allPlayers.map(p => p['重伤'] || 0), 1)
             };
 
                 // 伤害与治疗雷达图
@@ -7442,6 +8277,36 @@
             });
         }
 
+        // 职业对比图表全屏切换
+        let professionFullscreenChart = null;
+        
+        function toggleProfessionChartFullscreen(type) {
+            const container = type === 'damageHealing' 
+                ? document.getElementById('professionDamageHealingContainer')
+                : document.getElementById('professionCombatContainer');
+            const card = container.closest('.card');
+            
+            if (card.classList.contains('profession-fullscreen')) {
+                // 退出全屏
+                card.classList.remove('profession-fullscreen');
+                container.style.height = '350px';
+                // 重新渲染图表以适应新尺寸
+                const professionSelect = document.getElementById('professionSelect');
+                if (professionSelect && professionSelect.value) {
+                    setTimeout(() => updateProfessionComparison(), 100);
+                }
+            } else {
+                // 进入全屏
+                card.classList.add('profession-fullscreen');
+                container.style.height = 'calc(100vh - 150px)';
+                // 重新渲染图表以适应新尺寸
+                const professionSelect = document.getElementById('professionSelect');
+                if (professionSelect && professionSelect.value) {
+                    setTimeout(() => updateProfessionComparison(), 100);
+                }
+            }
+        }
+
         // 更新职业玩家表格
         function updateProfessionPlayersTable(players) {
             const tbody = document.getElementById('professionPlayersTable');
@@ -7450,14 +8315,20 @@
             tbody.innerHTML = players.map((player, index) => `
                 <tr>
                     <td>${index + 1}</td>
-                    <td class="font-bold">${player['玩家名字']}</td>
+                    <td class="font-bold whitespace-nowrap">${player['玩家名字']}</td>
                     <td>${player['击败'] || 0}</td>
+                    <td>${player['破泉'] || 0}</td>
+                    <td>${player['化羽'] || 0}</td>
                     <td>${player['助攻'] || 0}</td>
+                    <td>${player['焚骨'] || 0}</td>
                     <td>${formatNumber(player['对玩家伤害'])}</td>
                     <td>${formatNumber(player['对建筑伤害'])}</td>
+                    <td>${player['人伤卸甲'] || 0}</td>
+                    <td>${player['破塔卸甲'] || 0}</td>
                     <td>${formatNumber(player['治疗值'])}</td>
+                    <td>${formatNumber(player['承受伤害'])}</td>
+                    <td>${player['重伤'] || 0}</td>
                     <td>${player['清泉'] || 0}</td>
-                    <td>${player['焚骨'] || 0}</td>
                 </tr>
             `).join('');
         }
