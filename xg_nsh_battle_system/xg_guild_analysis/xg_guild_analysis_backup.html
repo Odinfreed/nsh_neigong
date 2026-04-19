@@ -8048,7 +8048,7 @@
                     const trimmedLine = line.trim();
                     if (!trimmedLine) return;
 
-                    // 解析格式：1. 醉若曦 妙音 李四（一线牵对象）或 1. 醉若曦 妙音 无
+                    // 解析格式：1. 张三 妙音 李四（一线牵对象）或 1. 张三 妙音 无
                     const match = trimmedLine.match(/^(\d+)\.\s*(\S+)\s+(\S+)\s+(\S+)$/);
                     if (match) {
                         const [, num, playerName, profession, yxqPartner] = match;

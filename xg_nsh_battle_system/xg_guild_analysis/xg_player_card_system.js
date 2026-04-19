@@ -7,144 +7,7 @@
 (function(global) {
     'use strict';
 
-    // 档案码池管理（24小时回收机制）
-    const CardCodePool = {
-        STORAGE_KEY: 'xg_player_card_pool_v2',
-        VALIDITY_PERIOD: 24 * 60 * 60 * 1000,
-        MAX_POOL_SIZE: 10000,
-
-        getPool() {
-            try {
-                const pool = localStorage.getItem(this.STORAGE_KEY);
-                return pool ? JSON.parse(pool) : {};
-            } catch (e) {
-                console.error('读取档案码池失败:', e);
-                return {};
-            }
-        },
-
-        savePool(pool) {
-            try {
-                localStorage.setItem(this.STORAGE_KEY, JSON.stringify(pool));
-            } catch (e) {
-                console.error('保存档案码池失败:', e);
-            }
-        },
-
-        cleanupExpired() {
-            const pool = this.getPool();
-            const now = Date.now();
-            let cleaned = 0;
-
-            for (const [code, data] of Object.entries(pool)) {
-                if (now - data.timestamp > this.VALIDITY_PERIOD) {
-                    delete pool[code];
-                    cleaned++;
-                }
-            }
-
-            if (cleaned > 0) {
-                this.savePool(pool);
-                console.log(`档案码池清理: 已移除 ${cleaned} 个过期代码`);
-            }
-
-            return cleaned;
-        },
-
-        store(code, playerData, options = {}) {
-            this.cleanupExpired();
-            const pool = this.getPool();
-
-            if (Object.keys(pool).length >= this.MAX_POOL_SIZE) {
-                const oldestCode = Object.entries(pool)
-                    .sort((a, b) => a[1].timestamp - b[1].timestamp)[0];
-                if (oldestCode) delete pool[oldestCode[0]];
-            }
-
-            pool[code] = {
-                data: playerData,
-                timestamp: Date.now(),
-                expiresAt: Date.now() + this.VALIDITY_PERIOD,
-                playerName: playerData.playerName || playerData['玩家名字'] || '未知玩家',
-                profession: playerData.profession || playerData['职业'] || '未知职业',
-                isMultiBattle: options.isMultiBattle || false,
-                battleCount: options.battleCount || 1,
-                includeHistory: options.includeHistory || false,
-                isAnonymous: options.isAnonymous || false,
-                isPKMode: options.isPKMode || false
-            };
-
-            this.savePool(pool);
-            return true;
-        },
-
-        retrieve(code) {
-            this.cleanupExpired();
-            const pool = this.getPool();
-            const record = pool[code];
-
-            if (!record) return { valid: false, error: '档案码不存在或已过期' };
-            if (Date.now() > record.expiresAt) {
-                delete pool[code];
-                this.savePool(pool);
-                return { valid: false, error: '档案码已过期' };
-            }
-
-            return {
-                valid: true,
-                data: record.data,
-                createdAt: record.timestamp,
-                expiresAt: record.expiresAt,
-                playerName: record.playerName,
-                profession: record.profession,
-                isMultiBattle: record.isMultiBattle,
-                battleCount: record.battleCount,
-                includeHistory: record.includeHistory,
-                isAnonymous: record.isAnonymous,
-                isPKMode: record.isPKMode
-            };
-        }
-    };
-
-    // 档案码生成器
-    const CardCodeGenerator = {
-        CHARSET: 'ABCDEFGHJKMNPQRSTUVWXYZ23456789',
-        CODE_LENGTH: 8,
-
-        generate() {
-            let code = '';
-            for (let i = 0; i < this.CODE_LENGTH; i++) {
-                code += this.CHARSET.charAt(Math.floor(Math.random() * this.CHARSET.length));
-            }
-            return code;
-        },
-
-        generateUnique() {
-            const pool = CardCodePool.getPool();
-            let code, attempts = 0;
-            do {
-                code = this.generate();
-                attempts++;
-            } while (pool[code] && attempts < 100);
-
-            if (attempts >= 100) {
-                const timestamp = Date.now().toString(36).toUpperCase().slice(-4);
-                code = this.generate().slice(0, 4) + timestamp;
-            }
-            return code;
-        },
-
-        validateFormat(code) {
-            if (!code || typeof code !== 'string') return false;
-            if (code.length !== this.CODE_LENGTH) return false;
-            for (let char of code) {
-                if (!this.CHARSET.includes(char)) return false;
-            }
-            return true;
-        }
-    };
-
-    // 数据序列化/反序列化（支持多场数据）
+    // ==================== 数据序列化/反序列化（先定义，后面依赖它） ====================
     const DataSerializer = {
         // 字段映射表（缩短键名）- 包含所有可能的字段
         FIELD_MAP: {
@@ -258,6 +121,20 @@
                 if (serializedData._full) {
                     Object.assign(result, serializedData._full);
                 }
+                // 确保playerName和profession字段存在（兼容中文键名）
+                if (!result.playerName && result['玩家名字']) {
+                    result.playerName = result['玩家名字'];
+                }
+                if (!result.profession && result['职业']) {
+                    result.profession = result['职业'];
+                }
+                // 同样确保反向兼容
+                if (!result['玩家名字'] && result.playerName) {
+                    result['玩家名字'] = result.playerName;
+                }
+                if (!result['职业'] && result.profession) {
+                    result['职业'] = result.profession;
+                }
                 return result;
             }
         },
@@ -283,12 +160,259 @@
         }
     };
 
-    // 主API
+    // 暴露DataSerializer供外部使用（URL hash解码等场景）
+    global.PlayerCardDataSerializer = DataSerializer;
+
+    // ==================== 档案码池管理（24小时回收机制） ====================
+    const CardCodePool = {
+        STORAGE_KEY: 'xg_player_card_pool_v2',
+        VALIDITY_PERIOD: 24 * 60 * 60 * 1000,
+        MAX_POOL_SIZE: 10000,
+
+        getPool() {
+            try {
+                const pool = localStorage.getItem(this.STORAGE_KEY);
+                return pool ? JSON.parse(pool) : {};
+            } catch (e) {
+                console.error('读取档案码池失败:', e);
+                return {};
+            }
+        },
+
+        savePool(pool) {
+            try {
+                localStorage.setItem(this.STORAGE_KEY, JSON.stringify(pool));
+            } catch (e) {
+                console.error('保存档案码池失败:', e);
+            }
+        },
+
+        cleanupExpired() {
+            const pool = this.getPool();
+            const now = Date.now();
+            let cleaned = 0;
+
+            for (const [code, data] of Object.entries(pool)) {
+                if (now - data.timestamp > this.VALIDITY_PERIOD) {
+                    delete pool[code];
+                    cleaned++;
+                }
+            }
+
+            if (cleaned > 0) {
+                this.savePool(pool);
+                console.log(`档案码池清理: 已移除 ${cleaned} 个过期代码`);
+            }
+
+            return cleaned;
+        },
+
+        store(code, playerData, options = {}) {
+            this.cleanupExpired();
+            const pool = this.getPool();
+
+            if (Object.keys(pool).length >= this.MAX_POOL_SIZE) {
+                const oldestCode = Object.entries(pool)
+                    .sort((a, b) => a[1].timestamp - b[1].timestamp)[0];
+                if (oldestCode) delete pool[oldestCode[0]];
+            }
+
+            pool[code] = {
+                data: playerData,
+                timestamp: Date.now(),
+                expiresAt: Date.now() + this.VALIDITY_PERIOD,
+                playerName: playerData.playerName || playerData['玩家名字'] || '未知玩家',
+                profession: playerData.profession || playerData['职业'] || '未知职业',
+                isMultiBattle: options.isMultiBattle || false,
+                battleCount: options.battleCount || 1,
+                includeHistory: options.includeHistory || false,
+                isAnonymous: options.isAnonymous || false,
+                isPKMode: options.isPKMode || false
+            };
+
+            this.savePool(pool);
+            return true;
+        },
+
+        retrieve(code) {
+            this.cleanupExpired();
+            const pool = this.getPool();
+            const record = pool[code];
+
+            if (!record) return { valid: false, error: '档案码不存在或已过期' };
+            if (Date.now() > record.expiresAt) {
+                delete pool[code];
+                this.savePool(pool);
+                return { valid: false, error: '档案码已过期' };
+            }
+
+            return {
+                valid: true,
+                data: record.data,
+                createdAt: record.timestamp,
+                expiresAt: record.expiresAt,
+                playerName: record.playerName,
+                profession: record.profession,
+                isMultiBattle: record.isMultiBattle,
+                battleCount: record.battleCount,
+                includeHistory: record.includeHistory,
+                isAnonymous: record.isAnonymous,
+                isPKMode: record.isPKMode
+            };
+        }
+    };
+
+    // ==================== 使用外部多轮映射表系统 ====================
+    // 映射表定义在 xg_card_code_mappings.js 中
+    
+    // 简单哈希（用于校验）
+    function quickHash(str) {
+        let h = 0;
+        for (let i = 0; i < str.length; i++) {
+            h = ((h << 5) - h) + str.charCodeAt(i);
+            h = h & h;
+        }
+        return Math.abs(h).toString(36).slice(0, 4);
+    }
+
+    // 档案码生成器（使用多轮映射表）
+    const CardCodeGenerator = {
+        CODE_LENGTH: 8,
+        
+        // 获取映射表（从全局或传入）
+        getMappings() {
+            return (typeof CardCodeMappings !== 'undefined') ? CardCodeMappings : null;
+        },
+        
+        // 生成压缩档案码（使用多轮映射）
+        generateOffline(playerData, options = {}) {
+            const mappings = this.getMappings();
+            
+            if (mappings && mappings.CardCodeCompressor) {
+                // 使用新的多轮映射压缩
+                const compressed = mappings.CardCodeCompressor.compress(playerData, options);
+                const timestamp = Math.floor(Date.now() / 3600000);
+                const check = quickHash(compressed + timestamp);
+                
+                const code = `${compressed}.${check}.${timestamp}`;
+                return {
+                    code: code,
+                    expiresAt: (timestamp + 24) * 3600000,
+                    data: playerData
+                };
+            } else {
+                // 降级：简单Base64
+                const json = JSON.stringify({
+                    n: playerData['玩家名字'] || playerData.playerName,
+                    c: playerData['职业'] || playerData.profession,
+                    bd: playerData['对建筑伤害'],
+                    pd: playerData['对玩家伤害'],
+                    k: playerData['击败']
+                });
+                const encoded = btoa(encodeURIComponent(json)).replace(/=/g, '');
+                const timestamp = Math.floor(Date.now() / 3600000);
+                const check = quickHash(encoded + timestamp);
+                
+                return {
+                    code: `${encoded}.${check}.${timestamp}`,
+                    expiresAt: (timestamp + 24) * 3600000,
+                    data: playerData
+                };
+            }
+        },
+        
+        // 验证并解压档案码
+        verifyOffline(code, userSettings = {}) {
+            try {
+                const parts = code.split('.');
+                if (parts.length !== 3) {
+                    return { valid: false, error: '档案码格式错误' };
+                }
+                
+                const [encoded, check, tsStr] = parts;
+                const timestamp = parseInt(tsStr, 36);
+                
+                // 1. 校验
+                if (quickHash(encoded + timestamp) !== check) {
+                    return { valid: false, error: '档案码校验失败' };
+                }
+                
+                // 2. 检查过期（24小时）
+                const now = Math.floor(Date.now() / 3600000);
+                if (now - timestamp > 24) {
+                    return { valid: false, error: '档案码已过期' };
+                }
+                
+                // 3. 使用映射表解压
+                const mappings = this.getMappings();
+                let result;
+                
+                if (mappings && mappings.CardCodeCompressor) {
+                    result = mappings.CardCodeCompressor.decompress(encoded);
+                } else {
+                    // 降级解析
+                    const json = decodeURIComponent(atob(encoded));
+                    const data = JSON.parse(json);
+                    result = {
+                        '玩家名字': data.n,
+                        '职业': data.c,
+                        '对建筑伤害': data.bd,
+                        '对玩家伤害': data.pd,
+                        '击败': data.k,
+                        playerName: data.n,
+                        profession: data.c
+                    };
+                }
+                
+                if (!result) {
+                    return { valid: false, error: '档案码解析失败' };
+                }
+                
+                // 填充默认值
+                if (!result['玩家名字']) result['玩家名字'] = result.playerName = userSettings.gameId || '档案玩家';
+                if (!result['职业']) result['职业'] = result.profession = '未知';
+                
+                return {
+                    valid: true,
+                    data: result,
+                    timestamp: timestamp * 3600000,
+                    expiresAt: (timestamp + 24) * 3600000,
+                    region: result.region || userSettings.region || '',
+                    guildName: result.userGuild || userSettings.guildName || '',
+                    gameId: userSettings.gameId || '',
+                    isAnonymous: false
+                };
+                
+            } catch (e) {
+                console.error('档案码解析失败:', e);
+                return { valid: false, error: '档案码解析失败' };
+            }
+        },
+
+        generate() {
+            const chars = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+            let code = '';
+            for (let i = 0; i < this.CODE_LENGTH; i++) {
+                code += chars.charAt(Math.floor(Math.random() * 32));
+            }
+            return code;
+        },
+
+        generateUnique() {
+            return this.generate();
+        },
+
+        validateFormat(code) {
+            return code && typeof code === 'string' && code.length >= 8;
+        }
+    };
+
+    // 主API（仅8位极限压缩版）
     const PlayerCardSystem = {
         /**
-         * 导出玩家档案码
-         * @param {Object} playerData - 玩家数据（单场或多场）
-         * @param {Object} options - {isMultiBattle, includeHistory, battleCount}
+         * 导出玩家档案码（8位极限压缩）
+         * @param {Object} playerData - 玩家数据
+         * @param {Object} options - {userSettings}
          */
         exportCard(playerData, options = {}) {
             try {
@@ -296,20 +420,12 @@
                     return { success: false, error: '无效的玩家数据' };
                 }
 
-                const code = CardCodeGenerator.generateUnique();
-                const serializedData = DataSerializer.serialize(playerData, options);
-                const stored = CardCodePool.store(code, serializedData, options);
-
-                if (!stored) {
-                    return { success: false, error: '存储档案码失败' };
-                }
-
+                const result = CardCodeGenerator.generateOffline(playerData, options);
+                
                 return {
                     success: true,
-                    code: code,
-                    expiresAt: Date.now() + CardCodePool.VALIDITY_PERIOD,
-                    isMultiBattle: options.isMultiBattle || false,
-                    includeHistory: options.includeHistory || false
+                    code: result.code,
+                    expiresAt: result.expiresAt
                 };
 
             } catch (e) {
@@ -319,34 +435,32 @@
         },
 
         /**
-         * 通过档案码导入玩家数据
+         * 通过档案码导入玩家数据（8位验证）
          * @param {string} code - 8位档案码
+         * @param {Object} userSettings - 用户设置
          */
-        importCard(code) {
+        importCard(code, userSettings = {}) {
             try {
-                if (!CardCodeGenerator.validateFormat(code)) {
-                    return { success: false, error: '档案码格式错误（应为8位字母数字）' };
+                if (!code || typeof code !== 'string' || code.length !== 8) {
+                    return { success: false, error: '档案码应为8位字符' };
                 }
-
-                const result = CardCodePool.retrieve(code);
+                
+                const result = CardCodeGenerator.verifyOffline(code, userSettings);
+                
                 if (!result.valid) {
                     return { success: false, error: result.error };
                 }
-
-                const data = DataSerializer.deserialize(result.data);
-
+                
                 return {
                     success: true,
-                    data: data,
-                    playerName: result.playerName,
+                    data: result.data,
+                    playerName: result.data.playerName,
                     profession: result.profession,
-                    isMultiBattle: result.isMultiBattle,
-                    includeHistory: result.includeHistory,
-                    battleCount: result.battleCount,
-                    isAnonymous: result.isAnonymous,
-                    isPKMode: result.isPKMode,
-                    createdAt: result.createdAt,
-                    expiresAt: result.expiresAt
+                    createdAt: result.timestamp,
+                    expiresAt: result.expiresAt,
+                    region: result.region,
+                    guildName: result.guildName,
+                    gameId: result.gameId
                 };
 
             } catch (e) {

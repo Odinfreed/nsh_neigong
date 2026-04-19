@@ -40,23 +40,36 @@ function formatSmallNumber(num) {
  */
 function getMultiBattleCache() {
     try {
-        // 首先检查是否有导入的档案码数据
+        // 1. 首先尝试从主系统的全局变量获取（最优先，因为可能包含未保存的数据）
+        if (typeof multiBattleCache !== 'undefined' && 
+            typeof window !== 'undefined' && 
+            window.multiBattleCache && 
+            window.multiBattleCache.length > 0) {
+            console.log('从全局变量获取多场数据:', window.multiBattleCache.length, '场');
+            return window.multiBattleCache;
+        }
+        
+        // 2. 检查是否有导入的档案码数据
         const importedCache = localStorage.getItem('importedCardMultiCache');
         if (importedCache) {
             const parsed = JSON.parse(importedCache);
             if (parsed && parsed.length > 0) {
+                console.log('从导入档案获取多场数据:', parsed.length, '场');
                 return parsed;
             }
         }
         
-        // 然后尝试从主系统的全局变量获取
-        if (typeof multiBattleCache !== 'undefined' && multiBattleCache.length > 0) {
-            return multiBattleCache;
+        // 3. 从 localStorage 获取常规缓存
+        const cache = localStorage.getItem(MULTI_BATTLE_CACHE_KEY);
+        if (cache) {
+            const parsed = JSON.parse(cache);
+            if (parsed && parsed.length > 0) {
+                console.log('从localStorage获取多场数据:', parsed.length, '场');
+                return parsed;
+            }
         }
         
-        // 否则从 localStorage 获取常规缓存
-        const cache = localStorage.getItem(MULTI_BATTLE_CACHE_KEY);
-        return cache ? JSON.parse(cache) : [];
+        return [];
     } catch (e) {
         console.error('读取多场缓存失败:', e);
         return [];
@@ -68,15 +81,29 @@ function getMultiBattleCache() {
  * 用于参战率计算
  */
 function getPlayerMultiBattleData(playerName) {
+    console.log('getPlayerMultiBattleData 被调用:', playerName);
+    
     const cache = getMultiBattleCache();
+    console.log('缓存数据:', cache.length, '场');
+    
     const playerData = [];
     
-    cache.forEach(battle => {
+    cache.forEach((battle, idx) => {
+        console.log(`检查场次 ${idx}:`, battle.id || 'unknown');
+        
         const guilds = battle.guilds || battle.data || {};
         const guildNames = Object.keys(guilds);
+        console.log('  帮会:', guildNames);
         
         Object.entries(guilds).forEach(([rawGuildName, players], index) => {
-            const player = players.find(p => p['玩家名字'] === playerName);
+            console.log(`  帮会 ${index} (${rawGuildName}):`, players.length, '人');
+            
+            const player = players.find(p => {
+                const match = p['玩家名字'] === playerName;
+                if (match) console.log('  找到玩家:', p['玩家名字'], '职业:', p['职业']);
+                return match;
+            });
+            
             if (player) {
                 // 根据索引获取自定义名称
                 let displayGuildName;
@@ -91,7 +118,7 @@ function getPlayerMultiBattleData(playerName) {
                 playerData.push({
                     battleTime: battle.dateTime || battle.battleTime,
                     timestamp: battle.timestamp,
-                    guildName: displayGuildName,  // 使用自定义名称
+                    guildName: displayGuildName,
                     guild1Name: battle.guild1Name || guildNames[0],
                     guild2Name: battle.guild2Name || guildNames[1],
                     ...player
@@ -100,6 +127,7 @@ function getPlayerMultiBattleData(playerName) {
         });
     });
     
+    console.log('找到玩家数据:', playerData.length, '条');
     playerData.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
     return playerData;
 }
@@ -453,15 +481,28 @@ const PlayerMultiAnalysis = {
      * @param {string} currentProfession - 当前职业（用于过滤同名同职业数据）
      */
     init(playerName, currentProfession) {
-        if (!playerName) return;
+        console.log('PlayerMultiAnalysis.init 被调用:', playerName, currentProfession);
+        
+        if (!playerName) {
+            console.warn('playerName 为空，跳过初始化');
+            return;
+        }
 
         // 1. 获取所有同名数据（用于参战率）
         const allData = getPlayerMultiBattleData(playerName);
+        console.log('获取到所有同名数据:', allData.length, '条');
         
         // 2. 按职业过滤，只保留同名同职业数据（用于趋势图/波动比）
         const sameProfessionData = currentProfession 
-            ? allData.filter(d => (d['职业'] || '') === currentProfession)
+            ? allData.filter(d => {
+                const prof = (d['职业'] || '').trim();
+                const match = prof === currentProfession.trim();
+                console.log('职业匹配检查:', prof, 'vs', currentProfession, '=', match);
+                return match;
+            })
             : allData;
+        
+        console.log('同职业数据:', sameProfessionData.length, '条');
 
         // 3. 定义所有指标
         const allMetrics = [

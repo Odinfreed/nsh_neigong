@@ -26,8 +26,12 @@
     
     <!-- 个人分析多场数据对比模块 v4.0.0 -->
     <script src="player_multi_analysis.js"></script>
+    <!-- 档案码多轮映射表系统 -->
+    <script src="xg_card_code_mappings.js"></script>
     <!-- 玩家档案码系统 -->
     <script src="xg_player_card_system.js"></script>
+    <!-- GitHub Gist 8位短码档案系统 -->
+    <script src="xg_archive_gist.js"></script>
     
     <script>
         tailwind.config = {
@@ -1396,10 +1400,11 @@
                                         </div>
 
                                         <!-- 档案码导入区域 -->
-                                        <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded p-3 mb-4 border border-purple-500/30">
+                                        <!-- 本地档案码导入 -->
+                                        <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded p-3 mb-3 border border-purple-500/30">
                                             <div class="text-xs text-purple-300 mb-2 flex items-center justify-between">
-                                                <span><i class="fas fa-id-card mr-1"></i>档案码导入</span>
-                                                <span class="text-[10px] text-gray-500">24小时有效</span>
+                                                <span><i class="fas fa-id-card mr-1"></i>本地档案码</span>
+                                                <span class="text-[10px] text-gray-500">离线</span>
                                             </div>
                                             <div class="flex gap-2">
                                                 <input type="text" id="cardCodeInput" placeholder="输入8位档案码..."
@@ -1410,9 +1415,27 @@
                                                 </button>
                                             </div>
                                             <div id="cardCodeStatus" class="mt-2 text-[10px] hidden"></div>
-                                            <div class="mt-2 text-[10px] text-gray-500">
-                                                <i class="fas fa-info-circle mr-1"></i>输入他人分享的档案码，查看完整数据
+                                        </div>
+                                        
+                                        <!-- 云端档案码导入 -->
+                                        <div class="bg-gradient-to-r from-green-900/30 to-teal-900/30 rounded p-3 mb-4 border border-green-500/30">
+                                            <div class="text-xs text-green-300 mb-2 flex items-center justify-between">
+                                                <span><i class="fab fa-github mr-1"></i>云端档案码</span>
+                                                <span class="text-[10px] text-gray-500">GitHub Gist</span>
                                             </div>
+                                            <div class="flex gap-2">
+                                                <input type="text" id="playerGistCodeInput" placeholder="输入8位云端码或链接..."
+                                                       class="flex-1 p-2 bg-dark border border-gray-600 rounded text-xs text-gray-100"
+                                                       maxlength="50">
+                                                <button onclick="importPlayerGistArchive()" class="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded text-xs transition-colors">
+                                                    <i class="fas fa-cloud-download-alt mr-1"></i>获取
+                                                </button>
+                                            </div>
+                                            <div id="playerGistCodeStatus" class="mt-2 text-[10px] hidden"></div>
+                                        </div>
+                                        
+                                        <div class="mt-2 text-[10px] text-gray-500 mb-4">
+                                            <i class="fas fa-info-circle mr-1"></i>输入他人分享的档案码，查看完整数据
                                         </div>
 
                                         <div class="relative mb-4">
@@ -2669,10 +2692,11 @@
                         </div>
                         
                         <!-- 档案码导入 -->
-                        <div class="bg-gray-800/50 rounded p-2 border border-purple-500/30">
+                        <!-- 本地档案码导入 -->
+                        <div class="bg-gray-800/50 rounded p-2 border border-purple-500/30 mb-2">
                             <div class="text-xs text-gray-400 mb-1 flex items-center justify-between">
-                                <span><i class="fas fa-id-card mr-1 text-purple-400"></i>档案码导入</span>
-                                <span class="text-[10px] text-gray-500">24小时有效</span>
+                                <span><i class="fas fa-id-card mr-1 text-purple-400"></i>本地档案码</span>
+                                <span class="text-[10px] text-gray-500">离线</span>
                             </div>
                             <div class="flex gap-1">
                                 <input type="text" id="compareCardCodeInput" placeholder="输入8位档案码..."
@@ -2682,8 +2706,26 @@
                                     <i class="fas fa-download mr-1"></i>导入
                                 </button>
                             </div>
-                            <div id="compareCardCodeStatus" class="mt-1 text-[10px] hidden"></div>
                         </div>
+                        
+                        <!-- 云端档案码导入 -->
+                        <div class="bg-gray-800/50 rounded p-2 border border-green-500/30">
+                            <div class="text-xs text-gray-400 mb-1 flex items-center justify-between">
+                                <span><i class="fab fa-github mr-1 text-green-400"></i>云端档案码</span>
+                                <span class="text-[10px] text-gray-500">GitHub Gist</span>
+                            </div>
+                            <div class="flex gap-1">
+                                <input type="text" id="compareGistCodeInput" placeholder="输入8位云端码或完整链接..."
+                                       class="flex-1 p-1.5 bg-dark border border-gray-600 rounded text-xs text-gray-100"
+                                       maxlength="50">
+                                <button onclick="importGistArchive()" class="px-3 py-1.5 bg-green-600 hover:bg-green-500 text-white rounded text-xs transition-colors">
+                                    <i class="fas fa-cloud-download-alt mr-1"></i>获取
+                                </button>
+                            </div>
+                            <div id="compareGistCodeStatus" class="mt-1 text-[10px] hidden"></div>
+                        </div>
+                        
+                        <div id="compareCardCodeStatus" class="mt-1 text-[10px] hidden"></div>
                         
                         <!-- 分隔线 -->
                         <div class="relative flex items-center py-2">
@@ -4928,11 +4970,14 @@
                             <p><i class="fas fa-shield-alt mr-1 text-green-400"></i>匿名模式下ID显示为"匿名玩家"</p>
                         </div>
 
-                        <div class="flex gap-2">
-                            <button onclick="generateCardCode()" class="flex-1 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded text-sm transition-colors font-medium">
-                                <i class="fas fa-key mr-1"></i>生成档案码
+                        <div class="space-y-2">
+                            <button onclick="generateCardCode()" class="w-full py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded text-sm transition-colors font-medium">
+                                <i class="fas fa-key mr-1"></i>生成本地档案码
                             </button>
-                            <button onclick="closeCardCodeExportModal()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-colors">
+                            <button onclick="generateGistArchiveCode()" class="w-full py-2 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500 text-white rounded text-sm transition-colors font-medium">
+                                <i class="fab fa-github mr-1"></i>生成云端档案码 (8位短码)
+                            </button>
+                            <button onclick="closeCardCodeExportModal()" class="w-full py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-colors">
                                 取消
                             </button>
                         </div>
@@ -5007,21 +5052,22 @@
 
             // 准备玩家数据
             let exportData;
+            // 加载用户设置以包含区服信息
+            const settings = loadUserProfileSettings();
+            
             let exportOptions = {
                 isMultiBattle: false,
                 battleCount: 1,
                 includeHistory: false,
                 isAnonymous: isAnonymous,
-                isPKMode: isPKMode
+                isPKMode: isPKMode,
+                userSettings: settings  // 传递用户设置用于生成哈希盐值
             };
 
             // 基础数据（根据模式决定包含哪些字段）
             const baseFields = isPKMode 
                 ? ['玩家名字', '职业', '对建筑伤害', '对玩家伤害', '击败', '助攻', '治疗值', '承受伤害']
                 : null; // null表示包含所有字段
-
-            // 加载用户设置以包含区服信息
-            const settings = loadUserProfileSettings();
             
             if (hasMultiData && multiBattleData.length > 1) {
                 // 多场数据导出
@@ -5115,6 +5161,192 @@
             }
         }
 
+        // 生成 Gist 云端档案码（8位短码）
+        async function generateGistArchiveCode() {
+            const options = window.cardExportOptions;
+            if (!options) return;
+            
+            if (!currentPlayer) {
+                alert('请先选择一名玩家');
+                return;
+            }
+
+            // 显示加载中
+            const loadingHtml = `
+                <div id="gistLoadingModal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
+                    <div class="bg-gray-800 border border-green-500/50 rounded-lg p-6 text-center">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
+                        <p class="text-green-400">正在创建云端档案...</p>
+                        <p class="text-xs text-gray-500 mt-2">正在上传到 GitHub Gist</p>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', loadingHtml);
+
+            try {
+                // 准备档案数据
+                const isAnonymous = options.nameMode === 'anonymous';
+                let exportData = { ...currentPlayer };
+                
+                // 获取多场数据
+                let multiBattleData = [];
+                if (typeof getPlayerMultiBattleData === 'function') {
+                    multiBattleData = getPlayerMultiBattleData(currentPlayer['玩家名字']);
+                }
+                
+                // 应用匿名模式
+                if (isAnonymous) {
+                    exportData = {
+                        ...exportData,
+                        '玩家名字': '匿名玩家',
+                        '原始名字': currentPlayer['玩家名字']
+                    };
+                    multiBattleData = multiBattleData.map(battle => ({
+                        ...battle,
+                        '玩家名字': '匿名玩家'
+                    }));
+                }
+
+                // 初始化 ArchiveGistSystem
+                await ArchiveGistSystem.init();
+                
+                // 上传档案
+                const result = await ArchiveGistSystem.uploadArchive(exportData, multiBattleData);
+                
+                // 关闭加载弹窗
+                const loadingModal = document.getElementById('gistLoadingModal');
+                if (loadingModal) loadingModal.remove();
+                closeCardCodeExportModal();
+                
+                // 显示结果
+                showGistArchiveResult(result, isAnonymous);
+                
+            } catch (error) {
+                // 关闭加载弹窗
+                const loadingModal = document.getElementById('gistLoadingModal');
+                if (loadingModal) loadingModal.remove();
+                
+                console.error('生成 Gist 档案码失败:', error);
+                alert('生成云端档案码失败: ' + error.message + '\n\n可能原因：\n1. GitHub API 速率限制（每小时60次）\n2. 网络连接问题\n3. 数据过大\n\n建议：使用本地档案码功能');
+            }
+        }
+
+        // 显示 Gist 档案码结果
+        function showGistArchiveResult(result, isAnonymous) {
+            const settings = loadUserProfileSettings();
+            const expireHours = ArchiveGistSystem.getExpireHours();
+            
+            const modalHtml = `
+                <div id="gistArchiveModal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100]" onclick="if(event.target.id==='gistArchiveModal')closeGistArchiveModal()">
+                    <div class="bg-gray-800 border border-green-500/50 rounded-lg p-6 max-w-md w-full mx-4 shadow-2xl">
+                        <h3 class="text-lg font-bold text-green-400 mb-4 flex items-center">
+                            <i class="fab fa-github mr-2"></i>云端档案码生成成功
+                        </h3>
+                        
+                        <!-- 8位短码展示 -->
+                        <div class="bg-gradient-to-r from-green-900/30 to-teal-900/30 border border-green-500/30 rounded p-4 mb-4">
+                            <div class="text-xs text-gray-400 mb-2 text-center">8位短码（有效期${expireHours}小时）</div>
+                            <div class="text-center">
+                                <div class="text-3xl font-mono font-bold text-green-400 tracking-widest select-all" id="gistShortCode">${result.shortCode}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- 分享链接 -->
+                        <div class="bg-gray-900 rounded p-3 mb-4">
+                            <div class="text-xs text-gray-500 mb-2">分享链接</div>
+                            <div class="flex gap-2">
+                                <input type="text" id="gistShareUrl" value="${result.shareUrl}" readonly 
+                                    class="flex-1 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-xs text-gray-300">
+                                <button onclick="copyGistShareUrl()" class="px-3 py-2 bg-green-600 hover:bg-green-500 text-white rounded text-xs">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 档案信息 -->
+                        <div class="bg-gray-900/50 rounded p-3 mb-4 text-xs space-y-1">
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">玩家:</span>
+                                <span class="text-white">${result.data?.playerName || 'Unknown'}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">职业:</span>
+                                <span class="text-jade">${result.data?.profession || 'Unknown'}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">场次:</span>
+                                <span class="text-blue-400">${result.data?.multiBattleData?.length || 1} 场</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">存储:</span>
+                                <span class="text-green-400"><i class="fab fa-github mr-1"></i>GitHub Gist</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 使用说明 -->
+                        <div class="text-xs text-gray-500 mb-4 bg-gray-900/30 rounded p-2">
+                            <p><i class="fas fa-info-circle mr-1 text-green-400"></i>他人可通过链接直接查看你的档案</p>
+                            <p><i class="fas fa-clock mr-1 text-yellow-400"></i>档案将在 ${expireHours} 小时后过期</p>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <button onclick="copyGistShortCode()" class="flex-1 py-2 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500 text-white rounded text-sm transition-colors font-medium">
+                                <i class="fas fa-copy mr-1"></i>复制短码
+                            </button>
+                            <button onclick="closeGistArchiveModal()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-colors">
+                                关闭
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        // 复制 Gist 短码
+        async function copyGistShortCode() {
+            const codeEl = document.getElementById('gistShortCode');
+            if (!codeEl) return;
+            
+            const code = codeEl.textContent.trim();
+            
+            try {
+                await navigator.clipboard.writeText(code);
+                showToast('短码已复制到剪贴板', 'success');
+            } catch (e) {
+                // 降级方案
+                const textarea = document.createElement('textarea');
+                textarea.value = code;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showToast('短码已复制', 'success');
+            }
+        }
+
+        // 复制 Gist 分享链接
+        async function copyGistShareUrl() {
+            const urlEl = document.getElementById('gistShareUrl');
+            if (!urlEl) return;
+            
+            try {
+                await navigator.clipboard.writeText(urlEl.value);
+                showToast('分享链接已复制', 'success');
+            } catch (e) {
+                urlEl.select();
+                document.execCommand('copy');
+                showToast('分享链接已复制', 'success');
+            }
+        }
+
+        // 关闭 Gist 档案码弹窗
+        function closeGistArchiveModal() {
+            const modal = document.getElementById('gistArchiveModal');
+            if (modal) modal.remove();
+        }
+
         // 显示档案码结果
         function showCardCodeResult(result, isAnonymous, isPKMode) {
             // 加载用户设置
@@ -5165,9 +5397,11 @@
                 `;
             }
             
-            // 生成分享链接
-            const shareUrl = `https://odinfreed.github.io/nsh_tools/xg_nsh_battle_system/xg_guild_analysis/xg_guild_analysis_main.html?card=${result.code}&mode=compare`;
+            // 生成分享链接（离线档案码已包含所有数据，无需额外hash）
+            const shareUrl = `https://odinfreed.github.io/nsh_tools/xg_nsh_battle_system/xg_guild_analysis/xg_guild_analysis_main.html?card=${encodeURIComponent(result.code)}&mode=compare`;
             const shareText = `我生成了我的帮战数据档案码，快来和我PK吧？和我一较高下✌️(≧▽≦)✌️\n${shareUrl}`;
+            // 安全编码用于HTML属性
+            const shareTextEncoded = shareText.replace(/"/g, '&quot;').replace(/'/g, "&#39;");
             
             // 显示档案码
             const modalHtml = `
@@ -5203,7 +5437,7 @@
                                        class="w-full bg-transparent text-xs text-gray-300 outline-none"
                                        onclick="this.select()">
                             </div>
-                            <button onclick="copyShareLinkWithText('${shareUrl}', '${shareText.replace(/'/g, "\\'")}')" class="w-full py-1.5 bg-blue-600/80 hover:bg-blue-500 text-white rounded text-xs transition-colors">
+                            <button onclick="copyShareLinkWithTextSafe('${shareUrl}', '${shareTextEncoded}')" class="w-full py-1.5 bg-blue-600/80 hover:bg-blue-500 text-white rounded text-xs transition-colors">
                                 <i class="fas fa-link mr-1"></i>复制分享链接
                             </button>
                             <div id="shareCopyFeedback" class="text-xs text-green-400 mt-1 hidden text-center">
@@ -5228,11 +5462,22 @@
             document.body.insertAdjacentHTML('beforeend', modalHtml);
         }
 
+        // 复制分享链接（附带话术）- 安全版本（处理HTML实体编码）
+        function copyShareLinkWithTextSafe(url, textEncoded) {
+            // 解码HTML实体
+            const textarea = document.createElement('textarea');
+            textarea.innerHTML = textEncoded;
+            const text = textarea.value;
+            copyShareLinkWithText(url, text);
+        }
+
         // 复制分享链接（附带话术）
         function copyShareLinkWithText(url, text) {
+            console.log('尝试复制链接:', text);
             // 尝试使用现代 Clipboard API
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(text).then(() => {
+                    console.log('Clipboard API 复制成功');
                     showShareCopyFeedback();
                 }).catch((err) => {
                     console.log('Clipboard API 失败，使用回退方案:', err);
@@ -5240,6 +5485,7 @@
                 });
             } else {
                 // 使用回退方案
+                console.log('Clipboard API 不可用，使用回退方案');
                 fallbackCopyTextToClipboard(text);
             }
         }
@@ -5318,8 +5564,29 @@
             closeManualCopyModal();
         }
 
+        // 显示全局Toast提示
+        function showToast(message, type = 'info') {
+            // 创建toast元素
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : 'bg-blue-600';
+            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+            
+            toast.className = `fixed top-4 left-1/2 transform -translate-x-1/2 ${bgColor} text-white px-6 py-3 rounded shadow-lg z-[9999] flex items-center gap-2 animate-fade-in`;
+            toast.innerHTML = `<i class="fas ${icon}"></i><span>${message}</span>`;
+            
+            document.body.appendChild(toast);
+            
+            // 2秒后自动移除
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+
         // 显示分享复制反馈
         function showShareCopyFeedback() {
+            // 首先尝试在弹窗内显示反馈
             const feedback = document.getElementById('shareCopyFeedback');
             if (feedback) {
                 feedback.classList.remove('hidden');
@@ -5327,6 +5594,8 @@
                     feedback.classList.add('hidden');
                 }, 2000);
             }
+            // 同时显示全局toast提示
+            showToast('链接已复制到剪贴板！', 'success');
         }
 
         // 复制档案码并显示反馈
@@ -5418,19 +5687,17 @@
         // 在个人分析面板导入档案码
         function importPlayerCard() {
             const input = document.getElementById('cardCodeInput');
-            const code = input ? input.value.trim().toUpperCase() : '';
+            const code = input ? input.value.trim() : '';
 
             if (!code) {
                 showCardCodeStatus('请输入档案码', 'error', 'cardCodeStatus');
                 return;
             }
 
-            if (code.length !== 8) {
-                showCardCodeStatus('档案码应为8位字符', 'error', 'cardCodeStatus');
-                return;
-            }
-
-            const result = PlayerCardSystem.importCard(code);
+            // 加载用户设置用于离线档案码验证
+            const settings = loadUserProfileSettings();
+            
+            const result = PlayerCardSystem.importCard(code, settings);
 
             if (result.success) {
                 // 存储导入的档案数据
@@ -5467,23 +5734,102 @@
                 showCardCodeStatus(result.error, 'error', 'cardCodeStatus');
             }
         }
+        
+        // 在个人分析面板导入 Gist 云端档案码
+        async function importPlayerGistArchive() {
+            const input = document.getElementById('playerGistCodeInput');
+            const code = input ? input.value.trim() : '';
+            
+            if (!code) {
+                showCardCodeStatus('请输入云端档案码或链接', 'error', 'playerGistCodeStatus');
+                return;
+            }
+            
+            showCardCodeStatus('正在获取云端档案...', 'info', 'playerGistCodeStatus');
+            
+            try {
+                await ArchiveGistSystem.init();
+                
+                let result;
+                
+                // 判断输入类型
+                if (code.length === 8 && /^[A-Z0-9]+$/i.test(code)) {
+                    result = await ArchiveGistSystem.getArchiveByShortCode(code);
+                } else if (code.length === 32) {
+                    result = await ArchiveGistSystem.getArchiveByGistId(code);
+                } else if (code.includes('gist.github.com')) {
+                    const match = code.match(/gist\.github\.com\/(?:.*\/)?([a-f0-9]{32})/);
+                    if (match) {
+                        result = await ArchiveGistSystem.getArchiveByGistId(match[1]);
+                    } else {
+                        throw new Error('无法从链接中提取 Gist ID');
+                    }
+                } else {
+                    throw new Error('无效的档案码格式');
+                }
+                
+                // 处理过期提醒
+                if (result.isExpired) {
+                    showCardCodeStatus('档案已过期，但仍可查看', 'warning', 'playerGistCodeStatus');
+                } else {
+                    showCardCodeStatus('档案导入成功', 'success', 'playerGistCodeStatus');
+                }
+                
+                // 清空输入框
+                if (input) input.value = '';
+                
+                // 设置导入的玩家数据
+                const archiveData = result.data;
+                importedPlayerCard = archiveData.playerData;
+                
+                // 如果有几场数据
+                if (archiveData.multiBattleData && archiveData.multiBattleData.length > 0) {
+                    const mockMultiCache = [{
+                        id: 'gist_player_' + Date.now(),
+                        timestamp: archiveData.timestamp,
+                        dateTime: archiveData.meta?.createdAt || new Date().toISOString(),
+                        guilds: {
+                            [importedPlayerCard['帮会'] || '导入数据']: [importedPlayerCard]
+                        },
+                        data: {
+                            [importedPlayerCard['帮会'] || '导入数据']: [importedPlayerCard]
+                        }
+                    }];
+                    
+                    localStorage.setItem('importedCardMultiCache', JSON.stringify(mockMultiCache));
+                    importedPlayerCard.isMultiBattle = true;
+                    importedPlayerCard.battleCount = archiveData.multiBattleData.length;
+                    importedPlayerCard.battles = archiveData.multiBattleData;
+                }
+                
+                // 显示导入的玩家
+                displayImportedPlayerCard();
+                
+                // 显示成功提示
+                const nameType = importedPlayerCard['玩家名字'] === '匿名玩家' ? '匿名' : '实名';
+                const dataType = importedPlayerCard.isMultiBattle ? `${importedPlayerCard.battleCount}场数据` : '单场数据';
+                showCardCodeStatus(`成功导入: ${importedPlayerCard['玩家名字']} [${nameType}|${dataType}]`, 'success', 'playerGistCodeStatus');
+                
+            } catch (error) {
+                console.error('导入云端档案失败:', error);
+                showCardCodeStatus('导入失败: ' + error.message, 'error', 'playerGistCodeStatus');
+            }
+        }
 
         // 在对比系统导入档案码
         function importCardForCompare() {
             const input = document.getElementById('compareCardCodeInput');
-            const code = input ? input.value.trim().toUpperCase() : '';
+            const code = input ? input.value.trim() : '';
 
             if (!code) {
                 showCardCodeStatus('请输入档案码', 'error', 'compareCardCodeStatus');
                 return;
             }
 
-            if (code.length !== 8) {
-                showCardCodeStatus('档案码应为8位字符', 'error', 'compareCardCodeStatus');
-                return;
-            }
-
-            const result = PlayerCardSystem.importCard(code);
+            // 加载用户设置用于离线档案码验证
+            const settings = loadUserProfileSettings();
+            
+            const result = PlayerCardSystem.importCard(code, settings);
 
             if (result.success) {
                 // 设置为对比玩家
@@ -5499,16 +5845,20 @@
                 if (selectedDiv) selectedDiv.classList.remove('hidden');
                 
                 // 根据是否匿名显示不同格式
+                // 从data中获取玩家信息（序列化后的字段名可能是中文或英文）
+                const playerName = result.data['玩家名字'] || result.data.n || result.data.playerName || result.playerName || '未知玩家';
+                const profession = result.data['职业'] || result.data.c || result.data.profession || result.profession || '未知职业';
+                
                 if (result.isAnonymous) {
                     // 匿名玩家显示格式
                     if (nameEl) nameEl.innerHTML = `未知玩家 <span class="text-xs text-gray-400">档案码导入</span>`;
                     if (infoEl) infoEl.innerHTML = `<span class="text-gray-500">未知信息</span>`;
                 } else {
                     // 实名玩家显示格式
-                    const region = result.data.region || result.data.re || '未知区服';
-                    const userGuild = result.data.userGuild || result.data.ug || result.data['帮会'] || '未知帮会';
-                    if (nameEl) nameEl.innerHTML = `${result.playerName || '未知玩家'} <span class="text-xs text-gray-400">档案码导入</span>`;
-                    if (infoEl) infoEl.innerHTML = `<span class="text-jade">${region}</span> <span class="text-cyan-400">${userGuild}</span> <span class="text-yellow-400">${result.profession || '未知职业'}</span>`;
+                    const region = result.data.region || result.data.re || result.data['区服'] || '未知区服';
+                    const userGuild = result.data.userGuild || result.data.ug || result.data['帮会'] || result.data['帮派'] || '未知帮会';
+                    if (nameEl) nameEl.innerHTML = `${playerName} <span class="text-xs text-gray-400">档案码导入</span>`;
+                    if (infoEl) infoEl.innerHTML = `<span class="text-jade">${region}</span> <span class="text-cyan-400">${userGuild}</span> <span class="text-yellow-400">${profession}</span>`;
                 }
 
                 // 填充基础数据（4个核心数据）
@@ -5632,6 +5982,206 @@
         function closePKCodeModal() { closeCardCodeModal(); }
         function showPKCodeStatus(message, type) {
             showCardCodeStatus(message, type, 'compareCardCodeStatus');
+        }
+
+        // ==================== Gist 云端档案码导入功能 ====================
+        
+        // 导入 Gist 云端档案码
+        async function importGistArchive() {
+            const input = document.getElementById('compareGistCodeInput');
+            const code = input ? input.value.trim() : '';
+            
+            if (!code) {
+                showCardCodeStatus('请输入云端档案码或链接', 'error', 'compareGistCodeStatus');
+                return;
+            }
+            
+            // 显示加载状态
+            showCardCodeStatus('正在获取云端档案...', 'info', 'compareGistCodeStatus');
+            
+            try {
+                // 初始化系统
+                await ArchiveGistSystem.init();
+                
+                let result;
+                
+                // 判断输入类型：8位短码 / Gist ID / 完整URL
+                if (code.length === 8 && /^[A-Z0-9]+$/i.test(code)) {
+                    // 8位短码
+                    result = await ArchiveGistSystem.getArchiveByShortCode(code);
+                } else if (code.length === 32) {
+                    // Gist ID
+                    result = await ArchiveGistSystem.getArchiveByGistId(code);
+                } else if (code.includes('gist.github.com')) {
+                    // 完整URL，提取 Gist ID
+                    const match = code.match(/gist\.github\.com\/(?:.*\/)?([a-f0-9]{32})/);
+                    if (match) {
+                        result = await ArchiveGistSystem.getArchiveByGistId(match[1]);
+                    } else {
+                        throw new Error('无法从链接中提取 Gist ID');
+                    }
+                } else {
+                    throw new Error('无效的档案码格式');
+                }
+                
+                // 处理过期提醒
+                if (result.isExpired) {
+                    showCardCodeStatus('档案已过期，但仍可查看', 'warning', 'compareGistCodeStatus');
+                } else {
+                    showCardCodeStatus('档案导入成功', 'success', 'compareGistCodeStatus');
+                }
+                
+                // 清空输入框
+                if (input) input.value = '';
+                
+                // 设置对比玩家数据
+                const archiveData = result.data;
+                const playerData = archiveData.playerData;
+                
+                // 如果有几场数据，设置到全局
+                if (archiveData.multiBattleData && archiveData.multiBattleData.length > 0) {
+                    // 创建临时多场缓存用于对比
+                    const mockMultiCache = [{
+                        id: 'gist_import_' + Date.now(),
+                        timestamp: archiveData.timestamp,
+                        dateTime: archiveData.meta?.createdAt || new Date().toISOString(),
+                        guilds: {
+                            [playerData['帮会'] || '导入数据']: [playerData]
+                        },
+                        data: {
+                            [playerData['帮会'] || '导入数据']: [playerData]
+                        }
+                    }];
+                    
+                    // 存储到本地缓存供多场分析使用
+                    localStorage.setItem('importedCardMultiCache', JSON.stringify(mockMultiCache));
+                    
+                    // 标记为多场数据
+                    playerData.isMultiBattle = true;
+                    playerData.battleCount = archiveData.multiBattleData.length;
+                    playerData.battles = archiveData.multiBattleData;
+                }
+                
+                // 设置到对比系统
+                comparePlayer = playerData;
+                compareBattleId = 'gist_import';
+                
+                // 更新UI
+                updatePlayerCharts();
+                updateCompareBarChart();
+                updatePKDataTable();
+                updateCompareChart();
+                
+                // 显示提示
+                const nameType = playerData['玩家名字'] === '匿名玩家' ? '匿名' : '实名';
+                const dataType = playerData.isMultiBattle ? `${playerData.battleCount}场数据` : '单场数据';
+                showNotification(`已导入云端档案: ${playerData['玩家名字']} [${nameType}|${dataType}]`, 'success');
+                
+            } catch (error) {
+                console.error('导入云端档案失败:', error);
+                showCardCodeStatus('导入失败: ' + error.message, 'error', 'compareGistCodeStatus');
+            }
+        }
+        
+        // 显示 Gist 状态信息
+        function showGistCodeStatus(message, type, elementId) {
+            const statusEl = document.getElementById(elementId || 'compareGistCodeStatus');
+            if (!statusEl) return;
+            
+            const colorClass = type === 'success' ? 'text-green-400' : 
+                              type === 'warning' ? 'text-yellow-400' : 
+                              type === 'info' ? 'text-blue-400' : 'text-red-400';
+            
+            statusEl.textContent = message;
+            statusEl.className = 'mt-1 text-[10px] ' + colorClass;
+            statusEl.classList.remove('hidden');
+            
+            setTimeout(() => {
+                statusEl.classList.add('hidden');
+            }, 5000);
+        }
+
+        // ==================== 页面加载时自动解析 URL 参数 ====================
+        
+        // 初始化 Gist 档案码 URL 解析
+        async function initGistUrlParser() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const cardCode = params.get('card') || params.get('gist');
+                
+                if (!cardCode) return;
+                
+                console.log('检测到 URL 档案码参数:', cardCode);
+                
+                // 初始化系统
+                await ArchiveGistSystem.init();
+                
+                // 显示加载提示
+                showNotification('正在加载云端档案...', 'info');
+                
+                let result;
+                
+                // 判断输入类型
+                if (cardCode.length === 8 && /^[A-Z0-9]+$/i.test(cardCode)) {
+                    result = await ArchiveGistSystem.getArchiveByShortCode(cardCode);
+                } else if (cardCode.length === 32) {
+                    result = await ArchiveGistSystem.getArchiveByGistId(cardCode);
+                } else {
+                    showNotification('无效的档案码格式', 'error');
+                    return;
+                }
+                
+                // 处理过期
+                if (result.isExpired) {
+                    showNotification('档案已过期，但仍可查看数据', 'warning');
+                }
+                
+                // 设置对比玩家
+                const archiveData = result.data;
+                const playerData = archiveData.playerData;
+                
+                // 如果有几场数据
+                if (archiveData.multiBattleData && archiveData.multiBattleData.length > 0) {
+                    const mockMultiCache = [{
+                        id: 'gist_url_' + Date.now(),
+                        timestamp: archiveData.timestamp,
+                        dateTime: archiveData.meta?.createdAt || new Date().toISOString(),
+                        guilds: {
+                            [playerData['帮会'] || '导入数据']: [playerData]
+                        },
+                        data: {
+                            [playerData['帮会'] || '导入数据']: [playerData]
+                        }
+                    }];
+                    
+                    localStorage.setItem('importedCardMultiCache', JSON.stringify(mockMultiCache));
+                    playerData.isMultiBattle = true;
+                    playerData.battleCount = archiveData.multiBattleData.length;
+                    playerData.battles = archiveData.multiBattleData;
+                }
+                
+                comparePlayer = playerData;
+                compareBattleId = 'gist_url_import';
+                
+                // 清除 URL 参数
+                window.history.replaceState({}, document.title, window.location.pathname);
+                
+                // 延迟更新UI，确保页面已加载
+                setTimeout(() => {
+                    updatePlayerCharts();
+                    updateCompareBarChart();
+                    updatePKDataTable();
+                    updateCompareChart();
+                    
+                    const nameType = playerData['玩家名字'] === '匿名玩家' ? '匿名' : '实名';
+                    const dataType = playerData.isMultiBattle ? `${playerData.battleCount}场数据` : '单场数据';
+                    showNotification(`已自动加载云端档案: ${playerData['玩家名字']} [${nameType}|${dataType}]`, 'success');
+                }, 1000);
+                
+            } catch (error) {
+                console.error('自动解析 URL 档案码失败:', error);
+                showNotification('档案码加载失败: ' + error.message, 'error');
+            }
         }
 
         // ==================== 对比系统功能 ====================
@@ -7305,7 +7855,12 @@
         
         // v4.0.0: 初始化多场数据对比分析
         function initMultiBattleAnalysis() {
-            if (!currentPlayer) return;
+            console.log('初始化多场数据对比分析...');
+            
+            if (!currentPlayer) {
+                console.warn('currentPlayer 为空，无法初始化多场数据对比');
+                return;
+            }
             
             // 检查 PlayerMultiAnalysis 是否已加载
             if (typeof PlayerMultiAnalysis === 'undefined') {
@@ -7317,9 +7872,13 @@
             }
             
             const playerName = currentPlayer['玩家名字'];
+            const currentProfession = currentPlayer['职业'];
+            console.log('当前玩家:', playerName, '职业:', currentProfession);
             
             // 显示参战率（按游戏ID统计，不区分职业）
             const attendanceInfo = PlayerMultiAnalysis.getAttendanceInfo(playerName);
+            console.log('参战率信息:', attendanceInfo);
+            
             if (attendanceInfo && attendanceInfo.total > 0) {
                 const badge = document.getElementById('attendanceBadge');
                 const rateEl = document.getElementById('attendanceRate');
@@ -7330,7 +7889,7 @@
             }
             
             // 初始化多场数据图表和分析（传入当前职业以过滤职业不一致的数据）
-            const currentProfession = currentPlayer ? currentPlayer['职业'] : null;
+            console.log('调用 PlayerMultiAnalysis.init...');
             PlayerMultiAnalysis.init(playerName, currentProfession);
         }
 
@@ -9880,6 +10439,11 @@
             
             // 检测URL参数，处理档案码分享链接
             handleCardCodeUrlParams();
+            
+            // 检测URL参数，处理 Gist 云端档案码
+            setTimeout(() => {
+                initGistUrlParser();
+            }, 1500); // 延迟确保其他初始化完成
         });
         
         // 处理档案码URL参数
@@ -9906,19 +10470,18 @@
             
             console.log('检测到档案码参数:', cardCode, '模式:', mode);
             
-            // 检查是否有本地数据
+            // 检查是否有本地数据（离线档案码自带数据，不需要本地数据）
             const hasLocalData = guild1Data.length > 0 || guild2Data.length > 0;
             
             if (!hasLocalData) {
-                // 没有本地数据，保存档案码和模式，跳转到导入页面
-                localStorage.setItem('pendingCardCode', cardCode);
-                localStorage.setItem('pendingCardMode', mode || 'compare');
-                localStorage.setItem('returnToCompare', 'true');
+                // 离线档案码自带数据，提示用户可以选择导入数据或直接对比
+                const useDirectCompare = confirm('检测到档案码分享链接！\n\n点击"确定"直接进入对比模式（使用档案码自带数据）\n点击"取消"跳转到数据导入页面导入您自己的数据');
                 
-                // 显示提示并跳转
-                const shouldImport = confirm('检测到档案码分享链接，但您还没有导入帮战数据。\n\n点击"确定"跳转到数据导入页面，导入数据后将自动进入对比模式。\n点击"取消"留在当前页面。');
-                
-                if (shouldImport) {
+                if (!useDirectCompare) {
+                    // 保存档案码和模式，跳转到导入页面
+                    localStorage.setItem('pendingCardCode', cardCode);
+                    localStorage.setItem('pendingCardMode', mode || 'compare');
+                    localStorage.setItem('returnToCompare', 'true');
                     window.location.href = 'https://odinfreed.github.io/nsh_tools/xg_nsh_battle_system/xg_data_import/index.html';
                 }
                 return;
@@ -9932,7 +10495,11 @@
         
         // 自动导入档案码并根据模式处理
         function autoImportCardCode(code, mode) {
-            const result = PlayerCardSystem.importCard(code);
+            // 加载用户设置用于离线档案码验证
+            const settings = loadUserProfileSettings();
+            
+            // 导入档案码（自动支持离线码验证）
+            const result = PlayerCardSystem.importCard(code, settings);
             
             if (!result.success) {
                 alert('档案码导入失败: ' + result.error);
@@ -9982,16 +10549,20 @@
                 if (selectedDiv) selectedDiv.classList.remove('hidden');
                 
                 // 根据是否匿名显示不同格式
+                // 从data中获取玩家信息（序列化后的字段名可能是中文或英文）
+                const playerName = result.data['玩家名字'] || result.data.n || result.data.playerName || result.playerName || '未知玩家';
+                const profession = result.data['职业'] || result.data.c || result.data.profession || result.profession || '未知职业';
+                
                 if (result.isAnonymous) {
                     // 匿名玩家显示格式
                     if (nameEl) nameEl.innerHTML = `未知玩家 <span class="text-xs text-gray-400">档案码导入</span>`;
                     if (infoEl) infoEl.innerHTML = `<span class="text-gray-500">未知信息</span>`;
                 } else {
                     // 实名玩家显示格式
-                    const region = result.data.region || result.data.re || '未知区服';
-                    const userGuild = result.data.userGuild || result.data.ug || result.data['帮会'] || '未知帮会';
-                    if (nameEl) nameEl.innerHTML = `${result.playerName || '未知玩家'} <span class="text-xs text-gray-400">档案码导入</span>`;
-                    if (infoEl) infoEl.innerHTML = `<span class="text-jade">${region}</span> <span class="text-cyan-400">${userGuild}</span> <span class="text-yellow-400">${result.profession || '未知职业'}</span>`;
+                    const region = result.data.region || result.data.re || result.data['区服'] || '未知区服';
+                    const userGuild = result.data.userGuild || result.data.ug || result.data['帮会'] || result.data['帮派'] || '未知帮会';
+                    if (nameEl) nameEl.innerHTML = `${playerName} <span class="text-xs text-gray-400">档案码导入</span>`;
+                    if (infoEl) infoEl.innerHTML = `<span class="text-jade">${region}</span> <span class="text-cyan-400">${userGuild}</span> <span class="text-yellow-400">${profession}</span>`;
                 }
                 
                 // 填充基础数据
@@ -10386,6 +10957,7 @@
             
             // v4.0.0: 清空多场数据缓存
             multiBattleCache = [];
+            window.multiBattleCache = [];
             localStorage.removeItem('multiBattleCache_v4');
             
             updateDataSourceUI();
@@ -10410,11 +10982,14 @@
                 const cached = localStorage.getItem('multiBattleCache_v4');
                 if (cached) {
                     multiBattleCache = JSON.parse(cached);
+                    // 同步到 window，供 player_multi_analysis.js 使用
+                    window.multiBattleCache = multiBattleCache;
                     console.log(`已加载 ${multiBattleCache.length} 场缓存数据`);
                 }
             } catch (e) {
                 console.error('加载多场数据缓存失败:', e);
                 multiBattleCache = [];
+                window.multiBattleCache = [];
             }
         }
         
@@ -10422,6 +10997,8 @@
         function saveMultiBattleCache() {
             try {
                 localStorage.setItem('multiBattleCache_v4', JSON.stringify(multiBattleCache));
+                // 同步到 window，供 player_multi_analysis.js 使用
+                window.multiBattleCache = multiBattleCache;
             } catch (e) {
                 console.error('保存多场数据缓存失败:', e);
             }
