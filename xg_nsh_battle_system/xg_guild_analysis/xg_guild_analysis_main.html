@@ -1437,7 +1437,6 @@
                                             <i class="fas fa-info-circle mr-1"></i>支持文本档案码或二维码图片导入
                                         </div>
                                         -->
-                                        </div>
 
                                         <div class="relative mb-4">
                                             <div class="absolute inset-0 flex items-center">
@@ -6686,6 +6685,36 @@
         }
         档案码系统功能已禁用 - 2024 */
 
+        // 档案码功能已禁用 - 空函数存根避免报错
+        function initGistUrlParser() { console.log('档案码功能已禁用'); }
+        function handleCardCodeUrlParams() { }
+        function autoImportCardCode() { }
+        function exportPKCode() { alert('档案码功能已禁用'); }
+        function importPKCode() { }
+        function importCardForCompare() { }
+        function generateCardCode() { }
+        function copyCardCode() { }
+        function closeCardCodeModal() { }
+        function showCardCodeResult() { }
+        function importPlayerGistArchive() { }
+        function importGistArchive() { }
+        function openQRScanner() { }
+        function importPlayerQRArchive() { }
+        function importCompareQRArchive() { }
+        function displayImportedPlayerCard() { }
+        function closeCardCodeExportModal() { }
+        function generateQRArchiveCode() { }
+        function generateGistArchiveCode() { }
+        function closeGistArchiveModal() { }
+        function copyGistShareUrl() { }
+        function copyGistShortCode() { }
+        function closeQRArchiveModal() { }
+        function copyCardCodeWithFeedback() { }
+        function showCardCodeStatus() { }
+        function copyShareLinkWithTextSafe() { }
+        function copyShareLinkWithText() { }
+        function updateCardCodeDisplayWithRegion() { }
+
         // ==================== 对比系统功能 ====================
 
         // 获取当前玩家所在的场次ID
@@ -8800,14 +8829,8 @@
 
             // 取前8名玩家显示
             const topPlayers = professionPlayers.slice(0, 8);
-            const currentPlayerName = currentPlayer['玩家名字'];
-            // 生成匿名玩家名称：当前玩家显示真实名，其他显示"玩家1"、"玩家2"...
-            const playerNames = ['【对方平均】', ...topPlayers.map((p, index) => {
-                if (p['玩家名字'] === currentPlayerName) {
-                    return currentPlayerName; // 当前玩家显示真实名字
-                }
-                return `玩家${index + 1}`; // 其他玩家显示匿名编号
-            })];
+            // 生成玩家名称列表（显示真实名字）
+            const playerNames = ['【对方平均】', ...topPlayers.map(p => p['玩家名字'])];
 
             // 计算当前玩家在各指标中的排名
             const playerRanks = {};
@@ -10052,8 +10075,8 @@
 
             const ctx = canvas.getContext('2d');
             const topPlayers = players.slice(0, 8);
-            // X轴标签：对方平均 + 匿名玩家编号（玩家1、玩家2...）
-            const playerNames = ['【对方平均】', ...topPlayers.map((p, index) => `玩家${index + 1}`)];
+            // X轴标签：对方平均 + 真实玩家名字
+            const playerNames = ['【对方平均】', ...topPlayers.map(p => p['玩家名字'])];
 
             const datasets = [
                 // === 柱状图：主要伤害输出 ===
@@ -10252,8 +10275,8 @@
 
             const ctx = canvas.getContext('2d');
             const topPlayers = players.slice(0, 8);
-            // X轴标签：对方平均 + 匿名玩家编号（玩家1、玩家2...）
-            const playerNames = ['【对方平均】', ...topPlayers.map((p, index) => `玩家${index + 1}`)];
+            // X轴标签：对方平均 + 真实玩家名字
+            const playerNames = ['【对方平均】', ...topPlayers.map(p => p['玩家名字'])];
 
             const datasets = [
                 // === 柱状图：主要战斗数据 ===
@@ -10944,13 +10967,9 @@
             // 初始化数据源管理器
             initDataSourceManager();
             
-            // 检测URL参数，处理档案码分享链接
-            handleCardCodeUrlParams();
-            
-            // 检测URL参数，处理 Gist 云端档案码
-            setTimeout(() => {
-                initGistUrlParser();
-            }, 1500); // 延迟确保其他初始化完成
+            // 档案码功能已禁用
+            // handleCardCodeUrlParams();
+            // setTimeout(() => { initGistUrlParser(); }, 1500);
         });
         
         // 处理档案码URL参数
