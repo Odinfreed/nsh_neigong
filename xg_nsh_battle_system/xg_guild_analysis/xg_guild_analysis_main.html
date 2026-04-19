@@ -26,6 +26,8 @@
     
     <!-- 个人分析多场数据对比模块 v4.0.0 -->
     <script src="player_multi_analysis.js"></script>
+    <!-- 玩家档案码系统 -->
+    <script src="xg_player_card_system.js"></script>
     
     <script>
         tailwind.config = {
@@ -976,7 +978,12 @@
                 <h1><i class="fas fa-chess-knight"></i> 帮会对决分析系统</h1>
                 <p class="header-subtitle">逆水寒 - 实时战力对比与战术分析平台</p>
             </div>
-
+            <div class="header-actions">
+                <button onclick="showProfileSetupModal()" class="action-button" title="个人设置">
+                    <i class="fas fa-user-cog"></i>
+                    <span>个人档案</span>
+                </button>
+            </div>
         </header>
         
         <!-- 主内容区域 - 三栏布局 -->
@@ -1388,6 +1395,35 @@
                                             <button onclick="filterPlayerByProfession('鸿音')" class="px-2 py-1 text-xs bg-gradient-to-r from-yellow-600/30 to-orange-600/30 hover:from-yellow-600/50 hover:to-orange-600/50 text-yellow-200 rounded transition-colors">鸿音</button>
                                         </div>
 
+                                        <!-- 档案码导入区域 -->
+                                        <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded p-3 mb-4 border border-purple-500/30">
+                                            <div class="text-xs text-purple-300 mb-2 flex items-center justify-between">
+                                                <span><i class="fas fa-id-card mr-1"></i>档案码导入</span>
+                                                <span class="text-[10px] text-gray-500">24小时有效</span>
+                                            </div>
+                                            <div class="flex gap-2">
+                                                <input type="text" id="cardCodeInput" placeholder="输入8位档案码..."
+                                                       class="flex-1 p-2 bg-dark border border-gray-600 rounded text-xs text-gray-100 uppercase tracking-wider"
+                                                       maxlength="8">
+                                                <button onclick="importPlayerCard()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded text-xs transition-colors">
+                                                    <i class="fas fa-download mr-1"></i>导入
+                                                </button>
+                                            </div>
+                                            <div id="cardCodeStatus" class="mt-2 text-[10px] hidden"></div>
+                                            <div class="mt-2 text-[10px] text-gray-500">
+                                                <i class="fas fa-info-circle mr-1"></i>输入他人分享的档案码，查看完整数据
+                                            </div>
+                                        </div>
+
+                                        <div class="relative mb-4">
+                                            <div class="absolute inset-0 flex items-center">
+                                                <div class="w-full border-t border-gray-700"></div>
+                                            </div>
+                                            <div class="relative flex justify-center">
+                                                <span class="px-2 bg-[#1a1a1a] text-xs text-gray-500">或选择本地玩家</span>
+                                            </div>
+                                        </div>
+
                                         <select id="playerSelect" class="w-full p-3 bg-dark border border-gray-600 rounded-none mb-4 text-gray-100 focus:ring-2 focus:ring-primary cursor-pointer" onchange="onPlayerSelectChange(this.value)">
                                             <option value="">请先加载数据...</option>
                                         </select>
@@ -1518,6 +1554,9 @@
                                                 </button>
                                                 <button onclick="openFullscreenAnalysis()" id="btnFullscreen" class="px-3 py-1 text-xs rounded bg-purple-600/30 text-purple-300 border border-purple-500/50 hover:bg-purple-600/50 transition-colors" title="全屏详细分析">
                                                     <i class="fas fa-expand mr-1"></i>全屏
+                                                </button>
+                                                <button onclick="exportPKCode()" id="btnExportPK" class="px-3 py-1 text-xs rounded bg-yellow-600/30 text-yellow-300 border border-yellow-500/50 hover:bg-yellow-600/50 transition-colors" title="导出PK码分享">
+                                                    <i class="fas fa-key mr-1"></i>档案码
                                                 </button>
                                             </div>
                                         </div>
@@ -2629,6 +2668,30 @@
                             </div>
                         </div>
                         
+                        <!-- 档案码导入 -->
+                        <div class="bg-gray-800/50 rounded p-2 border border-purple-500/30">
+                            <div class="text-xs text-gray-400 mb-1 flex items-center justify-between">
+                                <span><i class="fas fa-id-card mr-1 text-purple-400"></i>档案码导入</span>
+                                <span class="text-[10px] text-gray-500">24小时有效</span>
+                            </div>
+                            <div class="flex gap-1">
+                                <input type="text" id="compareCardCodeInput" placeholder="输入8位档案码..."
+                                       class="flex-1 p-1.5 bg-dark border border-gray-600 rounded text-xs text-gray-100 uppercase tracking-wider"
+                                       maxlength="8">
+                                <button onclick="importCardForCompare()" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded text-xs transition-colors">
+                                    <i class="fas fa-download mr-1"></i>导入
+                                </button>
+                            </div>
+                            <div id="compareCardCodeStatus" class="mt-1 text-[10px] hidden"></div>
+                        </div>
+                        
+                        <!-- 分隔线 -->
+                        <div class="relative flex items-center py-2">
+                            <div class="flex-1 border-t border-gray-700"></div>
+                            <span class="px-2 text-xs text-gray-500">或从历史选择</span>
+                            <div class="flex-1 border-t border-gray-700"></div>
+                        </div>
+                        
                         <!-- 搜索框 -->
                         <div class="relative">
                             <input type="text" id="compareSearchInput" placeholder="搜索玩家名称..." 
@@ -2982,6 +3045,19 @@
                 // 如果切换到职业末位视图，更新职业末位成员列表
                 if (tab === 'lowperform') {
                     updateLowPerformMembers();
+                }
+
+                // 如果切换到个人分析视图，默认折叠面板并尝试自动选择玩家
+                if (tab === 'player') {
+                    // 延迟执行以确保DOM已更新
+                    setTimeout(() => {
+                        // 默认折叠面板
+                        if (!currentPlayer) {
+                            collapsePlayerSelector();
+                            // 尝试根据用户设置自动选择玩家
+                            autoSelectPlayerBySettings();
+                        }
+                    }, 100);
                 }
             }
 
@@ -4595,6 +4671,969 @@
             search: ''
         };
 
+        // ==================== 用户个人设置 ====================
+        const USER_SETTINGS_KEY = 'xg_user_profile_settings';
+        let userProfileSettings = {
+            region: '',      // 区服
+            guildName: '',   // 帮会名称
+            gameId: ''       // 游戏ID
+        };
+        
+        // 玩家选择面板折叠状态
+        let isPlayerSelectorCollapsed = true; // 默认折叠
+
+        // 加载用户设置
+        function loadUserProfileSettings() {
+            try {
+                const saved = localStorage.getItem(USER_SETTINGS_KEY);
+                if (saved) {
+                    userProfileSettings = { ...userProfileSettings, ...JSON.parse(saved) };
+                }
+            } catch (e) {
+                console.error('加载用户设置失败:', e);
+            }
+            return userProfileSettings;
+        }
+
+        // 保存用户设置
+        function saveUserProfileSettings() {
+            try {
+                localStorage.setItem(USER_SETTINGS_KEY, JSON.stringify(userProfileSettings));
+            } catch (e) {
+                console.error('保存用户设置失败:', e);
+            }
+        }
+
+        // 检查是否需要显示首次设置弹窗
+        function shouldShowProfileSetup() {
+            const settings = loadUserProfileSettings();
+            return !settings.region || !settings.guildName || !settings.gameId;
+        }
+
+        // 显示用户设置弹窗
+        function showProfileSetupModal(isFirstTime = false) {
+            const settings = loadUserProfileSettings();
+            
+            const modalHtml = `
+                <div id="profileSetupModal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100]" onclick="if(event.target.id==='profileSetupModal')${isFirstTime ? '' : 'closeProfileSetupModal()'}">
+                    <div class="bg-gray-800 border border-jade/50 rounded-lg p-6 max-w-md w-full mx-4 shadow-2xl">
+                        <h3 class="text-lg font-bold text-jade mb-2 flex items-center">
+                            <i class="fas fa-user-cog mr-2"></i>${isFirstTime ? '欢迎使用帮会对决分析系统' : '个人设置'}
+                        </h3>
+                        ${isFirstTime ? '<p class="text-sm text-gray-400 mb-4">首次使用，请填写以下信息以生成完整的档案码</p>' : ''}
+                        
+                        <div class="space-y-4">
+                            <!-- 区服 -->
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">
+                                    <i class="fas fa-server mr-1"></i>所属区服 <span class="text-red-400">*</span>
+                                </label>
+                                <input type="text" id="setupRegion" placeholder="例如：紫禁之巅" 
+                                       class="w-full p-3 bg-dark border border-gray-600 rounded text-gray-100 focus:ring-2 focus:ring-jade focus:border-transparent"
+                                       value="${settings.region || ''}">
+                            </div>
+                            
+                            <!-- 帮会名称 -->
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">
+                                    <i class="fas fa-users mr-1"></i>帮会名称 <span class="text-red-400">*</span>
+                                </label>
+                                <input type="text" id="setupGuildName" placeholder="请输入您的帮会名称" 
+                                       class="w-full p-3 bg-dark border border-gray-600 rounded text-gray-100 focus:ring-2 focus:ring-jade focus:border-transparent"
+                                       value="${settings.guildName || ''}">
+                            </div>
+                            
+                            <!-- 游戏ID -->
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">
+                                    <i class="fas fa-gamepad mr-1"></i>游戏ID <span class="text-red-400">*</span>
+                                </label>
+                                <input type="text" id="setupGameId" placeholder="请输入您的游戏ID" 
+                                       class="w-full p-3 bg-dark border border-gray-600 rounded text-gray-100 focus:ring-2 focus:ring-jade focus:border-transparent"
+                                       value="${settings.gameId || ''}">
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 flex gap-3">
+                            <button onclick="saveProfileSettings(${isFirstTime})" class="flex-1 py-2 bg-gradient-to-r from-jade to-cyan-600 hover:from-jade/80 hover:to-cyan-500 text-white rounded transition-colors font-medium">
+                                <i class="fas fa-save mr-1"></i>保存设置
+                            </button>
+                            ${!isFirstTime ? `<button onclick="closeProfileSetupModal()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors">取消</button>` : ''}
+                        </div>
+                        
+                        ${isFirstTime ? '<p class="text-xs text-gray-500 mt-4 text-center"><i class="fas fa-info-circle mr-1"></i>这些信息将用于生成完整的档案码，可随时修改</p>' : ''}
+                    </div>
+                </div>
+            `;
+            
+            // 如果弹窗已存在，先移除
+            const existingModal = document.getElementById('profileSetupModal');
+            if (existingModal) existingModal.remove();
+            
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        // 关闭设置弹窗
+        function closeProfileSetupModal() {
+            const modal = document.getElementById('profileSetupModal');
+            if (modal) modal.remove();
+        }
+
+        // 保存设置
+        function saveProfileSettings(isFirstTime) {
+            const region = document.getElementById('setupRegion').value.trim();
+            const guildName = document.getElementById('setupGuildName').value.trim();
+            const gameId = document.getElementById('setupGameId').value.trim();
+            
+            if (!region || !guildName || !gameId) {
+                alert('请填写所有必填项');
+                return;
+            }
+            
+            userProfileSettings = { region, guildName, gameId };
+            saveUserProfileSettings();
+            
+            closeProfileSetupModal();
+            
+            if (isFirstTime) {
+                // 首次设置后，自动切换到个人分析视图并尝试选择对应玩家
+                setTimeout(() => {
+                    autoSelectPlayerBySettings();
+                }, 500);
+            }
+            
+            // 更新档案码显示（如果正在显示）
+            updateCardCodeDisplayWithRegion();
+        }
+
+        // 根据设置自动选择玩家
+        function autoSelectPlayerBySettings() {
+            if (!userProfileSettings.gameId) return;
+            
+            // 查找匹配的玩家
+            const matchedPlayer = allPlayers.find(p => 
+                p['玩家名字'] === userProfileSettings.gameId
+            );
+            
+            if (matchedPlayer) {
+                // 找到匹配玩家，自动选择
+                const playerSelect = document.getElementById('playerSelect');
+                if (playerSelect) {
+                    playerSelect.value = matchedPlayer['玩家名字'];
+                    onPlayerSelectChange(matchedPlayer['玩家名字']);
+                }
+            } else {
+                // 没有找到匹配玩家，帮会筛选优先显示用户设置的帮会
+                const guildFilter = document.getElementById('filterGuild1');
+                const guildFilter2 = document.getElementById('filterGuild2');
+                
+                // 检查帮会1或帮会2是否匹配
+                if (guildFilter && guildFilter.textContent === userProfileSettings.guildName) {
+                    filterPlayerByGuild('guild1');
+                } else if (guildFilter2 && guildFilter2.textContent === userProfileSettings.guildName) {
+                    filterPlayerByGuild('guild2');
+                }
+            }
+        }
+
+        // 更新档案码显示（添加区服信息）
+        function updateCardCodeDisplayWithRegion() {
+            const cardCodeDisplay = document.getElementById('cardCodeDisplay');
+            if (cardCodeDisplay && userProfileSettings.region) {
+                // 如果弹窗正在显示，更新显示
+                const regionInfo = document.getElementById('cardCodeRegionInfo');
+                if (regionInfo) {
+                    regionInfo.textContent = userProfileSettings.region;
+                }
+            }
+        }
+
+        // ==================== 档案码系统功能 ====================
+
+        // 存储导入的玩家档案数据
+        let importedPlayerCard = null;
+
+        // 导出档案码 - 显示选项界面
+        function exportPKCode() {
+            if (!currentPlayer) {
+                alert('请先选择一名玩家');
+                return;
+            }
+
+            // 获取当前玩家的多场数据
+            let multiBattleData = [];
+            if (typeof getPlayerMultiBattleData === 'function') {
+                multiBattleData = getPlayerMultiBattleData(currentPlayer['玩家名字']);
+            }
+            const hasMultiData = multiBattleData && multiBattleData.length > 1;
+
+            // 显示导出选项界面
+            const modalHtml = `
+                <div id="cardCodeExportModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onclick="if(event.target.id==='cardCodeExportModal')closeCardCodeExportModal()">
+                    <div class="bg-gray-800 border border-purple-500/50 rounded-lg p-6 max-w-md w-full mx-4 shadow-2xl">
+                        <h3 class="text-lg font-bold text-purple-400 mb-4 flex items-center">
+                            <i class="fas fa-id-card mr-2"></i>导出档案码
+                        </h3>
+                        
+                        <!-- 玩家信息预览 -->
+                        <div class="bg-gray-900 rounded p-3 mb-4">
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-400 text-sm">玩家</span>
+                                <span class="text-white font-medium">${currentPlayer['玩家名字']}</span>
+                            </div>
+                            <div class="flex items-center justify-between mt-1">
+                                <span class="text-gray-400 text-sm">职业</span>
+                                <span class="text-jade">${currentPlayer['职业']}</span>
+                            </div>
+                            ${hasMultiData ? `<div class="flex items-center justify-between mt-1">
+                                <span class="text-gray-400 text-sm">历史数据</span>
+                                <span class="text-blue-400">${multiBattleData.length} 场</span>
+                            </div>` : ''}
+                        </div>
+
+                        <!-- 导出选项 -->
+                        <div class="space-y-4 mb-4">
+                            <!-- 实名/匿名 -->
+                            <div>
+                                <label class="text-xs text-gray-500 mb-2 block">身份显示</label>
+                                <div class="flex gap-2">
+                                    <button id="btnRealName" onclick="toggleNameMode('real')" class="flex-1 py-2 px-3 bg-purple-600 text-white rounded text-sm border border-purple-500 transition-colors">
+                                        <i class="fas fa-user mr-1"></i>实名
+                                    </button>
+                                    <button id="btnAnonymous" onclick="toggleNameMode('anonymous')" class="flex-1 py-2 px-3 bg-gray-700 text-gray-300 rounded text-sm border border-gray-600 transition-colors">
+                                        <i class="fas fa-user-secret mr-1"></i>匿名
+                                    </button>
+                                </div>
+                                <div id="nameModeDesc" class="text-xs text-gray-500 mt-1">显示真实游戏ID和帮会</div>
+                            </div>
+
+                            <!-- 数据模式 -->
+                            <div>
+                                <label class="text-xs text-gray-500 mb-2 block">数据范围</label>
+                                <div class="flex gap-2">
+                                    <button id="btnFullData" onclick="toggleDataMode('full')" class="flex-1 py-2 px-3 bg-blue-600 text-white rounded text-sm border border-blue-500 transition-colors">
+                                        <i class="fas fa-database mr-1"></i>完整数据
+                                    </button>
+                                    <button id="btnPKMode" onclick="toggleDataMode('pk')" class="flex-1 py-2 px-3 bg-gray-700 text-gray-300 rounded text-sm border border-gray-600 transition-colors">
+                                        <i class="fas fa-bolt mr-1"></i>仅PK
+                                    </button>
+                                </div>
+                                <div id="dataModeDesc" class="text-xs text-gray-500 mt-1">包含所有参数、多场对比、职业排名</div>
+                            </div>
+                        </div>
+
+                        <!-- 说明 -->
+                        <div class="text-xs text-gray-500 mb-4 space-y-1 bg-gray-900/50 rounded p-2">
+                            <p><i class="fas fa-info-circle mr-1 text-purple-400"></i>档案码有效期24小时</p>
+                            <p><i class="fas fa-shield-alt mr-1 text-green-400"></i>匿名模式下ID显示为"匿名玩家"</p>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <button onclick="generateCardCode()" class="flex-1 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded text-sm transition-colors font-medium">
+                                <i class="fas fa-key mr-1"></i>生成档案码
+                            </button>
+                            <button onclick="closeCardCodeExportModal()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-colors">
+                                取消
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // 存储导出选项状态
+            window.cardExportOptions = {
+                nameMode: 'real', // 'real' | 'anonymous'
+                dataMode: 'full', // 'full' | 'pk'
+                multiBattleData: multiBattleData,
+                hasMultiData: hasMultiData
+            };
+        }
+
+        // 切换实名/匿名模式
+        function toggleNameMode(mode) {
+            window.cardExportOptions.nameMode = mode;
+            const btnReal = document.getElementById('btnRealName');
+            const btnAnon = document.getElementById('btnAnonymous');
+            const desc = document.getElementById('nameModeDesc');
+            
+            if (mode === 'real') {
+                btnReal.className = 'flex-1 py-2 px-3 bg-purple-600 text-white rounded text-sm border border-purple-500 transition-colors';
+                btnAnon.className = 'flex-1 py-2 px-3 bg-gray-700 text-gray-300 rounded text-sm border border-gray-600 transition-colors';
+                desc.textContent = '显示真实游戏ID和帮会';
+            } else {
+                btnReal.className = 'flex-1 py-2 px-3 bg-gray-700 text-gray-300 rounded text-sm border border-gray-600 transition-colors';
+                btnAnon.className = 'flex-1 py-2 px-3 bg-purple-600 text-white rounded text-sm border border-purple-500 transition-colors';
+                desc.textContent = 'ID显示为"匿名玩家"，帮会隐藏';
+            }
+        }
+
+        // 切换数据模式
+        function toggleDataMode(mode) {
+            window.cardExportOptions.dataMode = mode;
+            const btnFull = document.getElementById('btnFullData');
+            const btnPK = document.getElementById('btnPKMode');
+            const desc = document.getElementById('dataModeDesc');
+            
+            if (mode === 'full') {
+                btnFull.className = 'flex-1 py-2 px-3 bg-blue-600 text-white rounded text-sm border border-blue-500 transition-colors';
+                btnPK.className = 'flex-1 py-2 px-3 bg-gray-700 text-gray-300 rounded text-sm border border-gray-600 transition-colors';
+                desc.textContent = window.cardExportOptions.hasMultiData 
+                    ? `包含所有参数、${window.cardExportOptions.multiBattleData.length}场对比、职业排名` 
+                    : '包含所有参数、职业排名';
+            } else {
+                btnFull.className = 'flex-1 py-2 px-3 bg-gray-700 text-gray-300 rounded text-sm border border-gray-600 transition-colors';
+                btnPK.className = 'flex-1 py-2 px-3 bg-blue-600 text-white rounded text-sm border border-blue-500 transition-colors';
+                desc.textContent = '仅包含PK所需核心数据（对塔/对人/击败/助攻）';
+            }
+        }
+
+        // 关闭导出选项弹窗
+        function closeCardCodeExportModal() {
+            const modal = document.getElementById('cardCodeExportModal');
+            if (modal) modal.remove();
+            window.cardExportOptions = null;
+        }
+
+        // 生成档案码
+        function generateCardCode() {
+            const options = window.cardExportOptions;
+            if (!options) return;
+
+            const isAnonymous = options.nameMode === 'anonymous';
+            const isPKMode = options.dataMode === 'pk';
+            const multiBattleData = options.multiBattleData;
+            const hasMultiData = options.hasMultiData && !isPKMode; // PK模式不包含多场数据
+
+            // 准备玩家数据
+            let exportData;
+            let exportOptions = {
+                isMultiBattle: false,
+                battleCount: 1,
+                includeHistory: false,
+                isAnonymous: isAnonymous,
+                isPKMode: isPKMode
+            };
+
+            // 基础数据（根据模式决定包含哪些字段）
+            const baseFields = isPKMode 
+                ? ['玩家名字', '职业', '对建筑伤害', '对玩家伤害', '击败', '助攻', '治疗值', '承受伤害']
+                : null; // null表示包含所有字段
+
+            // 加载用户设置以包含区服信息
+            const settings = loadUserProfileSettings();
+            
+            if (hasMultiData && multiBattleData.length > 1) {
+                // 多场数据导出
+                exportData = {
+                    playerName: isAnonymous ? '匿名玩家' : currentPlayer['玩家名字'],
+                    profession: currentPlayer['职业'],
+                    region: isAnonymous ? '***' : (settings.region || ''),  // 添加区服
+                    userGuild: isAnonymous ? '***' : (settings.guildName || ''),  // 添加帮会
+                    battles: multiBattleData.map(battle => {
+                        const battleData = {
+                            '玩家名字': isAnonymous ? '匿名玩家' : (battle['玩家名字'] || currentPlayer['玩家名字']),
+                            '职业': battle['职业'] || currentPlayer['职业'],
+                            '对建筑伤害': battle['对建筑伤害'],
+                            '对玩家伤害': battle['对玩家伤害'],
+                            '击败': battle['击败'],
+                            '破泉': battle['破泉'],
+                            '助攻': battle['助攻'],
+                            '治疗值': battle['治疗值'],
+                            '承受伤害': battle['承受伤害'],
+                            'battleTime': battle.battleTime || battle.timestamp
+                        };
+                        
+                        // 完整数据模式下包含更多字段
+                        if (!isPKMode) {
+                            battleData['化羽'] = battle['化羽'];
+                            battleData['清泉'] = battle['清泉'];
+                            battleData['人伤卸甲'] = battle['人伤卸甲'];
+                            battleData['破塔卸甲'] = battle['破塔卸甲'];
+                            battleData['资源'] = battle['资源'];
+                            battleData['焚骨'] = battle['焚骨'];
+                            battleData['重伤'] = battle['重伤'];
+                            battleData['死亡'] = battle['死亡'];
+                            battleData['帮会'] = battle['guildName'] || battle['帮会'];
+                        }
+                        
+                        return battleData;
+                    }),
+                    // 保留当前场次完整数据
+                    ...currentPlayer
+                };
+                
+                // 匿名处理当前数据
+                if (isAnonymous) {
+                    exportData['玩家名字'] = '匿名玩家';
+                    exportData['帮会'] = '***';
+                }
+                
+                exportOptions.isMultiBattle = true;
+                exportOptions.battleCount = multiBattleData.length;
+                exportOptions.includeHistory = true;
+            } else {
+                // 单场数据导出
+                exportData = {
+                    playerName: isAnonymous ? '匿名玩家' : currentPlayer['玩家名字'],
+                    profession: currentPlayer['职业'],
+                    region: isAnonymous ? '***' : (settings.region || ''),  // 添加区服
+                    userGuild: isAnonymous ? '***' : (settings.guildName || ''),  // 添加帮会
+                    ...currentPlayer
+                };
+                
+                // 匿名处理
+                if (isAnonymous) {
+                    exportData['玩家名字'] = '匿名玩家';
+                    exportData['帮会'] = '***';
+                }
+                
+                // PK模式只保留核心字段
+                if (isPKMode) {
+                    const pkData = {
+                        '玩家名字': exportData['玩家名字'],
+                        '职业': exportData['职业'],
+                        '对建筑伤害': exportData['对建筑伤害'],
+                        '对玩家伤害': exportData['对玩家伤害'],
+                        '击败': exportData['击败'],
+                        '助攻': exportData['助攻'],
+                        '治疗值': exportData['治疗值'],
+                        '承受伤害': exportData['承受伤害']
+                    };
+                    exportData = { ...exportData, ...pkData, playerName: pkData['玩家名字'], profession: pkData['职业'] };
+                }
+            }
+
+            // 调用档案码系统导出
+            const result = PlayerCardSystem.exportCard(exportData, exportOptions);
+
+            if (result.success) {
+                closeCardCodeExportModal();
+                showCardCodeResult(result, isAnonymous, isPKMode);
+            } else {
+                alert('导出失败: ' + result.error);
+            }
+        }
+
+        // 显示档案码结果
+        function showCardCodeResult(result, isAnonymous, isPKMode) {
+            // 加载用户设置
+            const settings = loadUserProfileSettings();
+            
+            // 构建数据详情文本
+            let dataDetail;
+            if (isPKMode) {
+                dataDetail = `<span class="text-yellow-400"><i class="fas fa-bolt mr-1"></i>PK模式</span>`;
+            } else if (result.isMultiBattle) {
+                dataDetail = `<span class="text-blue-400"><i class="fas fa-layer-group mr-1"></i>完整数据 · ${result.battleCount} 场</span>`;
+            } else {
+                dataDetail = `<span class="text-green-400"><i class="fas fa-file-alt mr-1"></i>完整数据 · 单场</span>`;
+            }
+            
+            const nameType = isAnonymous ? '<span class="text-purple-400">匿名</span>' : '<span class="text-green-400">实名</span>';
+            
+            // 构建档案码附加信息（实名模式下显示）
+            let profileInfoHtml = '';
+            if (!isAnonymous && settings.gameId) {
+                profileInfoHtml = `
+                    <div class="mt-3 p-3 bg-gray-900/50 rounded border border-jade/30">
+                        <div class="text-xs text-gray-500 mb-2"><i class="fas fa-id-card mr-1"></i>档案信息</div>
+                        <div class="grid grid-cols-3 gap-2 text-xs">
+                            <div>
+                                <span class="text-gray-500">区服:</span>
+                                <span class="text-jade ml-1" id="cardCodeRegionInfo">${settings.region || '未设置'}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500">帮会:</span>
+                                <span class="text-cyan-400 ml-1">${settings.guildName || '未设置'}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500">ID:</span>
+                                <span class="text-yellow-400 ml-1">${settings.gameId}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (!isAnonymous) {
+                profileInfoHtml = `
+                    <div class="mt-3 p-3 bg-gray-900/50 rounded border border-yellow-500/30">
+                        <div class="text-xs text-yellow-400">
+                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                            尚未设置个人档案信息，<a href="#" onclick="showProfileSetupModal(); return false;" class="underline hover:text-yellow-300">点击设置</a>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // 生成分享链接
+            const shareUrl = `https://odinfreed.github.io/nsh_tools/xg_nsh_battle_system/xg_guild_analysis/xg_guild_analysis_main.html?card=${result.code}&mode=compare`;
+            const shareText = `我生成了我的帮战数据档案码，快来和我PK吧？和我一较高下✌️(≧▽≦)✌️\n${shareUrl}`;
+            
+            // 显示档案码
+            const modalHtml = `
+                <div id="cardCodeModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onclick="if(event.target.id==='cardCodeModal')closeCardCodeModal()">
+                    <div class="bg-gray-800 border border-purple-500/50 rounded-lg p-6 max-w-md w-full mx-4 shadow-2xl">
+                        <h3 class="text-lg font-bold text-purple-400 mb-4 flex items-center">
+                            <i class="fas fa-id-card mr-2"></i>档案码导出成功
+                        </h3>
+                        <div class="bg-gray-900 rounded p-4 mb-4">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-xs text-gray-500">档案码（点击复制）</span>
+                                <span class="text-xs">${nameType}</span>
+                            </div>
+                            <div id="cardCodeDisplay" class="text-2xl font-mono font-bold text-yellow-400 tracking-wider cursor-pointer hover:text-yellow-300 transition-colors"
+                                 onclick="copyCardCodeWithFeedback('${result.code}')" title="点击复制">
+                                ${result.code}
+                            </div>
+                            <div id="copyFeedback" class="text-xs text-green-400 mt-1 hidden">
+                                <i class="fas fa-check mr-1"></i>已复制到剪贴板
+                            </div>
+                        </div>
+                        
+                        <!-- 档案信息（实名模式下显示） -->
+                        ${profileInfoHtml}
+                        
+                        <!-- 分享链接区域 -->
+                        <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded p-3 mb-4 border border-purple-500/30">
+                            <div class="text-xs text-purple-300 mb-2 flex items-center">
+                                <i class="fas fa-share-alt mr-1"></i>分享链接（点击自动填充并对比）
+                            </div>
+                            <div class="bg-gray-900 rounded p-2 mb-2">
+                                <input type="text" id="shareUrlInput" value="${shareUrl}" readonly 
+                                       class="w-full bg-transparent text-xs text-gray-300 outline-none"
+                                       onclick="this.select()">
+                            </div>
+                            <button onclick="copyShareLinkWithText('${shareUrl}', '${shareText.replace(/'/g, "\\'")}')" class="w-full py-1.5 bg-blue-600/80 hover:bg-blue-500 text-white rounded text-xs transition-colors">
+                                <i class="fas fa-link mr-1"></i>复制分享链接
+                            </button>
+                            <div id="shareCopyFeedback" class="text-xs text-green-400 mt-1 hidden text-center">
+                                <i class="fas fa-check mr-1"></i>已复制到剪贴板
+                            </div>
+                        </div>
+
+                        <div class="text-xs text-gray-400 mb-4 space-y-1">
+                            <p><i class="fas fa-info-circle mr-1"></i>有效期：${PlayerCardSystem.formatExpiryTime(result.expiresAt)}</p>
+                            <p>${dataDetail}</p>
+                            <p class="text-gray-500 mt-2">• 个人分析面板：查看完整数据、多场对比</p>
+                            <p class="text-gray-500">• 对比系统：进行PK对比</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="closeCardCodeModal()" class="flex-1 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-colors">
+                                关闭
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        // 复制分享链接（附带话术）
+        function copyShareLinkWithText(url, text) {
+            // 尝试使用现代 Clipboard API
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showShareCopyFeedback();
+                }).catch((err) => {
+                    console.log('Clipboard API 失败，使用回退方案:', err);
+                    fallbackCopyTextToClipboard(text);
+                });
+            } else {
+                // 使用回退方案
+                fallbackCopyTextToClipboard(text);
+            }
+        }
+
+        // 回退复制方案
+        function fallbackCopyTextToClipboard(text) {
+            try {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0;';
+                document.body.appendChild(textarea);
+                textarea.focus();
+                textarea.select();
+                
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textarea);
+                
+                if (successful) {
+                    showShareCopyFeedback();
+                } else {
+                    // 如果 execCommand 也失败，显示提示让用户手动复制
+                    showManualCopyTip(text);
+                }
+            } catch (err) {
+                console.error('复制失败:', err);
+                showManualCopyTip(text);
+            }
+        }
+
+        // 显示手动复制提示
+        function showManualCopyTip(text) {
+            const modalHtml = `
+                <div id="manualCopyModal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100]" onclick="if(event.target.id==='manualCopyModal')closeManualCopyModal()">
+                    <div class="bg-gray-800 border border-yellow-500/50 rounded-lg p-6 max-w-md w-full mx-4 shadow-2xl">
+                        <h3 class="text-lg font-bold text-yellow-400 mb-4 flex items-center">
+                            <i class="fas fa-copy mr-2"></i>请手动复制
+                        </h3>
+                        <p class="text-sm text-gray-400 mb-4">浏览器安全限制，请手动复制以下内容：</p>
+                        <div class="bg-gray-900 rounded p-3 mb-4">
+                            <textarea id="manualCopyText" readonly class="w-full h-24 bg-transparent text-xs text-gray-300 outline-none resize-none">${text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+                        </div>
+                        <button onclick="selectAndCloseManualCopy()" class="w-full py-2 bg-yellow-600 hover:bg-yellow-500 text-white rounded text-sm transition-colors">
+                            <i class="fas fa-check mr-1"></i>已选中，我要手动复制
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // 如果弹窗已存在，先移除
+            const existingModal = document.getElementById('manualCopyModal');
+            if (existingModal) existingModal.remove();
+            
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // 自动选中文本
+            setTimeout(() => {
+                const textarea = document.getElementById('manualCopyText');
+                if (textarea) {
+                    textarea.select();
+                }
+            }, 100);
+        }
+
+        // 关闭手动复制弹窗
+        function closeManualCopyModal() {
+            const modal = document.getElementById('manualCopyModal');
+            if (modal) modal.remove();
+        }
+
+        // 选中文本并关闭弹窗
+        function selectAndCloseManualCopy() {
+            const textarea = document.getElementById('manualCopyText');
+            if (textarea) {
+                textarea.select();
+            }
+            closeManualCopyModal();
+        }
+
+        // 显示分享复制反馈
+        function showShareCopyFeedback() {
+            const feedback = document.getElementById('shareCopyFeedback');
+            if (feedback) {
+                feedback.classList.remove('hidden');
+                setTimeout(() => {
+                    feedback.classList.add('hidden');
+                }, 2000);
+            }
+        }
+
+        // 复制档案码并显示反馈
+        function copyCardCodeWithFeedback(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                // 显示反馈
+                const feedback = document.getElementById('copyFeedback');
+                const display = document.getElementById('cardCodeDisplay');
+                const btn = document.getElementById('btnCopyCode');
+                
+                if (feedback) feedback.classList.remove('hidden');
+                if (display) {
+                    display.classList.remove('text-yellow-400');
+                    display.classList.add('text-green-400');
+                }
+                if (btn) {
+                    btn.innerHTML = '<i class="fas fa-check mr-1"></i>已复制';
+                    btn.classList.remove('bg-purple-600', 'hover:bg-purple-500');
+                    btn.classList.add('bg-green-600', 'hover:bg-green-500');
+                }
+                
+                // 3秒后恢复
+                setTimeout(() => {
+                    if (feedback) feedback.classList.add('hidden');
+                    if (display) {
+                        display.classList.add('text-yellow-400');
+                        display.classList.remove('text-green-400');
+                    }
+                    if (btn) {
+                        btn.innerHTML = '<i class="fas fa-copy mr-1"></i>复制';
+                        btn.classList.add('bg-purple-600', 'hover:bg-purple-500');
+                        btn.classList.remove('bg-green-600', 'hover:bg-green-500');
+                    }
+                }, 3000);
+                
+                showCardCodeStatus('已复制到剪贴板', 'success', 'cardCodeStatus');
+            }).catch(() => {
+                // 降级方案
+                const input = document.createElement('input');
+                input.value = code;
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand('copy');
+                document.body.removeChild(input);
+                
+                // 同样显示反馈
+                const feedback = document.getElementById('copyFeedback');
+                const btn = document.getElementById('btnCopyCode');
+                if (feedback) feedback.classList.remove('hidden');
+                if (btn) {
+                    btn.innerHTML = '<i class="fas fa-check mr-1"></i>已复制';
+                    btn.classList.remove('bg-purple-600');
+                    btn.classList.add('bg-green-600');
+                }
+                setTimeout(() => {
+                    if (feedback) feedback.classList.add('hidden');
+                    if (btn) {
+                        btn.innerHTML = '<i class="fas fa-copy mr-1"></i>复制';
+                        btn.classList.add('bg-purple-600');
+                        btn.classList.remove('bg-green-600');
+                    }
+                }, 3000);
+                
+                showCardCodeStatus('已复制到剪贴板', 'success', 'cardCodeStatus');
+            });
+        }
+
+        // 复制档案码
+        function copyCardCode(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                showCardCodeStatus('已复制到剪贴板', 'success', 'cardCodeStatus');
+            }).catch(() => {
+                const input = document.createElement('input');
+                input.value = code;
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand('copy');
+                document.body.removeChild(input);
+                showCardCodeStatus('已复制到剪贴板', 'success', 'cardCodeStatus');
+            });
+        }
+
+        // 关闭档案码弹窗
+        function closeCardCodeModal() {
+            const modal = document.getElementById('cardCodeModal');
+            if (modal) modal.remove();
+        }
+
+        // 在个人分析面板导入档案码
+        function importPlayerCard() {
+            const input = document.getElementById('cardCodeInput');
+            const code = input ? input.value.trim().toUpperCase() : '';
+
+            if (!code) {
+                showCardCodeStatus('请输入档案码', 'error', 'cardCodeStatus');
+                return;
+            }
+
+            if (code.length !== 8) {
+                showCardCodeStatus('档案码应为8位字符', 'error', 'cardCodeStatus');
+                return;
+            }
+
+            const result = PlayerCardSystem.importCard(code);
+
+            if (result.success) {
+                // 存储导入的档案数据
+                importedPlayerCard = {
+                    ...result.data,
+                    isMultiBattle: result.isMultiBattle,
+                    battleCount: result.battleCount,
+                    includeHistory: result.includeHistory,
+                    isAnonymous: result.isAnonymous,
+                    isPKMode: result.isPKMode,
+                    _importedFrom: code,
+                    _importedAt: Date.now()
+                };
+
+                // 清空输入框
+                if (input) input.value = '';
+
+                // 构建导入信息
+                const nameType = result.isAnonymous ? '匿名' : '实名';
+                let dataType;
+                if (result.isPKMode) {
+                    dataType = 'PK模式';
+                } else if (result.isMultiBattle) {
+                    dataType = `${result.battleCount}场完整`;
+                } else {
+                    dataType = '单场完整';
+                }
+                
+                showCardCodeStatus(`成功导入: ${result.playerName} [${nameType}|${dataType}]`, 'success', 'cardCodeStatus');
+
+                // 显示导入的玩家数据
+                displayImportedPlayerCard();
+            } else {
+                showCardCodeStatus(result.error, 'error', 'cardCodeStatus');
+            }
+        }
+
+        // 在对比系统导入档案码
+        function importCardForCompare() {
+            const input = document.getElementById('compareCardCodeInput');
+            const code = input ? input.value.trim().toUpperCase() : '';
+
+            if (!code) {
+                showCardCodeStatus('请输入档案码', 'error', 'compareCardCodeStatus');
+                return;
+            }
+
+            if (code.length !== 8) {
+                showCardCodeStatus('档案码应为8位字符', 'error', 'compareCardCodeStatus');
+                return;
+            }
+
+            const result = PlayerCardSystem.importCard(code);
+
+            if (result.success) {
+                // 设置为对比玩家
+                comparePlayer = result.data;
+                compareBattleId = 'card_' + code;
+
+                // 显示已选玩家信息
+                const selectedDiv = document.getElementById('selectedComparePlayer');
+                const nameEl = document.getElementById('selectedCompareName');
+                const infoEl = document.getElementById('selectedCompareInfo');
+                const basicDataEl = document.getElementById('selectedCompareBasicData');
+
+                if (selectedDiv) selectedDiv.classList.remove('hidden');
+                
+                // 根据是否匿名显示不同格式
+                if (result.isAnonymous) {
+                    // 匿名玩家显示格式
+                    if (nameEl) nameEl.innerHTML = `未知玩家 <span class="text-xs text-gray-400">档案码导入</span>`;
+                    if (infoEl) infoEl.innerHTML = `<span class="text-gray-500">未知信息</span>`;
+                } else {
+                    // 实名玩家显示格式
+                    const region = result.data.region || result.data.re || '未知区服';
+                    const userGuild = result.data.userGuild || result.data.ug || result.data['帮会'] || '未知帮会';
+                    if (nameEl) nameEl.innerHTML = `${result.playerName || '未知玩家'} <span class="text-xs text-gray-400">档案码导入</span>`;
+                    if (infoEl) infoEl.innerHTML = `<span class="text-jade">${region}</span> <span class="text-cyan-400">${userGuild}</span> <span class="text-yellow-400">${result.profession || '未知职业'}</span>`;
+                }
+
+                // 填充基础数据（4个核心数据）
+                if (basicDataEl) {
+                    const data = result.data;
+                    const basicData = [
+                        { label: '对塔', value: data['对建筑伤害'] || data['bd'] || 0, color: 'text-purple-400' },
+                        { label: '对人', value: data['对玩家伤害'] || data['pd'] || 0, color: 'text-red-400' },
+                        { label: '击败', value: data['击败'] || data['k'] || 0, color: 'text-yellow-400' },
+                        { label: '治疗', value: data['治疗值'] || data['h'] || 0, color: 'text-green-400' }
+                    ];
+                    basicDataEl.innerHTML = basicData.map(d => `
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-500">${d.label}:</span>
+                            <span class="${d.color} font-medium">${formatNumber(d.value)}</span>
+                        </div>
+                    `).join('');
+                }
+
+                // 清空输入框
+                if (input) input.value = '';
+
+                showCardCodeStatus(`成功导入: ${result.playerName}`, 'success', 'compareCardCodeStatus');
+
+                // 更新图表
+                updatePlayerCharts();
+                updateCompareBarChart();
+            } else {
+                showCardCodeStatus(result.error, 'error', 'compareCardCodeStatus');
+            }
+        }
+
+        // 显示导入的玩家档案
+        function displayImportedPlayerCard() {
+            if (!importedPlayerCard) return;
+
+            // 设置当前玩家为导入的档案
+            currentPlayer = importedPlayerCard;
+
+            // 如果有多场数据，设置到 PlayerMultiAnalysis 模块
+            if (importedPlayerCard.isMultiBattle && importedPlayerCard.battles && 
+                typeof PlayerMultiAnalysis !== 'undefined') {
+                // 构建模拟的多场缓存数据格式
+                const mockMultiCache = importedPlayerCard.battles.map((battle, index) => ({
+                    id: 'imported_' + index,
+                    timestamp: battle.battleTime || Date.now() - (importedPlayerCard.battles.length - index) * 86400000,
+                    dateTime: battle.battleTime || new Date().toISOString(),
+                    guild1Name: battle.guildName || '导入数据',
+                    guild2Name: '对手',
+                    guilds: {
+                        [battle.guildName || '导入数据']: [{
+                            '玩家名字': battle['玩家名字'] || importedPlayerCard['玩家名字'],
+                            '职业': battle['职业'] || importedPlayerCard['职业'],
+                            '对建筑伤害': battle['对建筑伤害'],
+                            '对玩家伤害': battle['对玩家伤害'],
+                            '击败': battle['击败'],
+                            '破泉': battle['破泉'],
+                            '化羽': battle['化羽'],
+                            '清泉': battle['清泉'],
+                            '治疗值': battle['治疗值'],
+                            '助攻': battle['助攻'],
+                            '承受伤害': battle['承受伤害'],
+                            '人伤卸甲': battle['人伤卸甲'],
+                            '破塔卸甲': battle['破塔卸甲'],
+                            '资源': battle['资源'],
+                            '焚骨': battle['焚骨'],
+                            '重伤': battle['重伤'],
+                            '死亡': battle['死亡']
+                        }]
+                    }
+                }));
+                
+                // 临时覆盖 multiBattleCache
+                window._originalMultiCache = window.multiBattleCache;
+                window.multiBattleCache = mockMultiCache;
+                
+                // 存储到 localStorage 供 PlayerMultiAnalysis 使用
+                localStorage.setItem('importedCardMultiCache', JSON.stringify(mockMultiCache));
+                
+                console.log('档案码导入：已加载 ' + importedPlayerCard.battles.length + ' 场历史数据');
+            }
+
+            // 更新UI显示
+            updatePlayerInfo();
+            updatePlayerCharts();
+            updatePlayerAnalysis();
+
+            // 显示导入标记
+            const playerNameEl = document.getElementById('playerName');
+            if (playerNameEl) {
+                const battleCount = importedPlayerCard.isMultiBattle ? 
+                    ` <span class="text-xs text-blue-400">(${importedPlayerCard.battleCount || importedPlayerCard.battles?.length || 1}场数据)</span>` : '';
+                playerNameEl.innerHTML = `${importedPlayerCard['玩家名字']} <span class="text-xs text-purple-400">(档案码导入)</span>${battleCount}`;
+            }
+
+            // 隐藏选择器，显示信息面板
+            document.getElementById('playerInfo').style.display = 'block';
+            document.getElementById('analysisSection').style.display = 'block';
+
+            // 自动折叠选择器
+            collapsePlayerSelector();
+        }
+
+        // 显示档案码状态信息
+        function showCardCodeStatus(message, type, elementId) {
+            const statusEl = document.getElementById(elementId);
+            if (!statusEl) return;
+
+            statusEl.textContent = message;
+            statusEl.className = 'mt-1 text-[10px] ' + (type === 'success' ? 'text-green-400' : 'text-red-400');
+            statusEl.classList.remove('hidden');
+
+            setTimeout(() => {
+                statusEl.classList.add('hidden');
+            }, 3000);
+        }
+
+        // 向后兼容：保留旧函数名
+        function importPKCode() { importCardForCompare(); }
+        function copyPKCode(code) { copyCardCode(code); }
+        function closePKCodeModal() { closeCardCodeModal(); }
+        function showPKCodeStatus(message, type) {
+            showCardCodeStatus(message, type, 'compareCardCodeStatus');
+        }
+
         // ==================== 对比系统功能 ====================
 
         // 获取当前玩家所在的场次ID
@@ -4970,13 +6009,16 @@
             const container = document.getElementById('professionRankings');
             if (!container) return;
             
-            if (!currentPlayer) {
-                container.innerHTML = '<p class="text-gray-400 text-center py-4">请选择玩家查看数据</p>';
+            // 检查是否是档案码对比模式（无currentPlayer但有comparePlayer）
+            const isCardCompareMode = !currentPlayer && comparePlayer;
+            
+            if (!currentPlayer && !comparePlayer) {
+                container.innerHTML = '<p class="text-gray-400 text-center py-4">请选择玩家或导入档案码查看数据</p>';
                 return;
             }
             
-            // 如果没有选择对比玩家，显示提示
-            if (!comparePlayer) {
+            // 如果没有选择对比玩家且不是档案码对比模式，显示提示
+            if (!comparePlayer && currentPlayer) {
                 container.innerHTML = '<p class="text-gray-400 text-center py-4">请在右侧面板选择一名对比玩家</p>';
                 return;
             }
@@ -5001,18 +6043,23 @@
             // 计算最大值用于比例
             const maxValues = {};
             selectedDims.forEach(dim => {
-                const v1 = parseFloat(currentPlayer[dim.key]) || 0;
+                const v1 = currentPlayer ? (parseFloat(currentPlayer[dim.key]) || 0) : 0;
                 const v2 = parseFloat(comparePlayer[dim.key]) || 0;
                 maxValues[dim.key] = Math.max(v1, v2, 1);
             });
             
+            // 档案码对比模式标题不同
+            const titleText = isCardCompareMode ? '档案码数据' : '数据对比';
+            const currentPlayerName = currentPlayer ? currentPlayer['玩家名字'] : null;
+            const comparePlayerName = comparePlayer['玩家名字'];
+            
             let html = `
                 <div class="space-y-3">
                     <div class="flex items-center justify-between mb-3">
-                        <h4 class="text-sm font-bold text-gray-200">数据对比</h4>
+                        <h4 class="text-sm font-bold text-gray-200">${titleText}</h4>
                         <div class="flex items-center gap-3 text-xs">
-                            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded" style="background:#3B82F6"></span>${currentPlayer['玩家名字']}</span>
-                            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded" style="background:#EF4444"></span>${comparePlayer['玩家名字']}</span>
+                            ${currentPlayerName ? `<span class="flex items-center gap-1"><span class="w-3 h-3 rounded" style="background:#3B82F6"></span>${currentPlayerName}</span>` : ''}
+                            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded" style="background:#EF4444"></span>${comparePlayerName}</span>
                         </div>
                     </div>
                     
@@ -5031,10 +6078,10 @@
             `;
             
             selectedDims.forEach(dim => {
-                const v1 = parseFloat(currentPlayer[dim.key]) || 0;
+                const v1 = currentPlayer ? (parseFloat(currentPlayer[dim.key]) || 0) : 0;
                 const v2 = parseFloat(comparePlayer[dim.key]) || 0;
                 const max = maxValues[dim.key];
-                const p1 = (v1 / max * 100).toFixed(1);
+                const p1 = currentPlayer ? (v1 / max * 100).toFixed(1) : 0;
                 const p2 = (v2 / max * 100).toFixed(1);
                 
                 const formattedV1 = v1 >= 10000 ? (v1/10000).toFixed(1) + '万' : v1.toLocaleString();
@@ -5046,15 +6093,17 @@
                             <span class="text-xs text-gray-400"><i class="fas ${dim.icon} mr-1"></i>${dim.label}</span>
                         </div>
                         <div class="space-y-1">
+                            ${currentPlayer ? `
                             <div class="flex items-center gap-2">
-                                <span class="text-xs text-blue-400 w-16 truncate">${currentPlayer['玩家名字']}</span>
+                                <span class="text-xs text-blue-400 w-16 truncate">${currentPlayerName}</span>
                                 <div class="flex-1 bg-gray-700 rounded-full h-2 overflow-hidden">
                                     <div class="h-full rounded-full transition-all" style="width: ${p1}%; background: #3B82F6;"></div>
                                 </div>
                                 <span class="text-xs text-gray-300 w-16 text-right">${formattedV1}</span>
                             </div>
+                            ` : ''}
                             <div class="flex items-center gap-2">
-                                <span class="text-xs text-red-400 w-16 truncate">${comparePlayer['玩家名字']}</span>
+                                <span class="text-xs text-red-400 w-16 truncate">${comparePlayerName}</span>
                                 <div class="flex-1 bg-gray-700 rounded-full h-2 overflow-hidden">
                                     <div class="h-full rounded-full transition-all" style="width: ${p2}%; background: #EF4444;"></div>
                                 </div>
@@ -5246,9 +6295,6 @@
             applyPlayerFilters();
         }
         
-        // 玩家选择面板折叠状态
-        let isPlayerSelectorCollapsed = false;
-
         // 折叠玩家选择面板
         function collapsePlayerSelector() {
             isPlayerSelectorCollapsed = true;
@@ -5609,14 +6655,17 @@
 
         // 更新玩家图表
         function updatePlayerCharts() {
-            // 检查currentPlayer是否存在
-            if (!currentPlayer) {
-                console.log('updatePlayerCharts: currentPlayer为空，跳过更新');
+            // 检查是否是档案码对比模式（无currentPlayer但有comparePlayer）
+            const isCardCompareMode = !currentPlayer && comparePlayer;
+            
+            // 检查currentPlayer是否存在（档案码对比模式除外）
+            if (!currentPlayer && !isCardCompareMode) {
+                console.log('updatePlayerCharts: currentPlayer为空且不是档案码对比模式，跳过更新');
                 return;
             }
             
-            // 判断是否为对比模式
-            const isInCompareMode = isCompareMode && comparePlayer;
+            // 判断是否为对比模式（包括档案码对比模式）
+            const isInCompareMode = (isCompareMode && comparePlayer) || isCardCompareMode;
             
             // 计算最大值（用于归一化）- 对比模式下使用当前玩家和对比玩家的最大值
             let maxValues;
@@ -5695,42 +6744,65 @@
             // 准备数据集 - 对比模式下只显示当前玩家和对比玩家
             let damageDatasets;
             if (isInCompareMode) {
-                damageDatasets = [
-                    {
-                        label: currentPlayer['玩家名字'],
-                        data: [
-                            normalizeValue(currentPlayer['对建筑伤害'] || 0, maxValues.buildingDmg),
-                            normalizeValue(currentPlayer['对玩家伤害'] || 0, maxValues.playerDmg),
-                            normalizeValue(currentPlayer['人伤卸甲'] || 0, maxValues.playerArmorBreak),
-                            normalizeValue(currentPlayer['破塔卸甲'] || 0, maxValues.buildingArmorBreak),
-                            normalizeValue(currentPlayer['治疗值'] || 0, maxValues.healing),
-                            normalizeValue(currentPlayer['承受伤害'] || 0, maxValues.takenDmg)
-                        ],
-                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                        borderColor: '#3B82F6',
-                        pointBackgroundColor: '#3B82F6',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: '#3B82F6'
-                    },
-                    {
-                        label: comparePlayer['玩家名字'],
-                        data: [
-                            normalizeValue(comparePlayer['对建筑伤害'] || 0, maxValues.buildingDmg),
-                            normalizeValue(comparePlayer['对玩家伤害'] || 0, maxValues.playerDmg),
-                            normalizeValue(comparePlayer['人伤卸甲'] || 0, maxValues.playerArmorBreak),
-                            normalizeValue(comparePlayer['破塔卸甲'] || 0, maxValues.buildingArmorBreak),
-                            normalizeValue(comparePlayer['治疗值'] || 0, maxValues.healing),
-                            normalizeValue(comparePlayer['承受伤害'] || 0, maxValues.takenDmg)
-                        ],
-                        backgroundColor: 'rgba(239, 68, 68, 0.2)',
-                        borderColor: '#EF4444',
-                        pointBackgroundColor: '#EF4444',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: '#EF4444'
-                    }
-                ];
+                // 档案码对比模式：只显示对比玩家；普通对比模式：显示当前玩家和对比玩家
+                if (isCardCompareMode) {
+                    damageDatasets = [
+                        {
+                            label: comparePlayer['玩家名字'] + ' (档案码)',
+                            data: [
+                                normalizeValue(comparePlayer['对建筑伤害'] || 0, maxValues.buildingDmg),
+                                normalizeValue(comparePlayer['对玩家伤害'] || 0, maxValues.playerDmg),
+                                normalizeValue(comparePlayer['人伤卸甲'] || 0, maxValues.playerArmorBreak),
+                                normalizeValue(comparePlayer['破塔卸甲'] || 0, maxValues.buildingArmorBreak),
+                                normalizeValue(comparePlayer['治疗值'] || 0, maxValues.healing),
+                                normalizeValue(comparePlayer['承受伤害'] || 0, maxValues.takenDmg)
+                            ],
+                            backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                            borderColor: '#EF4444',
+                            pointBackgroundColor: '#EF4444',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: '#EF4444'
+                        }
+                    ];
+                } else {
+                    damageDatasets = [
+                        {
+                            label: currentPlayer['玩家名字'],
+                            data: [
+                                normalizeValue(currentPlayer['对建筑伤害'] || 0, maxValues.buildingDmg),
+                                normalizeValue(currentPlayer['对玩家伤害'] || 0, maxValues.playerDmg),
+                                normalizeValue(currentPlayer['人伤卸甲'] || 0, maxValues.playerArmorBreak),
+                                normalizeValue(currentPlayer['破塔卸甲'] || 0, maxValues.buildingArmorBreak),
+                                normalizeValue(currentPlayer['治疗值'] || 0, maxValues.healing),
+                                normalizeValue(currentPlayer['承受伤害'] || 0, maxValues.takenDmg)
+                            ],
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            borderColor: '#3B82F6',
+                            pointBackgroundColor: '#3B82F6',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: '#3B82F6'
+                        },
+                        {
+                            label: comparePlayer['玩家名字'],
+                            data: [
+                                normalizeValue(comparePlayer['对建筑伤害'] || 0, maxValues.buildingDmg),
+                                normalizeValue(comparePlayer['对玩家伤害'] || 0, maxValues.playerDmg),
+                                normalizeValue(comparePlayer['人伤卸甲'] || 0, maxValues.playerArmorBreak),
+                                normalizeValue(comparePlayer['破塔卸甲'] || 0, maxValues.buildingArmorBreak),
+                                normalizeValue(comparePlayer['治疗值'] || 0, maxValues.healing),
+                                normalizeValue(comparePlayer['承受伤害'] || 0, maxValues.takenDmg)
+                            ],
+                            backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                            borderColor: '#EF4444',
+                            pointBackgroundColor: '#EF4444',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: '#EF4444'
+                        }
+                    ];
+                }
             } else {
                 damageDatasets = [
                     {
@@ -6301,55 +7373,91 @@
 
         // 渲染全屏雷达图
         function renderFullscreenCharts() {
-            // 计算最大值用于归一化
+            // 检查是否是导入的档案数据
+            const isImportedData = importedPlayerCard && currentPlayer && 
+                currentPlayer['玩家名字'] === importedPlayerCard['玩家名字'];
+            
+            // 计算最大值用于归一化（导入数据时使用导入的数据作为参考）
+            let referencePlayers = allPlayers;
+            if (isImportedData && (!allPlayers || allPlayers.length === 0)) {
+                // 导入数据时没有本地数据，使用当前玩家数据
+                referencePlayers = [currentPlayer];
+            }
+            
             const maxValues = {
-                buildingDmg: Math.max(...allPlayers.map(p => p['对建筑伤害'] || 0), 1),
-                playerDmg: Math.max(...allPlayers.map(p => p['对玩家伤害'] || 0), 1),
-                playerArmorBreak: Math.max(...allPlayers.map(p => p['人伤卸甲'] || 0), 1),
-                buildingArmorBreak: Math.max(...allPlayers.map(p => p['破塔卸甲'] || 0), 1),
-                healing: Math.max(...allPlayers.map(p => p['治疗值'] || 0), 1),
-                takenDmg: Math.max(...allPlayers.map(p => p['承受伤害'] || 0), 1),
-                kills: Math.max(...allPlayers.map(p => p['击败'] || 0), 1),
-                poquan: Math.max(...allPlayers.map(p => p['破泉'] || 0), 1),
-                huayu: Math.max(...allPlayers.map(p => p['化羽'] || 0), 1),
-                qingquan: Math.max(...allPlayers.map(p => p['清泉'] || 0), 1),
-                assists: Math.max(...allPlayers.map(p => p['助攻'] || 0), 1),
-                resource: Math.max(...allPlayers.map(p => p['资源'] || 0), 1),
-                fenGu: Math.max(...allPlayers.map(p => p['焚骨'] || 0), 1)
+                buildingDmg: Math.max(...referencePlayers.map(p => p['对建筑伤害'] || 0), currentPlayer['对建筑伤害'] || 0, 1),
+                playerDmg: Math.max(...referencePlayers.map(p => p['对玩家伤害'] || 0), currentPlayer['对玩家伤害'] || 0, 1),
+                playerArmorBreak: Math.max(...referencePlayers.map(p => p['人伤卸甲'] || 0), currentPlayer['人伤卸甲'] || 0, 1),
+                buildingArmorBreak: Math.max(...referencePlayers.map(p => p['破塔卸甲'] || 0), currentPlayer['破塔卸甲'] || 0, 1),
+                healing: Math.max(...referencePlayers.map(p => p['治疗值'] || 0), currentPlayer['治疗值'] || 0, 1),
+                takenDmg: Math.max(...referencePlayers.map(p => p['承受伤害'] || 0), currentPlayer['承受伤害'] || 0, 1),
+                kills: Math.max(...referencePlayers.map(p => p['击败'] || 0), currentPlayer['击败'] || 0, 1),
+                poquan: Math.max(...referencePlayers.map(p => p['破泉'] || 0), currentPlayer['破泉'] || 0, 1),
+                huayu: Math.max(...referencePlayers.map(p => p['化羽'] || 0), currentPlayer['化羽'] || 0, 1),
+                qingquan: Math.max(...referencePlayers.map(p => p['清泉'] || 0), currentPlayer['清泉'] || 0, 1),
+                assists: Math.max(...referencePlayers.map(p => p['助攻'] || 0), currentPlayer['助攻'] || 0, 1),
+                resource: Math.max(...referencePlayers.map(p => p['资源'] || 0), currentPlayer['资源'] || 0, 1),
+                fenGu: Math.max(...referencePlayers.map(p => p['焚骨'] || 0), currentPlayer['焚骨'] || 0, 1)
             };
 
-            // 计算帮会前15/16平均值
-            const myGuildStats = {
-                对建筑伤害: calculateTopNAverage(guild1Data, '对建筑伤害', 15),
-                对玩家伤害: calculateTopNAverage(guild1Data, '对玩家伤害', 15),
-                人伤卸甲: calculateTopNAverage(guild1Data, '人伤卸甲', 15),
-                破塔卸甲: calculateTopNAverage(guild1Data, '破塔卸甲', 15),
-                治疗值: calculateTopNAverage(guild1Data.filter(p => p['职业'] === '素问'), '治疗值', 15),
-                承受伤害: calculateTopNAverage(guild1Data, '承受伤害', 15),
-                击败: calculateTopNAverage(guild1Data, '击败', 15),
-                破泉: calculateTopNAverage(guild1Data, '破泉', 15),
-                化羽: calculateTopNAverage(guild1Data, '化羽', 15),
-                清泉: calculateTopNAverage(guild1Data, '清泉', 15),
-                助攻: calculateTopNAverage(guild1Data, '助攻', 15),
-                资源: calculateTopNAverage(guild1Data.filter(p => (p['资源'] || 0) > 0), '资源', 15),
-                焚骨: calculateTopNAverage(guild1Data.filter(p => (p['焚骨'] || 0) > 0), '焚骨', 15)
-            };
+            // 计算帮会前15/16平均值（导入数据时使用导入数据作为参考）
+            let myGuildStats, enemyGuildStats;
+            
+            if (isImportedData && (!guild1Data || guild1Data.length === 0)) {
+                // 导入数据时没有本地帮会数据，使用当前玩家数据作为参考
+                const defaultStats = {
+                    对建筑伤害: currentPlayer['对建筑伤害'] || 0,
+                    对玩家伤害: currentPlayer['对玩家伤害'] || 0,
+                    人伤卸甲: currentPlayer['人伤卸甲'] || 0,
+                    破塔卸甲: currentPlayer['破塔卸甲'] || 0,
+                    治疗值: currentPlayer['治疗值'] || 0,
+                    承受伤害: currentPlayer['承受伤害'] || 0,
+                    击败: currentPlayer['击败'] || 0,
+                    破泉: currentPlayer['破泉'] || 0,
+                    化羽: currentPlayer['化羽'] || 0,
+                    清泉: currentPlayer['清泉'] || 0,
+                    助攻: currentPlayer['助攻'] || 0,
+                    资源: currentPlayer['资源'] || 0,
+                    焚骨: currentPlayer['焚骨'] || 0
+                };
+                myGuildStats = { ...defaultStats };
+                enemyGuildStats = { ...defaultStats };
+            } else {
+                myGuildStats = {
+                    对建筑伤害: calculateTopNAverage(guild1Data, '对建筑伤害', 15),
+                    对玩家伤害: calculateTopNAverage(guild1Data, '对玩家伤害', 15),
+                    人伤卸甲: calculateTopNAverage(guild1Data, '人伤卸甲', 15),
+                    破塔卸甲: calculateTopNAverage(guild1Data, '破塔卸甲', 15),
+                    治疗值: calculateTopNAverage(guild1Data.filter(p => p['职业'] === '素问'), '治疗值', 15),
+                    承受伤害: calculateTopNAverage(guild1Data, '承受伤害', 15),
+                    击败: calculateTopNAverage(guild1Data, '击败', 15),
+                    破泉: calculateTopNAverage(guild1Data, '破泉', 15),
+                    化羽: calculateTopNAverage(guild1Data, '化羽', 15),
+                    清泉: calculateTopNAverage(guild1Data, '清泉', 15),
+                    助攻: calculateTopNAverage(guild1Data, '助攻', 15),
+                    资源: calculateTopNAverage(guild1Data.filter(p => (p['资源'] || 0) > 0), '资源', 15),
+                    焚骨: calculateTopNAverage(guild1Data.filter(p => (p['焚骨'] || 0) > 0), '焚骨', 15)
+                };
+            }
 
-            const enemyGuildStats = {
-                对建筑伤害: calculateTopNAverage(guild2Data, '对建筑伤害', 16),
-                对玩家伤害: calculateTopNAverage(guild2Data, '对玩家伤害', 16),
-                人伤卸甲: calculateTopNAverage(guild2Data, '人伤卸甲', 16),
-                破塔卸甲: calculateTopNAverage(guild2Data, '破塔卸甲', 16),
-                治疗值: calculateTopNAverage(guild2Data.filter(p => p['职业'] === '素问'), '治疗值', 16),
-                承受伤害: calculateTopNAverage(guild2Data, '承受伤害', 16),
-                击败: calculateTopNAverage(guild2Data, '击败', 16),
-                破泉: calculateTopNAverage(guild2Data, '破泉', 16),
-                化羽: calculateTopNAverage(guild2Data, '化羽', 16),
-                清泉: calculateTopNAverage(guild2Data, '清泉', 16),
-                助攻: calculateTopNAverage(guild2Data, '助攻', 16),
-                资源: calculateTopNAverage(guild2Data.filter(p => (p['资源'] || 0) > 0), '资源', 16),
-                焚骨: calculateTopNAverage(guild2Data.filter(p => (p['焚骨'] || 0) > 0), '焚骨', 16)
-            };
+            // 计算敌方帮会统计（如果不是导入数据）
+            if (!enemyGuildStats) {
+                enemyGuildStats = {
+                    对建筑伤害: calculateTopNAverage(guild2Data, '对建筑伤害', 16),
+                    对玩家伤害: calculateTopNAverage(guild2Data, '对玩家伤害', 16),
+                    人伤卸甲: calculateTopNAverage(guild2Data, '人伤卸甲', 16),
+                    破塔卸甲: calculateTopNAverage(guild2Data, '破塔卸甲', 16),
+                    治疗值: calculateTopNAverage(guild2Data.filter(p => p['职业'] === '素问'), '治疗值', 16),
+                    承受伤害: calculateTopNAverage(guild2Data, '承受伤害', 16),
+                    击败: calculateTopNAverage(guild2Data, '击败', 16),
+                    破泉: calculateTopNAverage(guild2Data, '破泉', 16),
+                    化羽: calculateTopNAverage(guild2Data, '化羽', 16),
+                    清泉: calculateTopNAverage(guild2Data, '清泉', 16),
+                    助攻: calculateTopNAverage(guild2Data, '助攻', 16),
+                    资源: calculateTopNAverage(guild2Data.filter(p => (p['资源'] || 0) > 0), '资源', 16),
+                    焚骨: calculateTopNAverage(guild2Data.filter(p => (p['焚骨'] || 0) > 0), '焚骨', 16)
+                };
+            }
 
             // 伤害与治疗雷达图
             if (fullscreenDamageChart) fullscreenDamageChart.destroy();
@@ -6593,8 +7701,17 @@
             const playerProfession = (currentPlayer['职业'] || '').trim();
             if (!playerProfession) return;
 
+            // 检查是否是导入的档案数据
+            const isImportedData = importedPlayerCard && currentPlayer['玩家名字'] === importedPlayerCard['玩家名字'];
+
             // 获取同职业玩家
-            const professionPlayers = guild1Data.filter(p => p['职业'] === playerProfession);
+            let professionPlayers = guild1Data.filter(p => p['职业'] === playerProfession);
+            
+            // 如果是导入的数据且没有本地同职业数据，创建仅包含该玩家的数组
+            if (professionPlayers.length === 0 && isImportedData) {
+                professionPlayers = [currentPlayer];
+            }
+            
             if (professionPlayers.length === 0) return;
 
             // 计算该职业平均值（全维度）
@@ -6604,14 +7721,23 @@
                 professionAvg[key] = professionPlayers.reduce((sum, p) => sum + (p[key] || 0), 0) / professionPlayers.length;
             });
 
-            // 计算帮会2该职业平均值
-            const guild2ProfessionPlayers = guild2Data.filter(p => p['职业'] === playerProfession);
-            const guild2ProfessionAvg = {};
-            metrics.forEach(key => {
-                guild2ProfessionAvg[key] = guild2ProfessionPlayers.length > 0 
-                    ? guild2ProfessionPlayers.reduce((sum, p) => sum + (p[key] || 0), 0) / guild2ProfessionPlayers.length 
-                    : 0;
-            });
+            // 计算帮会2该职业平均值（导入数据时可能没有帮会2数据）
+            let guild2ProfessionPlayers = [];
+            let guild2ProfessionAvg = {};
+            
+            if (typeof guild2Data !== 'undefined' && guild2Data.length > 0) {
+                guild2ProfessionPlayers = guild2Data.filter(p => p['职业'] === playerProfession);
+                metrics.forEach(key => {
+                    guild2ProfessionAvg[key] = guild2ProfessionPlayers.length > 0 
+                        ? guild2ProfessionPlayers.reduce((sum, p) => sum + (p[key] || 0), 0) / guild2ProfessionPlayers.length 
+                        : 0;
+                });
+            } else {
+                // 导入数据时，使用导入玩家的数据作为参考
+                metrics.forEach(key => {
+                    guild2ProfessionAvg[key] = currentPlayer[key] || 0;
+                });
+            }
 
             // 取前8名玩家显示
             const topPlayers = professionPlayers.slice(0, 8);
@@ -8632,6 +9758,16 @@
         
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
+            // 首先加载用户设置
+            loadUserProfileSettings();
+            
+            // 检查是否需要显示首次设置弹窗
+            if (shouldShowProfileSetup()) {
+                setTimeout(() => {
+                    showProfileSetupModal(true);
+                }, 500);
+            }
+            
             // 从localStorage加载数据
             const savedData = localStorage.getItem('battleData');
             if (savedData) {
@@ -8741,7 +9877,211 @@
             
             // 初始化数据源管理器
             initDataSourceManager();
+            
+            // 检测URL参数，处理档案码分享链接
+            handleCardCodeUrlParams();
         });
+        
+        // 处理档案码URL参数
+        function handleCardCodeUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            let cardCode = urlParams.get('card');
+            let mode = urlParams.get('mode');
+            
+            // 如果没有URL参数，检查localStorage中的pendingCardCode（从导入页面返回）
+            if (!cardCode) {
+                const pendingCode = localStorage.getItem('pendingCardCode');
+                const pendingMode = localStorage.getItem('pendingCardMode');
+                if (pendingCode) {
+                    cardCode = pendingCode;
+                    mode = pendingMode || 'compare';
+                    // 清除pending标记
+                    localStorage.removeItem('pendingCardCode');
+                    localStorage.removeItem('pendingCardMode');
+                    console.log('从localStorage恢复档案码:', cardCode, '模式:', mode);
+                }
+            }
+            
+            if (!cardCode) return;
+            
+            console.log('检测到档案码参数:', cardCode, '模式:', mode);
+            
+            // 检查是否有本地数据
+            const hasLocalData = guild1Data.length > 0 || guild2Data.length > 0;
+            
+            if (!hasLocalData) {
+                // 没有本地数据，保存档案码和模式，跳转到导入页面
+                localStorage.setItem('pendingCardCode', cardCode);
+                localStorage.setItem('pendingCardMode', mode || 'compare');
+                localStorage.setItem('returnToCompare', 'true');
+                
+                // 显示提示并跳转
+                const shouldImport = confirm('检测到档案码分享链接，但您还没有导入帮战数据。\n\n点击"确定"跳转到数据导入页面，导入数据后将自动进入对比模式。\n点击"取消"留在当前页面。');
+                
+                if (shouldImport) {
+                    window.location.href = 'https://odinfreed.github.io/nsh_tools/xg_nsh_battle_system/xg_data_import/index.html';
+                }
+                return;
+            }
+            
+            // 有本地数据，自动导入档案码
+            setTimeout(() => {
+                autoImportCardCode(cardCode, mode);
+            }, 500); // 延迟确保页面完全加载
+        }
+        
+        // 自动导入档案码并根据模式处理
+        function autoImportCardCode(code, mode) {
+            const result = PlayerCardSystem.importCard(code);
+            
+            if (!result.success) {
+                alert('档案码导入失败: ' + result.error);
+                // 清除URL参数
+                window.history.replaceState({}, document.title, window.location.pathname);
+                return;
+            }
+            
+            console.log('档案码自动导入成功:', result.playerName);
+            
+            // 构建类型标签
+            const nameType = result.isAnonymous ? '匿名' : '实名';
+            let dataType;
+            if (result.isPKMode) {
+                dataType = 'PK模式';
+            } else if (result.isMultiBattle) {
+                dataType = `${result.battleCount}场完整`;
+            } else {
+                dataType = '单场完整';
+            }
+            
+            if (mode === 'compare') {
+                // 对比模式：设置为对比玩家，打开对比系统
+                comparePlayer = result.data;
+                compareBattleId = 'card_' + code;
+                
+                // 存储导入的档案数据（用于后续显示）
+                importedPlayerCard = {
+                    ...result.data,
+                    isMultiBattle: result.isMultiBattle,
+                    battleCount: result.battleCount,
+                    isAnonymous: result.isAnonymous,
+                    isPKMode: result.isPKMode,
+                    _importedFrom: code,
+                    _importedAt: Date.now()
+                };
+                
+                // 切换到对比标签页
+                switchTab('compare');
+                
+                // 更新对比玩家显示
+                const selectedDiv = document.getElementById('selectedComparePlayer');
+                const nameEl = document.getElementById('selectedCompareName');
+                const infoEl = document.getElementById('selectedCompareInfo');
+                const basicDataEl = document.getElementById('selectedCompareBasicData');
+                
+                if (selectedDiv) selectedDiv.classList.remove('hidden');
+                
+                // 根据是否匿名显示不同格式
+                if (result.isAnonymous) {
+                    // 匿名玩家显示格式
+                    if (nameEl) nameEl.innerHTML = `未知玩家 <span class="text-xs text-gray-400">档案码导入</span>`;
+                    if (infoEl) infoEl.innerHTML = `<span class="text-gray-500">未知信息</span>`;
+                } else {
+                    // 实名玩家显示格式
+                    const region = result.data.region || result.data.re || '未知区服';
+                    const userGuild = result.data.userGuild || result.data.ug || result.data['帮会'] || '未知帮会';
+                    if (nameEl) nameEl.innerHTML = `${result.playerName || '未知玩家'} <span class="text-xs text-gray-400">档案码导入</span>`;
+                    if (infoEl) infoEl.innerHTML = `<span class="text-jade">${region}</span> <span class="text-cyan-400">${userGuild}</span> <span class="text-yellow-400">${result.profession || '未知职业'}</span>`;
+                }
+                
+                // 填充基础数据
+                if (basicDataEl) {
+                    const data = result.data;
+                    const basicData = [
+                        { label: '对塔', value: data['对建筑伤害'] || data['bd'] || 0, color: 'text-purple-400' },
+                        { label: '对人', value: data['对玩家伤害'] || data['pd'] || 0, color: 'text-red-400' },
+                        { label: '击败', value: data['击败'] || data['k'] || 0, color: 'text-yellow-400' },
+                        { label: '治疗', value: data['治疗值'] || data['h'] || 0, color: 'text-green-400' }
+                    ];
+                    basicDataEl.innerHTML = basicData.map(d => `
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-500">${d.label}:</span>
+                            <span class="${d.color} font-medium">${formatNumber(d.value)}</span>
+                        </div>
+                    `).join('');
+                }
+                
+                // 显示提示
+                showNotification(`已自动导入档案码: ${result.playerName} [${nameType}|${dataType}]，请选择左侧玩家进行对比`, 'info');
+                
+                // 折叠左侧面板显示更多空间
+                collapseCompareSelectors();
+                
+                // 清除URL参数
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } else {
+                // 默认模式：在个人分析面板导入
+                importedPlayerCard = {
+                    ...result.data,
+                    isMultiBattle: result.isMultiBattle,
+                    battleCount: result.battleCount,
+                    isAnonymous: result.isAnonymous,
+                    isPKMode: result.isPKMode,
+                    _importedFrom: code,
+                    _importedAt: Date.now()
+                };
+                
+                // 显示导入的玩家
+                displayImportedPlayerCard();
+                
+                // 显示提示
+                showNotification(`已自动导入档案码: ${result.playerName} [${nameType}|${dataType}]`, 'success');
+                
+                // 清除URL参数
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+        
+        // 折叠对比选择器以节省空间
+        function collapseCompareSelectors() {
+            // 折叠当前玩家选择器
+            const currentSelectorContent = document.getElementById('currentSelectorContent');
+            const currentSelectorArrow = document.getElementById('currentSelectorArrow');
+            if (currentSelectorContent && !currentSelectorContent.classList.contains('hidden')) {
+                currentSelectorContent.classList.add('hidden');
+                if (currentSelectorArrow) currentSelectorArrow.style.transform = 'rotate(-90deg)';
+            }
+            
+            // 折叠对比玩家选择器
+            const compareSelectorContent = document.getElementById('compareSelectorContent');
+            const compareSelectorArrow = document.getElementById('compareSelectorArrow');
+            if (compareSelectorContent && !compareSelectorContent.classList.contains('hidden')) {
+                compareSelectorContent.classList.add('hidden');
+                if (compareSelectorArrow) compareSelectorArrow.style.transform = 'rotate(-90deg)';
+            }
+        }
+        
+        // 显示通知（比alert更友好的提示）
+        function showNotification(message, type = 'info') {
+            const colors = {
+                info: 'bg-blue-600',
+                success: 'bg-green-600',
+                warning: 'bg-yellow-600',
+                error: 'bg-red-600'
+            };
+            
+            const notification = document.createElement('div');
+            notification.className = `fixed top-20 left-1/2 transform -translate-x-1/2 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-xl z-50 animate-fade-in`;
+            notification.innerHTML = `<i class="fas fa-info-circle mr-2"></i>${message}`;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.5s';
+                setTimeout(() => notification.remove(), 500);
+            }, 5000);
+        }
 
         // ==================== 帮会分团排表优化模块 ====================
 
