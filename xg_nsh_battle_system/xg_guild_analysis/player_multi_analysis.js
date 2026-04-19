@@ -118,20 +118,32 @@ function getPlayerAttendanceInfo(playerName) {
     };
 }
 
-// ==================== 波动比计算 ====================
+// ==================== 涨幅波动比计算 ====================
 
+// 计算涨幅波动比：以平均数为基准，计算每个数据点相对于平均数的涨跌幅波动
 function calculateFluctuationRatio(values) {
-    if (values.length < 2) return { cv: 0, stability: 1, mean: values[0] || 0 };
+    if (values.length < 2) return { cv: 0, stability: 1, mean: values[0] || 0, avgChangeRate: 0 };
     
     const mean = values.reduce((a, b) => a + b, 0) / values.length;
-    if (mean === 0) return { cv: 0, stability: 1, mean: 0 };
+    if (mean === 0) return { cv: 0, stability: 1, mean: 0, avgChangeRate: 0 };
     
-    const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
+    // 计算每个数据点相对于平均数的涨跌幅（百分比）
+    const changeRates = values.map(val => ((val - mean) / mean) * 100);
+    
+    // 计算涨跌幅的平均值（理论上接近0）
+    const avgChangeRate = changeRates.reduce((a, b) => a + b, 0) / changeRates.length;
+    
+    // 计算涨跌幅的波动（标准差）
+    const variance = changeRates.reduce((sum, rate) => sum + Math.pow(rate - avgChangeRate, 2), 0) / changeRates.length;
     const stdDev = Math.sqrt(variance);
-    const cv = stdDev / mean;
+    
+    // CV基于涨跌幅的标准差（除以100将百分比转换为小数）
+    const cv = stdDev / 100;
+    
+    // 稳定性：涨跌幅波动越小越稳定
     const stability = Math.max(0, Math.min(1, 1 - cv));
     
-    return { cv, stability, mean, stdDev };
+    return { cv, stability, mean, stdDev, avgChangeRate, changeRates };
 }
 
 function calculatePlayerFluctuations(multiData) {
@@ -318,7 +330,7 @@ function renderFluctuationPanel(multiData) {
         <div class="mb-3 text-xs text-gray-400">
             <i class="fas fa-chart-line mr-1"></i>
             基于 ${battleCount} 场同职业数据
-            <span class="ml-2 text-gray-500">| CV = 变异系数，越低越稳定</span>
+            <span class="ml-2 text-gray-500">| 以平均数为基准计算涨幅波动</span>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
     `;
@@ -332,6 +344,11 @@ function renderFluctuationPanel(multiData) {
                           data.stability >= 0.6 ? 'bg-yellow-500/20 text-yellow-400' : 'bg-red-500/20 text-red-400';
 
         const meanValue = formatNumberCompact(data.mean);
+        // 涨跌幅的标准差（百分比）
+        const changeRateStdDev = data.stdDev.toFixed(1);
+        // 最大单边涨幅（估计值：均值 + 2倍标准差）
+        const maxUpRate = (data.avgChangeRate + 2 * data.stdDev).toFixed(0);
+        const maxDownRate = (data.avgChangeRate - 2 * data.stdDev).toFixed(0);
 
         html += `
             <div class="${bgColor} border rounded p-2 min-w-0">
@@ -340,9 +357,11 @@ function renderFluctuationPanel(multiData) {
                     <span class="text-sm font-bold text-gray-200 whitespace-nowrap">${meanValue}</span>
                     <span class="text-xs ${stabilityColor}">${(data.stability * 100).toFixed(0)}%</span>
                 </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-xs px-1.5 py-0.5 rounded ${badgeColor}">CV ${data.cv.toFixed(2)}</span>
-                    <span class="text-xs text-gray-500">σ${formatSmallNumber(data.stdDev)}</span>
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs px-1.5 py-0.5 rounded ${badgeColor}">波动 ±${changeRateStdDev}%</span>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-gray-500">区间: ${maxDownRate}% ~ +${maxUpRate}%</span>
                 </div>
             </div>
         `;
