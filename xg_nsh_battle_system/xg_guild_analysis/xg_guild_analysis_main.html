@@ -2557,8 +2557,8 @@
                         <button class="action-button" onclick="window.location.href='../xg_data_import/index.html'">
                             <i class="fas fa-arrow-left"></i>返回
                         </button>
-                        <button class="action-button" id="compareSystemBtn" onclick="toggleCompareSystem()" style="display: none;">
-                            <i class="fas fa-exchange-alt"></i>对比系统
+                        <button class="action-button" id="nameMappingBtn" onclick="toggleNameMappingPanel()" style="display: none;">
+                            <i class="fas fa-id-card"></i>名称变更
                         </button>
                     </div>
                 </div>
@@ -2646,6 +2646,63 @@
                                 <span class="mini-stat-value text-secondary" id="weight-g2-damage">-</span>
                             </div>
                             <div class="text-xs mt-1">得分: <span class="text-primary" id="score-g1-damage">-</span> vs <span class="text-secondary" id="score-g2-damage">-</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 新旧ID映射表卡片（默认隐藏） -->
+                <div id="nameMappingCard" class="card hidden" style="flex: 1; display: none; flex-direction: column; min-height: 0;">
+                    <div class="card-header" style="flex-shrink: 0;">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-lg font-bold flex items-center">
+                                <i class="fas fa-id-card mr-2 text-purple-400"></i>
+                                新旧ID映射表
+                            </h2>
+                            <button onclick="toggleNameMappingPanel()" class="text-xs text-gray-400 hover:text-white">
+                                <i class="fas fa-times"></i> 关闭
+                            </button>
+                        </div>
+                    </div>
+                    <div class="space-y-3" style="flex: 1; overflow-y: auto;">
+                        <!-- 说明文字 -->
+                        <div class="text-xs text-gray-500 bg-[#0d0d0d] rounded p-2">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            将多个旧ID映射到同一个新ID，用于处理改名情况
+                        </div>
+                        
+                        <!-- 添加映射表单 -->
+                        <div class="bg-[#0d0d0d] rounded p-3 space-y-2">
+                            <div>
+                                <label class="text-xs text-gray-400 block mb-1">旧ID（可多个，逗号分隔）</label>
+                                <input type="text" id="oldIdsInput" placeholder="例如：张三, 李四" 
+                                    class="w-full p-2 bg-dark border border-gray-600 rounded text-xs text-gray-100 placeholder-gray-600 focus:outline-none focus:border-purple-500">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400 block mb-1">新ID</label>
+                                <input type="text" id="newIdInput" placeholder="例如：王五" 
+                                    class="w-full p-2 bg-dark border border-gray-600 rounded text-xs text-gray-100 placeholder-gray-600 focus:outline-none focus:border-purple-500">
+                            </div>
+                            <button onclick="addNameMapping()" class="w-full px-3 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded text-xs font-medium transition-colors">
+                                <i class="fas fa-plus mr-1"></i>添加映射
+                            </button>
+                        </div>
+                        
+                        <!-- 映射列表 -->
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="text-xs text-gray-400">当前映射规则</label>
+                                <button onclick="clearAllNameMappings()" class="text-xs text-red-400 hover:text-red-300">
+                                    <i class="fas fa-trash mr-1"></i>清空
+                                </button>
+                            </div>
+                            <div id="nameMappingList" class="space-y-1 max-h-48 overflow-y-auto">
+                                <div class="text-center text-gray-500 py-4 text-xs">暂无映射规则</div>
+                            </div>
+                        </div>
+                        
+                        <!-- 应用状态 -->
+                        <div class="text-xs text-center">
+                            <span class="text-gray-500">已处理场次: <span id="mappingProcessedCount" class="text-purple-400">0</span></span>
                         </div>
                     </div>
                 </div>
@@ -2768,11 +2825,6 @@
                                 <!-- 动态填充 -->
                             </div>
                         </div>
-                        
-                        <!-- 关闭对比模式按钮 -->
-                        <button onclick="closeCompareSystem()" class="w-full py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-xs transition-colors">
-                            <i class="fas fa-times mr-1"></i>退出对比模式
-                        </button>
                     </div>
                 </div>
 
@@ -3123,6 +3175,10 @@
             const multiDashboardGuildOverviewCard = document.getElementById('multiDashboardGuildOverviewCard');
             const multiBattleTimelineCard = document.getElementById('multiBattleTimelineCard');
 
+            // 获取对比系统面板和名称变更面板
+            const comparePanel = document.getElementById('compareSystemPanel');
+            const nameMappingCard = document.getElementById('nameMappingCard');
+            
             if (tab === 'multibattle') {
                 // 多场看板模式：显示成员参战统计，隐藏综合评分权重和雷达图，显示场次对位记录
                 if (attendanceCard) attendanceCard.classList.remove('hidden');
@@ -3131,6 +3187,9 @@
                 if (guildsBasicInfoCard) guildsBasicInfoCard.classList.add('hidden');
                 if (multiDashboardGuildOverviewCard) multiDashboardGuildOverviewCard.classList.add('hidden');
                 if (multiBattleTimelineCard) multiBattleTimelineCard.classList.remove('hidden');
+                // 隐藏对比系统和名称变更面板
+                if (comparePanel) { comparePanel.classList.add('hidden'); comparePanel.style.display = 'none'; }
+                if (nameMappingCard) { nameMappingCard.classList.add('hidden'); nameMappingCard.style.display = 'none'; }
                 // 渲染场次对位记录
                 setTimeout(() => renderMultiBattleTimeline(), 100);
             } else if (tab === 'multidashboard') {
@@ -3141,8 +3200,23 @@
                 if (guildsBasicInfoCard) guildsBasicInfoCard.classList.add('hidden');
                 if (multiDashboardGuildOverviewCard) multiDashboardGuildOverviewCard.classList.remove('hidden');
                 if (multiBattleTimelineCard) multiBattleTimelineCard.classList.add('hidden');
+                // 隐藏对比系统和名称变更面板
+                if (comparePanel) { comparePanel.classList.add('hidden'); comparePanel.style.display = 'none'; }
+                if (nameMappingCard) { nameMappingCard.classList.add('hidden'); nameMappingCard.style.display = 'none'; }
                 // 初始化侧边栏雷达图
                 setTimeout(renderSidebarRadarCharts, 100);
+            } else if (tab === 'player') {
+                // 个人分析模式：隐藏权重分配和其他面板，默认显示对比系统
+                if (attendanceCard) attendanceCard.classList.add('hidden');
+                if (weightScoreCard) weightScoreCard.classList.add('hidden');
+                if (radarCard) radarCard.classList.add('hidden');
+                if (guildsBasicInfoCard) guildsBasicInfoCard.classList.remove('hidden');
+                if (multiDashboardGuildOverviewCard) multiDashboardGuildOverviewCard.classList.add('hidden');
+                if (multiBattleTimelineCard) multiBattleTimelineCard.classList.add('hidden');
+                // 默认显示对比系统面板（如果名称变更未打开）
+                if (nameMappingCard && nameMappingCard.classList.contains('hidden')) {
+                    if (comparePanel) { comparePanel.classList.remove('hidden'); comparePanel.style.display = 'flex'; }
+                }
             } else {
                 // 其他模式：隐藏成员参战统计和雷达图，显示综合评分权重和普通基本信息
                 if (attendanceCard) attendanceCard.classList.add('hidden');
@@ -3151,6 +3225,9 @@
                 if (guildsBasicInfoCard) guildsBasicInfoCard.classList.remove('hidden');
                 if (multiDashboardGuildOverviewCard) multiDashboardGuildOverviewCard.classList.add('hidden');
                 if (multiBattleTimelineCard) multiBattleTimelineCard.classList.add('hidden');
+                // 隐藏对比系统和名称变更面板
+                if (comparePanel) { comparePanel.classList.add('hidden'); comparePanel.style.display = 'none'; }
+                if (nameMappingCard) { nameMappingCard.classList.add('hidden'); nameMappingCard.style.display = 'none'; }
             }
             
             if (tab === 'team') {
@@ -3173,23 +3250,24 @@
                 setTimeout(updateCharts, 10);
             }
 
-            // 如果是个人分析视图，且已选择玩家，则更新图表
+            // 如果是个人分析视图，且已选择玩家，则初始化对比系统
             if (tab === 'player' && currentPlayer) {
                 setTimeout(() => {
-                    updatePlayerCharts();
+                    initPlayerAnalysisCompareSystem();
                 }, 100);
             }
 
-            // 控制对比系统按钮显示（仅在个人分析模块显示）
-            const compareBtn = document.getElementById('compareSystemBtn');
-            if (compareBtn) {
+            // 控制名称变更按钮显示（仅在个人分析模块显示）
+            const nameMappingBtn = document.getElementById('nameMappingBtn');
+            if (nameMappingBtn) {
                 if (tab === 'player') {
-                    compareBtn.style.display = 'inline-flex';
+                    nameMappingBtn.style.display = 'inline-flex';
                 } else {
-                    compareBtn.style.display = 'none';
-                    // 退出对比模式
-                    if (isCompareMode) {
-                        closeCompareSystem();
+                    nameMappingBtn.style.display = 'none';
+                    // 关闭名称变更面板
+                    const mappingCard = document.getElementById('nameMappingCard');
+                    if (mappingCard && !mappingCard.classList.contains('hidden')) {
+                        closeNameMappingPanel();
                     }
                 }
             }
@@ -6738,54 +6816,33 @@
             return null;
         }
 
-        // 切换对比系统
-        function toggleCompareSystem() {
-            if (!currentPlayer) {
-                alert('请先选择一名玩家作为对比基准');
-                return;
-            }
+        // 初始化对比系统（个人分析界面常驻）
+        function initPlayerAnalysisCompareSystem() {
+            if (!currentPlayer) return;
             
             isCompareMode = true;
-            
-            // 显示对比系统面板，隐藏权重分配卡片
-            document.getElementById('weightScoreCard').style.display = 'none';
-            const comparePanel = document.getElementById('compareSystemPanel');
-            comparePanel.classList.remove('hidden');
-            comparePanel.style.display = 'flex';
-            
-            // 更新按钮样式
-            const btn = document.getElementById('compareSystemBtn');
-            if (btn) {
-                btn.classList.add('bg-yellow-600');
-                btn.innerHTML = '<i class="fas fa-exchange-alt mr-1"></i>对比中';
-            }
             
             // 初始化对比系统数据
             initCompareSystem();
             
-            // 更新图表（移除top15/16，改为对比模式）
+            // 更新图表
             updatePlayerCharts();
             
             // 更新排名区域为条形统计图
             updateCompareBarChart();
         }
 
-        // 关闭对比系统
+        // 关闭对比系统（切换到其他标签页时调用）
         function closeCompareSystem() {
             isCompareMode = false;
             comparePlayer = null;
             compareBattleId = null;
             
-            // 隐藏对比系统面板，显示权重分配卡片
-            document.getElementById('compareSystemPanel').style.display = 'none';
-            document.getElementById('compareSystemPanel').classList.add('hidden');
-            document.getElementById('weightScoreCard').style.display = 'flex';
-            
-            // 更新按钮样式
-            const btn = document.getElementById('compareSystemBtn');
-            if (btn) {
-                btn.classList.remove('bg-yellow-600');
-                btn.innerHTML = '<i class="fas fa-exchange-alt mr-1"></i>对比系统';
+            // 隐藏对比系统面板
+            const comparePanel = document.getElementById('compareSystemPanel');
+            if (comparePanel) {
+                comparePanel.style.display = 'none';
+                comparePanel.classList.add('hidden');
             }
             
             // 恢复雷达图和排名显示
@@ -8355,17 +8412,11 @@
         // 设置职业定位
         function setProfessionRole(role) {
             currentProfessionRole = role;
-            const config = professionRoleConfig[role];
             
-            // 更新徽章显示
-            const badge = document.getElementById('professionRoleBadge');
-            if (badge) {
-                badge.className = `inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium ${config.bgClass} ${config.textClass} border ${config.borderClass} ${config.hoverClass} transition-all cursor-pointer`;
-                badge.innerHTML = `
-                    <i class="fas ${config.icon}"></i>
-                    <span>${config.label}</span>
-                    <i class="fas fa-chevron-down ml-0.5 text-[10px]"></i>
-                `;
+            // 同步下拉菜单选择
+            const select = document.getElementById('professionRoleSelect');
+            if (select && select.value !== role) {
+                select.value = role;
             }
             
             // 重新渲染职业对比图表
@@ -8387,14 +8438,241 @@
             return 'defense';
         }
 
-        // 循环切换职业定位
-        function cycleProfessionRole() {
-            const roles = ['bodyguard', 'defense', 'attack', 'support'];
-            const currentIndex = roles.indexOf(currentProfessionRole);
-            const nextIndex = (currentIndex + 1) % roles.length;
-            setProfessionRole(roles[nextIndex]);
+        // ==================== 新旧ID映射功能 ====================
+        
+        // ID映射表：旧ID -> 新ID
+        let nameMappingTable = {};
+        
+        // 本地存储键名
+        const NAME_MAPPING_STORAGE_KEY = 'xg_name_mapping_table';
+        
+        // 保存映射表到本地存储
+        function saveNameMappingToStorage() {
+            try {
+                localStorage.setItem(NAME_MAPPING_STORAGE_KEY, JSON.stringify(nameMappingTable));
+            } catch (e) {
+                console.warn('保存名称映射到本地存储失败:', e);
+            }
+        }
+        
+        // 从本地存储加载映射表
+        function loadNameMappingFromStorage() {
+            try {
+                const stored = localStorage.getItem(NAME_MAPPING_STORAGE_KEY);
+                if (stored) {
+                    nameMappingTable = JSON.parse(stored);
+                    console.log('已从本地存储加载名称映射表:', Object.keys(nameMappingTable).length, '条规则');
+                }
+            } catch (e) {
+                console.warn('从本地存储加载名称映射失败:', e);
+                nameMappingTable = {};
+            }
+        }
+        
+        // 页面加载时自动加载映射表
+        loadNameMappingFromStorage();
+        
+        // 关闭名称变更面板（统一处理）
+        function closeNameMappingPanel() {
+            const mappingCard = document.getElementById('nameMappingCard');
+            const comparePanel = document.getElementById('compareSystemPanel');
+            const btn = document.getElementById('nameMappingBtn');
+            
+            if (mappingCard && !mappingCard.classList.contains('hidden')) {
+                mappingCard.classList.add('hidden');
+                mappingCard.style.display = 'none';
+                // 显示对比系统面板
+                if (comparePanel) { comparePanel.classList.remove('hidden'); comparePanel.style.display = 'flex'; }
+                if (btn) btn.classList.remove('bg-purple-600', 'text-white');
+            }
+        }
+        
+        // 切换名称变更面板显示
+        function toggleNameMappingPanel() {
+            const mappingCard = document.getElementById('nameMappingCard');
+            const comparePanel = document.getElementById('compareSystemPanel');
+            const btn = document.getElementById('nameMappingBtn');
+            
+            if (mappingCard.classList.contains('hidden')) {
+                // 显示映射面板，隐藏对比系统面板
+                if (comparePanel) { comparePanel.classList.add('hidden'); comparePanel.style.display = 'none'; }
+                mappingCard.classList.remove('hidden');
+                mappingCard.style.display = 'flex';
+                btn.classList.add('bg-purple-600', 'text-white');
+                renderNameMappingList();
+            } else {
+                // 隐藏映射面板，显示对比系统面板
+                closeNameMappingPanel();
+            }
+        }
+        
+        // 添加ID映射
+        function addNameMapping() {
+            const oldIdsInput = document.getElementById('oldIdsInput');
+            const newIdInput = document.getElementById('newIdInput');
+            
+            const oldIdsStr = oldIdsInput.value.trim();
+            const newId = newIdInput.value.trim();
+            
+            if (!oldIdsStr || !newId) {
+                alert('请输入旧ID和新ID');
+                return;
+            }
+            
+            // 解析旧ID（支持逗号分隔）
+            const oldIds = oldIdsStr.split(/[,，]/).map(id => id.trim()).filter(id => id);
+            
+            if (oldIds.length === 0) {
+                alert('请输入至少一个旧ID');
+                return;
+            }
+            
+            // 添加到映射表
+            oldIds.forEach(oldId => {
+                nameMappingTable[oldId] = newId;
+            });
+            
+            // 保存到本地存储
+            saveNameMappingToStorage();
+            
+            // 清空输入
+            oldIdsInput.value = '';
+            newIdInput.value = '';
+            
+            // 刷新列表并重新处理数据
+            renderNameMappingList();
+            applyNameMappingToData();
+        }
+        
+        // 删除单个映射
+        function removeNameMapping(oldId) {
+            delete nameMappingTable[oldId];
+            // 保存到本地存储
+            saveNameMappingToStorage();
+            renderNameMappingList();
+            applyNameMappingToData();
+        }
+        
+        // 清空所有映射
+        function clearAllNameMappings() {
+            if (Object.keys(nameMappingTable).length === 0) return;
+            
+            if (confirm('确定要清空所有映射规则吗？此操作不可恢复。')) {
+                nameMappingTable = {};
+                // 保存到本地存储（清空）
+                saveNameMappingToStorage();
+                renderNameMappingList();
+                applyNameMappingToData();
+            }
+        }
+        
+        // 更新映射表计数显示
+        function updateNameMappingCount() {
+            const countEl = document.getElementById('mappingProcessedCount');
+            if (countEl) {
+                const count = Object.keys(nameMappingTable).length;
+                countEl.textContent = count;
+            }
+        }
+        
+        // 渲染映射列表
+        function renderNameMappingList() {
+            const listContainer = document.getElementById('nameMappingList');
+            const mappings = Object.entries(nameMappingTable);
+            
+            // 更新计数
+            updateNameMappingCount();
+            
+            if (mappings.length === 0) {
+                listContainer.innerHTML = '<div class="text-center text-gray-500 py-4 text-xs">暂无映射规则</div>';
+                return;
+            }
+            
+            // 按新ID分组显示
+            const grouped = {};
+            mappings.forEach(([oldId, newId]) => {
+                if (!grouped[newId]) grouped[newId] = [];
+                grouped[newId].push(oldId);
+            });
+            
+            let html = '';
+            Object.entries(grouped).forEach(([newId, oldIds]) => {
+                html += `
+                    <div class="bg-[#0d0d0d] rounded p-2">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs text-purple-400 font-medium">${newId}</span>
+                            <span class="text-[10px] text-gray-500">${oldIds.length}个旧ID</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1">
+                            ${oldIds.map(oldId => `
+                                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gray-800 rounded text-[10px] text-gray-400">
+                                    ${oldId}
+                                    <i class="fas fa-times cursor-pointer hover:text-red-400" onclick="removeNameMapping('${oldId}')"></i>
+                                </span>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            listContainer.innerHTML = html;
+        }
+        
+        // 应用ID映射到数据
+        function applyNameMappingToData() {
+            let processedCount = 0;
+            
+            // 处理 guild1Data
+            if (typeof guild1Data !== 'undefined') {
+                guild1Data.forEach(player => {
+                    const originalName = player['玩家名字'];
+                    if (nameMappingTable[originalName]) {
+                        player['玩家名字'] = nameMappingTable[originalName];
+                        processedCount++;
+                    }
+                });
+            }
+            
+            // 处理 guild2Data
+            if (typeof guild2Data !== 'undefined') {
+                guild2Data.forEach(player => {
+                    const originalName = player['玩家名字'];
+                    if (nameMappingTable[originalName]) {
+                        player['玩家名字'] = nameMappingTable[originalName];
+                        processedCount++;
+                    }
+                });
+            }
+            
+            // 处理多场缓存数据
+            if (typeof multiBattleCache !== 'undefined' && multiBattleCache.length > 0) {
+                multiBattleCache.forEach(battle => {
+                    const guilds = battle.guilds || battle.data || {};
+                    Object.values(guilds).forEach(players => {
+                        players.forEach(player => {
+                            const originalName = player['玩家名字'];
+                            if (nameMappingTable[originalName]) {
+                                player['玩家名字'] = nameMappingTable[originalName];
+                                processedCount++;
+                            }
+                        });
+                    });
+                });
+            }
+            
+            // 更新计数
+            const countEl = document.getElementById('mappingProcessedCount');
+            if (countEl) countEl.textContent = processedCount;
+            
+            // 刷新显示
+            renderPlayerList();
+            if (typeof renderMultiBattleStats === 'function') {
+                renderMultiBattleStats();
+            }
         }
 
+        // ==================== 全屏详细分析功能 ====================
+        
         // 打开全屏详细分析
         function openFullscreenAnalysis() {
             if (!currentPlayer) {
@@ -10962,6 +11240,9 @@
 
                     // 更新排行榜
                     updateLeaderboardView();
+                    
+                    // 应用名称映射到新加载的数据
+                    applyNameMappingToData();
                 } catch (e) {
                     console.error('解析数据失败:', e);
                     loadExampleData();
@@ -10980,6 +11261,9 @@
             
             // 初始化数据源管理器
             initDataSourceManager();
+            
+            // 初始化名称映射表（从localStorage加载后更新计数）
+            updateNameMappingCount();
             
             // 档案码功能已禁用
             // handleCardCodeUrlParams();
@@ -15634,11 +15918,12 @@
                     <span class="text-gray-600">|</span>
                     <span id="fullscreenPlayerGuildScreenshot">帮会</span>
                     <span class="text-gray-600">|</span>
-                    <button onclick="cycleProfessionRole()" id="professionRoleBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium bg-jade/20 text-jade border border-jade/40 hover:bg-jade/30 transition-all" title="点击切换职业定位">
-                        <i class="fas fa-shield-alt"></i>
-                        <span>保镖</span>
-                        <i class="fas fa-chevron-down ml-0.5 text-[10px]"></i>
-                    </button>
+                    <select id="professionRoleSelect" onchange="setProfessionRole(this.value)" class="bg-[#1a1a1a] border border-gray-600 text-xs rounded px-2 py-1 text-gray-300 focus:outline-none focus:border-jade cursor-pointer">
+                        <option value="bodyguard">🛡️ 保镖</option>
+                        <option value="defense">🏰 防守</option>
+                        <option value="attack">🔥 进攻</option>
+                        <option value="support">🤝 功能职业</option>
+                    </select>
                 </p>
             </div>
 
