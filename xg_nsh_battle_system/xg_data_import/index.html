@@ -360,7 +360,17 @@
                         <div class="mt-3 pt-3 border-t border-gray-800 space-y-2">
                             <div id="selectionControls" class="flex items-center justify-between text-xs text-gray-500 mb-2 hidden">
                                 <span>勾选 <span id="selectedCount" class="text-jade">0</span> 场导入</span>
-                                <button onclick="toggleSelectAll()" class="text-jade hover:underline">全选/取消</button>
+                                <div class="flex items-center gap-2">
+                                    <label class="flex items-center gap-1 cursor-pointer" title="勾选后自动选择最近的10场数据">
+                                        <input type="checkbox" id="autoSelectCheckbox" checked 
+                                               class="w-3 h-3 accent-jade cursor-pointer"
+                                               onchange="toggleAutoSelect(this.checked)">
+                                        <span class="text-jade">自动选近10场</span>
+                                    </label>
+                                    <button onclick="showAutoSelectHelp()" class="text-gray-500 hover:text-jade" title="查看说明">
+                                        <i class="fas fa-question-circle"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div id="autoSelectHint" class="text-xs text-gray-500 mb-2">
                                 <i class="fas fa-info-circle mr-1"></i>点击列表选择要导入的场次
@@ -584,6 +594,7 @@
         const MAX_BATTLE_SELECT = 10; // 最多选择10场进行分析
         let multiBattleData = [];
         let selectedBattleIds = new Set(); // 改为多选
+        let isAutoSelectEnabled = true; // 是否启用自动选择近10场
         let processedData = {};
         let parsedFileInfo = null; // 存储解析后的文件信息
         const DEFAULT_FOLDER = 'C:/Users/31352/AppData/LocalLow/netease/逆水寒手游桌面版/';
@@ -767,9 +778,15 @@
             const badge = document.getElementById('battleCountBadge');
             const loadBtn = document.getElementById('loadToAnalysisBtn');
             const selectedCount = document.getElementById('selectedCount');
+            const autoSelectCheckbox = document.getElementById('autoSelectCheckbox');
             
             badge.textContent = `${multiBattleData.length} 场`;
             selectedCount.textContent = selectedBattleIds.size;
+            
+            // 同步自动选择复选框状态
+            if (autoSelectCheckbox) {
+                autoSelectCheckbox.checked = isAutoSelectEnabled;
+            }
             
             if (multiBattleData.length === 0) {
                 container.innerHTML = `
@@ -983,32 +1000,66 @@
             updateBattleListUI();
         }
 
-        // 全选/取消全选（最多10场）
+        // 全选/取消全选
+        // 根据isAutoSelectEnabled决定行为：
+        // - 自动选择开启：全选近10场
+        // - 自动选择关闭：可以全选所有（超过10场时也只选10场，受MAX_BATTLE_SELECT限制）
         function toggleSelectAll() {
             const sortedData = [...multiBattleData].sort((a, b) => b.timestamp - a.timestamp);
-            if (selectedBattleIds.size === multiBattleData.length || selectedBattleIds.size >= MAX_BATTLE_SELECT) {
-                // 全部选中，取消全选
+            if (selectedBattleIds.size > 0) {
+                // 已有选中，取消全选（清空）
                 selectedBattleIds.clear();
             } else {
-                // 否则全选（最多10场）
-                selectedBattleIds.clear();
+                // 全选近10场
                 sortedData.slice(0, MAX_BATTLE_SELECT).forEach(b => selectedBattleIds.add(b.id));
             }
             updateBattleListUI();
         }
 
-        // 自动选择（不足10场时全选，超过10场时不自动选择）
+        // 自动选择逻辑
+        // <=10场：自动全选所有数据
+        // >10场：根据isAutoSelectEnabled决定是否自动选近10场
         function autoSelectIfEmpty() {
             if (multiBattleData.length === 0) return;
             
             const sortedData = [...multiBattleData].sort((a, b) => b.timestamp - a.timestamp);
             
-            // 如果数据量不超过10场，自动全选
+            // 如果数据量不超过10场，自动全选所有
             if (sortedData.length <= MAX_BATTLE_SELECT) {
                 selectedBattleIds.clear();
                 sortedData.forEach(b => selectedBattleIds.add(b.id));
+            } else {
+                // 数据量超过10场
+                if (isAutoSelectEnabled) {
+                    // 自动选择近10场（最新的10场）
+                    selectedBattleIds.clear();
+                    sortedData.slice(0, MAX_BATTLE_SELECT).forEach(b => selectedBattleIds.add(b.id));
+                }
+                // 如果取消自动选择，则不自动选择任何数据，让用户手动选择
             }
-            // 如果超过10场且没有选中任何数据，不自动选择（让用户手动选择）
+        }
+        
+        // 切换自动选择开关
+        function toggleAutoSelect(checked) {
+            isAutoSelectEnabled = checked;
+            if (isAutoSelectEnabled && multiBattleData.length > MAX_BATTLE_SELECT) {
+                // 开启自动选择，且数据量>10场，自动选近10场
+                const sortedData = [...multiBattleData].sort((a, b) => b.timestamp - a.timestamp);
+                selectedBattleIds.clear();
+                sortedData.slice(0, MAX_BATTLE_SELECT).forEach(b => selectedBattleIds.add(b.id));
+            } else if (!isAutoSelectEnabled) {
+                // 关闭自动选择，清空选择，让用户手动选择
+                selectedBattleIds.clear();
+            }
+            updateBattleListUI();
+        }
+        
+        // 显示自动选择帮助说明
+        function showAutoSelectHelp() {
+            alert('【自动选近10场】功能说明：\n\n' +
+                  '✓ 勾选状态：自动选择最近的10场数据进行解析\n' +
+                  '✗ 取消勾选：关闭自动选择，需手动勾选要解析的场次\n\n' +
+                  '注意：手动选择时可以只选1场或任意多场，\n系统不会自动补足到10场。');
         }
 
         // 删除单场
@@ -1018,6 +1069,8 @@
             selectedBattleIds.delete(battleId);
             if (activeBattleId === battleId) activeBattleId = null;
             saveMultiBattleData();
+            // 删除后重新应用自动选择逻辑（如果数据量变化可能影响选择）
+            autoSelectIfEmpty();
             updateBattleListUI();
         }
 
@@ -1046,22 +1099,8 @@
                     alert('请至少勾选一场数据');
                     return;
                 }
-                // 按时间顺序获取勾选的场次
+                // 按时间顺序获取勾选的场次（不再补足，用户选多少就导入多少）
                 battlesToImport = sortedData.filter(b => selectedBattleIds.has(b.id));
-                
-                // 如果勾选不足10场，按时间顺序从后往前补足到10场
-                if (battlesToImport.length < MAX_BATTLE_SELECT) {
-                    const needCount = MAX_BATTLE_SELECT - battlesToImport.length;
-                    const existingIds = new Set(battlesToImport.map(b => b.id));
-                    // 从已排序的数据中（时间倒序），从后往前取（时间较早的）
-                    for (let i = sortedData.length - 1; i >= 0 && needCount > 0; i--) {
-                        const battle = sortedData[i];
-                        if (!existingIds.has(battle.id)) {
-                            battlesToImport.unshift(battle); // 加到前面（时间较早的排前面）
-                            existingIds.add(battle.id);
-                        }
-                    }
-                }
             } else {
                 // <10场：使用当前激活的单选那场
                 if (!activeBattleId) {
@@ -1307,10 +1346,17 @@
             
             saveMultiBattleData();
             
-            // 新导入的数据自动添加到多选列表（如果未满10场）
-            if (selectedBattleIds.size < MAX_BATTLE_SELECT) {
-                selectedBattleIds.add(battleId);
+            // 根据自动选择设置处理
+            if (multiBattleData.length <= MAX_BATTLE_SELECT) {
+                // <=10场：全选所有
+                selectedBattleIds.clear();
+                multiBattleData.forEach(b => selectedBattleIds.add(b.id));
+            } else if (isAutoSelectEnabled) {
+                // >10场且自动选择开启：选近10场
+                selectedBattleIds.clear();
+                multiBattleData.slice(0, MAX_BATTLE_SELECT).forEach(b => selectedBattleIds.add(b.id));
             }
+            // 如果>10场且自动选择关闭，不自动添加，让用户手动选择
             
             updateBattleListUI();
             
@@ -1468,6 +1514,14 @@
                                             }
                                         }
                                     });
+                                    
+                                    // 处理单独的化羽字段（如果CSV中有单独的化羽列）
+                                    if (player['化羽'] !== undefined && player['化羽'] !== '' && player['化羽'] !== 0) {
+                                        const huayuValue = parseFloat(player['化羽']) || 0;
+                                        if (huayuValue > 0) {
+                                            player['化羽'] = huayuValue;
+                                        }
+                                    }
                                     guildData.push(player);
                                 }
                             }
