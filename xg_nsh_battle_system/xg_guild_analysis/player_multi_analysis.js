@@ -40,11 +40,21 @@ function formatSmallNumber(num) {
  */
 function getMultiBattleCache() {
     try {
-        // 首先尝试从主系统的全局变量获取
+        // 首先检查是否有导入的档案码数据
+        const importedCache = localStorage.getItem('importedCardMultiCache');
+        if (importedCache) {
+            const parsed = JSON.parse(importedCache);
+            if (parsed && parsed.length > 0) {
+                return parsed;
+            }
+        }
+        
+        // 然后尝试从主系统的全局变量获取
         if (typeof multiBattleCache !== 'undefined' && multiBattleCache.length > 0) {
             return multiBattleCache;
         }
-        // 否则从 localStorage 获取
+        
+        // 否则从 localStorage 获取常规缓存
         const cache = localStorage.getItem(MULTI_BATTLE_CACHE_KEY);
         return cache ? JSON.parse(cache) : [];
     } catch (e) {
