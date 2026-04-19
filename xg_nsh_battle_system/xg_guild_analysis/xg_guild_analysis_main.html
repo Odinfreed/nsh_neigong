@@ -8409,11 +8409,66 @@
             }
         };
 
+        // 职业定位显示文本映射
+        const professionRoleDisplayMap = {
+            bodyguard: { text: '🛡️ 保镖', icon: '🛡️', label: '保镖' },
+            defense: { text: '🏰 防守', icon: '🏰', label: '防守' },
+            attack: { text: '🔥 进攻', icon: '🔥', label: '进攻' },
+            support: { text: '🤝 功能职业', icon: '🤝', label: '功能职业' }
+        };
+        
+        // 切换职业定位下拉菜单
+        function toggleProfessionRoleDropdown() {
+            const dropdown = document.getElementById('professionRoleDropdown');
+            if (dropdown) {
+                dropdown.classList.toggle('hidden');
+            }
+        }
+        
+        // 选择职业定位
+        function selectProfessionRole(role) {
+            // 更新显示的文本
+            const textEl = document.getElementById('professionRoleText');
+            if (textEl && professionRoleDisplayMap[role]) {
+                textEl.textContent = professionRoleDisplayMap[role].text;
+            }
+            
+            // 隐藏下拉菜单
+            const dropdown = document.getElementById('professionRoleDropdown');
+            if (dropdown) {
+                dropdown.classList.add('hidden');
+            }
+            
+            // 同步隐藏的select并触发原有逻辑
+            const select = document.getElementById('professionRoleSelect');
+            if (select) {
+                select.value = role;
+            }
+            
+            // 调用原有设置函数
+            setProfessionRole(role);
+        }
+        
+        // 点击外部关闭下拉菜单
+        document.addEventListener('click', function(e) {
+            const selector = document.getElementById('professionRoleSelector');
+            const dropdown = document.getElementById('professionRoleDropdown');
+            if (selector && dropdown && !selector.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+        
         // 设置职业定位
         function setProfessionRole(role) {
             currentProfessionRole = role;
             
-            // 同步下拉菜单选择
+            // 同步自定义选择器显示
+            const textEl = document.getElementById('professionRoleText');
+            if (textEl && professionRoleDisplayMap[role]) {
+                textEl.textContent = professionRoleDisplayMap[role].text;
+            }
+            
+            // 同步隐藏的select
             const select = document.getElementById('professionRoleSelect');
             if (select && select.value !== role) {
                 select.value = role;
@@ -9291,20 +9346,7 @@
                                 labels: { color: '#E5E7EB', font: { size: 10 } },
                                 position: 'top'
                             },
-                            datalabels: {
-                                display: function(context) {
-                                    const name = context.chart.data.labels[context.dataIndex];
-                                    return name === currentPlayer['玩家名字'] || name === '【对方平均】';
-                                },
-                                color: '#E5E7EB',
-                                font: { size: 9 },
-                                formatter: function(value) {
-                                    return formatCompactNumber(value);
-                                },
-                                anchor: 'end',
-                                align: 'top',
-                                offset: 2
-                            },
+                            datalabels: false,
                             tooltip: {
                                 callbacks: {
                                     label: function(context) {
@@ -9395,20 +9437,7 @@
                                 labels: { color: '#E5E7EB', font: { size: 10 } },
                                 position: 'top'
                             },
-                            datalabels: {
-                                display: function(context) {
-                                    const name = context.chart.data.labels[context.dataIndex];
-                                    return name === currentPlayer['玩家名字'] || name === '【对方平均】';
-                                },
-                                color: '#E5E7EB',
-                                font: { size: 9 },
-                                formatter: function(value) {
-                                    return formatCompactNumber(value);
-                                },
-                                anchor: 'end',
-                                align: 'top',
-                                offset: 2
-                            },
+                            datalabels: false,
                             tooltip: {
                                 callbacks: {
                                     label: function(context) {
@@ -9606,6 +9635,42 @@
                         el.style.minHeight = '1px';
                     }
                 });
+                
+                // 修复：自定义职业定位选择器的对齐问题
+                const roleSelectorBtn = clone.querySelector('#professionRoleSelector button');
+                if (roleSelectorBtn) {
+                    roleSelectorBtn.style.verticalAlign = 'middle';
+                    roleSelectorBtn.style.display = 'inline-flex';
+                    roleSelectorBtn.style.alignItems = 'center';
+                    roleSelectorBtn.style.lineHeight = '1.5';
+                    roleSelectorBtn.style.padding = '0';
+                    roleSelectorBtn.style.margin = '0';
+                    roleSelectorBtn.style.height = 'auto';
+                }
+                
+                // 隐藏下拉菜单（截图时不应显示）
+                const roleDropdown = clone.querySelector('#professionRoleDropdown');
+                if (roleDropdown) {
+                    roleDropdown.style.display = 'none';
+                }
+                
+                // 修复：flex容器中的对齐问题
+                const flexContainers = clone.querySelectorAll('.flex.items-center.justify-center, .flex.items-center');
+                flexContainers.forEach(container => {
+                    container.style.alignItems = 'center';
+                    container.style.lineHeight = '1.5';
+                    // 确保子元素垂直居中
+                    Array.from(container.children).forEach(child => {
+                        child.style.verticalAlign = 'middle';
+                    });
+                });
+                
+                // 特别修复：玩家信息标题中的选择器
+                const headerSelector = clone.querySelector('#professionRoleSelector');
+                if (headerSelector) {
+                    headerSelector.style.verticalAlign = 'middle';
+                    headerSelector.style.display = 'inline-block';
+                }
 
                 // 将克隆节点添加到body进行截图
                 clone.style.position = 'fixed';
@@ -9648,6 +9713,43 @@
                             el.style.removeProperty('--tw-gradient-to');
                             el.style.removeProperty('--tw-gradient-stops');
                         });
+                        
+                        // 修复：自定义职业定位选择器的对齐问题
+                        const roleSelectorBtn = clonedDoc.querySelector('#professionRoleSelector button');
+                        if (roleSelectorBtn) {
+                            roleSelectorBtn.style.verticalAlign = 'middle';
+                            roleSelectorBtn.style.display = 'inline-flex';
+                            roleSelectorBtn.style.alignItems = 'center';
+                            roleSelectorBtn.style.lineHeight = '1.5';
+                            roleSelectorBtn.style.padding = '0';
+                            roleSelectorBtn.style.margin = '0';
+                            roleSelectorBtn.style.height = 'auto';
+                        }
+                        
+                        // 隐藏下拉菜单（截图时不应显示）
+                        const roleDropdown = clonedDoc.querySelector('#professionRoleDropdown');
+                        if (roleDropdown) {
+                            roleDropdown.style.display = 'none';
+                        }
+                        
+                        // 修复：flex容器中的对齐问题
+                        const flexElements = clonedDoc.querySelectorAll('.flex.items-center.justify-center, .flex.items-center');
+                        flexElements.forEach(container => {
+                            container.style.alignItems = 'center';
+                            container.style.lineHeight = '1.5';
+                            // 确保子元素垂直居中
+                            Array.from(container.children).forEach(child => {
+                                child.style.verticalAlign = 'middle';
+                            });
+                        });
+                        
+                        // 特别修复：玩家信息标题中的选择器
+                        const headerSelector = clonedDoc.querySelector('#professionRoleSelector');
+                        if (headerSelector) {
+                            headerSelector.style.verticalAlign = 'middle';
+                            headerSelector.style.display = 'inline-block';
+                        }
+                        
                         // Canvas已在前面转换为img，这里不需要额外处理
                     }
                 });
@@ -15924,12 +16026,36 @@
                     </div>
                     <h1 class="text-3xl font-bold text-white" id="fullscreenPlayerNameScreenshot">玩家名称</h1>
                 </div>
-                <p class="text-lg text-gray-400 flex items-center justify-center gap-3">
+                <p class="text-lg text-gray-400 flex items-center justify-center gap-3" style="line-height: 1.5;">
                     <span id="fullscreenPlayerProfessionScreenshot">职业</span>
                     <span class="text-gray-600">|</span>
                     <span id="fullscreenPlayerGuildScreenshot">帮会</span>
                     <span class="text-gray-600">|</span>
-                    <select id="professionRoleSelect" onchange="setProfessionRole(this.value)" class="bg-[#1a1a1a] border border-gray-600 text-xs rounded px-2 py-1 text-gray-300 focus:outline-none focus:border-jade cursor-pointer">
+                    <!-- 自定义职业定位选择器 -->
+                    <div class="relative inline-block" id="professionRoleSelector">
+                        <button onclick="toggleProfessionRoleDropdown()" 
+                            class="text-xs text-gray-300 hover:text-white focus:outline-none flex items-center gap-1"
+                            style="vertical-align: middle; line-height: 1.5;">
+                            <span id="professionRoleText">🛡️ 保镖</span>
+                            <i class="fas fa-chevron-down text-[10px] opacity-70"></i>
+                        </button>
+                        <div id="professionRoleDropdown" class="hidden absolute top-full left-0 mt-1 bg-[#1a1a1a] border border-gray-600 rounded shadow-lg z-50 min-w-[100px]">
+                            <div onclick="selectProfessionRole('bodyguard')" class="px-3 py-2 text-xs text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2">
+                                <span>🛡️</span><span>保镖</span>
+                            </div>
+                            <div onclick="selectProfessionRole('defense')" class="px-3 py-2 text-xs text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2">
+                                <span>🏰</span><span>防守</span>
+                            </div>
+                            <div onclick="selectProfessionRole('attack')" class="px-3 py-2 text-xs text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2">
+                                <span>🔥</span><span>进攻</span>
+                            </div>
+                            <div onclick="selectProfessionRole('support')" class="px-3 py-2 text-xs text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2">
+                                <span>🤝</span><span>功能职业</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 隐藏的select用于兼容原有逻辑 -->
+                    <select id="professionRoleSelect" onchange="setProfessionRole(this.value)" class="hidden">
                         <option value="bodyguard">🛡️ 保镖</option>
                         <option value="defense">🏰 防守</option>
                         <option value="attack">🔥 进攻</option>
@@ -16005,18 +16131,16 @@
                     </div>
                 </div>
                 <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4">
-                    <h3 class="text-sm font-bold mb-2 flex items-center justify-between">
-                        <span><i class="fas fa-chart-bar mr-2 text-warning"></i>职业伤害对比</span>
-                        <span class="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded">本场数据分析</span>
+                    <h3 class="text-sm font-bold mb-2 flex items-center">
+                        <i class="fas fa-chart-bar mr-2 text-warning"></i>职业伤害对比
                     </h3>
                     <div class="relative" style="height: 280px;">
                         <canvas id="fullscreenProfessionDamageChart"></canvas>
                     </div>
                 </div>
                 <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4">
-                    <h3 class="text-sm font-bold mb-2 flex items-center justify-between">
-                        <span><i class="fas fa-chart-line mr-2 text-success"></i>职业战斗对比</span>
-                        <span class="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded">本场数据分析</span>
+                    <h3 class="text-sm font-bold mb-2 flex items-center">
+                        <i class="fas fa-chart-line mr-2 text-success"></i>职业战斗对比
                     </h3>
                     <div class="relative" style="height: 280px;">
                         <canvas id="fullscreenProfessionCombatChart"></canvas>
