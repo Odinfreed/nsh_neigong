@@ -8664,8 +8664,13 @@
             const countEl = document.getElementById('mappingProcessedCount');
             if (countEl) countEl.textContent = processedCount;
             
-            // 刷新显示
-            renderPlayerList();
+            // 刷新显示 - 更新所有相关视图
+            updateStats();
+            updateCharts();
+            updateLeaderboardView();
+            if (typeof updatePlayerSelect === 'function') {
+                updatePlayerSelect();
+            }
             if (typeof renderMultiBattleStats === 'function') {
                 renderMultiBattleStats();
             }
@@ -10348,6 +10353,12 @@
 
                 // 更新玩家列表表格
                 console.log('Calling updateProfessionPlayersTable');
+                
+                // 针对潮光职业，按清泉从高到低排序
+                if (profession === '潮光') {
+                    professionPlayers.sort((a, b) => (b['清泉'] || 0) - (a['清泉'] || 0));
+                }
+                
                 updateProfessionPlayersTable(professionPlayers);
                 console.log('updateProfessionComparison completed');
             }, 100);
