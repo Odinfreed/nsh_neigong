@@ -9793,9 +9793,14 @@
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden'; // 禁止背景滚动
 
+            // 加载用户个人设置获取区服
+            const settings = loadUserProfileSettings();
+            const regionName = settings.region || '未设置区服';
+
             // 填充玩家基本信息
             document.getElementById('fullscreenPlayerName').textContent = currentPlayer['玩家名字'];
             document.getElementById('fullscreenPlayerProfession').textContent = currentPlayer['职业'];
+            document.getElementById('fullscreenPlayerRegion').textContent = regionName;
             const guildName = getPlayerGuildName(currentPlayer['玩家名字']);
             const guildElement = document.getElementById('fullscreenPlayerGuild');
             guildElement.textContent = guildName;
@@ -9804,6 +9809,7 @@
             // 同步更新截图区域的玩家信息
             document.getElementById('fullscreenPlayerNameScreenshot').textContent = currentPlayer['玩家名字'];
             document.getElementById('fullscreenPlayerProfessionScreenshot').textContent = currentPlayer['职业'];
+            document.getElementById('fullscreenPlayerRegionScreenshot').textContent = regionName;
             const guildScreenshotEl = document.getElementById('fullscreenPlayerGuildScreenshot');
             guildScreenshotEl.textContent = guildName;
             guildScreenshotEl.className = getPlayerGuildColorClass(guildName);
@@ -17613,6 +17619,7 @@
                     <div>
                         <h2 class="text-2xl font-bold text-white" id="fullscreenPlayerName">玩家名称</h2>
                         <p class="text-sm text-gray-400">
+                            <span id="fullscreenPlayerRegion" class="text-jade">区服</span> |
                             <span id="fullscreenPlayerProfession">职业</span> | 
                             <span id="fullscreenPlayerGuild">帮会</span>
                         </p>
@@ -17642,6 +17649,8 @@
                     <h1 class="text-3xl font-bold text-white" id="fullscreenPlayerNameScreenshot">玩家名称</h1>
                 </div>
                 <p class="text-lg text-gray-400 flex items-center justify-center gap-3" style="line-height: 1.5;">
+                    <span id="fullscreenPlayerRegionScreenshot" class="text-jade">区服</span>
+                    <span class="text-gray-600">|</span>
                     <span id="fullscreenPlayerProfessionScreenshot">职业</span>
                     <span class="text-gray-600">|</span>
                     <span id="fullscreenPlayerGuildScreenshot">帮会</span>
