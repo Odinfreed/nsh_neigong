@@ -225,6 +225,16 @@
             height: 100%;
         }
         
+        .action-btn.primary {
+            border-color: var(--jade-dim);
+            color: var(--jade);
+            background: rgba(0, 212, 170, 0.05);
+        }
+        
+        .action-btn.primary::before {
+            background: linear-gradient(180deg, transparent, rgba(0, 212, 170, 0.15));
+        }
+        
         /* 标签 */
         .tag {
             font-size: 0.7rem;
@@ -237,6 +247,56 @@
         .system-card:hover .tag {
             border-color: var(--jade-dim);
             color: var(--jade);
+        }
+        
+        /* 文档中心样式 */
+        .docs-tab-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: #888;
+            transition: all 0.3s ease;
+        }
+        
+        .docs-tab-btn:hover {
+            background: rgba(255, 255, 255, 0.03);
+            color: #ccc;
+        }
+        
+        .docs-tab-btn.active {
+            background: rgba(0, 212, 170, 0.1);
+            border-color: rgba(0, 212, 170, 0.3);
+            color: var(--jade);
+        }
+        
+        .docs-update-item {
+            border-left: 3px solid transparent;
+            background: linear-gradient(145deg, rgba(26, 26, 26, 0.5) 0%, rgba(13, 13, 13, 0.5) 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .docs-update-item:hover {
+            background: linear-gradient(145deg, rgba(26, 26, 26, 0.8) 0%, rgba(13, 13, 13, 0.8) 100%);
+        }
+        
+        .docs-update-item.major {
+            border-left-color: var(--gold);
+            background: linear-gradient(90deg, rgba(201, 162, 39, 0.05) 0%, rgba(26, 26, 26, 0.5) 100%);
+        }
+        
+        .docs-update-item.minor {
+            border-left-color: var(--jade);
+        }
+        
+        .version-badge-major {
+            background: rgba(201, 162, 39, 0.2);
+            color: var(--gold);
+            border: 1px solid rgba(201, 162, 39, 0.3);
+        }
+        
+        .version-badge-minor {
+            background: rgba(0, 212, 170, 0.2);
+            color: var(--jade);
+            border: 1px solid rgba(0, 212, 170, 0.3);
         }
         
         /* 页脚 */
@@ -404,6 +464,61 @@
             border: 1px solid var(--ink-gray);
         }
         
+        /* 文档中心按钮动画 */
+        @keyframes docsBtnPulse {
+            0%, 100% { 
+                box-shadow: 0 0 0 0 rgba(0, 212, 170, 0.4);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 0 8px rgba(0, 212, 170, 0);
+                transform: scale(1.05);
+            }
+        }
+        
+        @keyframes docsBtnGlow {
+            0%, 100% { 
+                color: var(--jade);
+                text-shadow: 0 0 10px rgba(0, 212, 170, 0.5);
+            }
+            50% { 
+                color: #fff;
+                text-shadow: 0 0 20px rgba(0, 212, 170, 0.8), 0 0 30px rgba(0, 212, 170, 0.4);
+            }
+        }
+        
+        .docs-btn-highlight {
+            animation: docsBtnPulse 2s ease-in-out infinite, docsBtnGlow 2s ease-in-out infinite;
+            border-radius: 50%;
+        }
+        
+        /* 文档中心弹窗动画 */
+        @keyframes docsModalIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1) translateY(0);
+            }
+        }
+        
+        @keyframes docsModalOut {
+            from {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1) translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.95) translateY(10px);
+            }
+        }
+        
+        .docs-modal-closing {
+            animation: docsModalOut 0.3s ease forwards !important;
+        }
+        
         /* 扫描线效果 */
         .scan-line {
             position: fixed;
@@ -464,7 +579,10 @@
             </div>
             
             <p class="subtitle text-sm md:text-base">
-                帮派战数据分析 · 联赛智能分团 · 内功优化计算
+                帮派战数据分析 · 多场数据管理 · 联赛智能分团 · 内功优化计算
+            </p>
+            <p class="text-xs text-jade mt-2">
+                <i class="fas fa-star mr-1"></i>v4.0.0 已发布：支持多场帮战数据管理与趋势分析
             </p>
         </header>
 
@@ -484,15 +602,18 @@
                     </div>
                     <div class="flex-1 min-w-0">
                         <h3 class="text-lg font-medium text-gray-200 mb-2 tracking-wide">
-                            帮战分析系统
-                        </h3>
-                        <p class="text-gray-500 text-sm mb-4 leading-relaxed">
-                            CSV数据导入、多维度对比分析、可视化图表展示
-                        </p>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="tag">数据导入</span>
-                            <span class="tag">可视化</span>
-                        </div>
+                                    帮战分析系统
+                                    <span class="ml-2 text-xs bg-jade/20 text-jade px-2 py-0.5 rounded">v4.0.0</span>
+                                </h3>
+                                <p class="text-gray-500 text-sm mb-4 leading-relaxed">
+                                    多场帮战数据导入、缓存管理、趋势分析、参战率统计、多维度对比分析
+                                </p>
+                                <div class="flex flex-wrap gap-2 mb-4">
+                                    <span class="tag">多场数据</span>
+                                    <span class="tag">趋势分析</span>
+                                    <span class="tag">参战率</span>
+                                    <span class="tag">可视化</span>
+                                </div>
                         <a href="xg_nsh_battle_system/xg_data_import/index.html" 
                            class="action-btn inline-flex items-center px-5 py-2 text-sm rounded-sm">
                             <i class="fas fa-arrow-right mr-2 text-xs"></i>
@@ -535,74 +656,115 @@
                 </div>
             </div>
 
-            <!-- 内功计算 -->
-            <div class="system-card rounded-sm p-6">
-                <div class="card-glow rounded-sm"></div>
-                <div class="corner-decoration top-left"></div>
-                <div class="corner-decoration top-right"></div>
-                <div class="corner-decoration bottom-left"></div>
-                <div class="corner-decoration bottom-right"></div>
-                
-                <div class="relative flex items-start gap-5">
-                    <div class="icon-container rounded-sm flex-shrink-0">
-                        <i class="fas fa-calculator text-2xl text-gray-400"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <h3 class="text-lg font-medium text-gray-200 mb-2 tracking-wide">
-                            内功评分计算器
-                        </h3>
-                        <p class="text-gray-500 text-sm mb-4 leading-relaxed">
-                            手动/自动组合计算，优化内功配置
-                        </p>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="tag">自动组合</span>
-                            <span class="tag">评分优化</span>
-                        </div>
-                        <a href="xg_nsh_battle_system/sg_calculator/sg_calculator_main.html" 
-                           class="action-btn inline-flex items-center px-5 py-2 text-sm rounded-sm">
-                            <i class="fas fa-arrow-right mr-2 text-xs"></i>
-                            进入系统
-                        </a>
-                    </div>
-                </div>
-            </div>
+        </div>
 
-            <!-- 文档说明 -->
-            <div class="system-card rounded-sm p-6">
-                <div class="card-glow rounded-sm"></div>
-                <div class="corner-decoration top-left"></div>
-                <div class="corner-decoration top-right"></div>
-                <div class="corner-decoration bottom-left"></div>
-                <div class="corner-decoration bottom-right"></div>
-                
-                <div class="relative flex items-start gap-5">
-                    <div class="icon-container rounded-sm flex-shrink-0">
-                        <i class="fas fa-book text-2xl text-gray-400"></i>
+        <!-- 文档中心弹窗 -->
+        <div id="docsCenterModal" class="fixed inset-0 bg-black/80 backdrop-blur z-50 hidden" onclick="closeDocsCenterModal(event)">
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-[80vh] bg-[#1a1a1a] border border-gray-800 rounded-sm shadow-2xl flex overflow-hidden" 
+                 style="animation: docsModalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);" onclick="event.stopPropagation()">
+                <!-- 左侧标签栏 -->
+                <div class="w-64 border-r border-gray-800 p-4 flex flex-col">
+                    <h3 class="text-base font-medium text-gray-200 mb-4 flex items-center">
+                        <i class="fas fa-book mr-2 text-jade"></i>
+                        文档中心
+                    </h3>
+                    
+                    <!-- 标签列表 -->
+                    <div class="space-y-2">
+                        <button onclick="switchDocsTab('updates')" id="docs-tab-updates" 
+                                class="docs-tab-btn w-full text-left px-4 py-3 rounded text-sm flex items-center justify-between active">
+                            <span class="flex items-center">
+                                <i class="fas fa-bullhorn w-5 mr-2"></i>
+                                更新公告
+                            </span>
+                            <span id="docs-unread-badge" class="px-2 py-0.5 bg-red-500/20 text-red-400 rounded text-xs hidden">0</span>
+                        </button>
+                        
+                        <button onclick="switchDocsTab('guide')" id="docs-tab-guide" 
+                                class="docs-tab-btn w-full text-left px-4 py-3 rounded text-sm flex items-center">
+                            <span class="flex items-center">
+                                <i class="fas fa-map-signs w-5 mr-2"></i>
+                                操作指南
+                            </span>
+                        </button>
                     </div>
-                    <div class="flex-1 min-w-0">
-                        <h3 class="text-lg font-medium text-gray-200 mb-2 tracking-wide">
-                            文档说明
-                        </h3>
-                        <p class="text-gray-500 text-sm mb-4 leading-relaxed">
-                            系统使用指南、数据管理中心文档
-                        </p>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="tag">使用指南</span>
-                            <span class="tag">技术文档</span>
+                    
+                    <!-- 过滤器（仅更新公告显示） -->
+                    <div id="docs-filter" class="mt-6 pt-4 border-t border-gray-800">
+                        <p class="text-xs text-gray-500 mb-3">显示类型</p>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2 text-sm text-gray-400 cursor-pointer hover:text-gray-300">
+                                <input type="checkbox" id="docs-filter-major" checked onchange="renderDocsUpdates()" class="accent-jade w-4 h-4">
+                                <span>大版本更新</span>
+                            </label>
+                            <label class="flex items-center gap-2 text-sm text-gray-400 cursor-pointer hover:text-gray-300">
+                                <input type="checkbox" id="docs-filter-minor" checked onchange="renderDocsUpdates()" class="accent-jade w-4 h-4">
+                                <span>小版本更新</span>
+                            </label>
                         </div>
-                        <div class="flex gap-3">
-                            <a href="xg_nsh_battle_system/README_数据管理中心.md" 
-                               class="action-btn inline-flex items-center px-4 py-2 text-xs rounded-sm">
-                                数据管理
-                            </a>
-                            <a href="xg_nsh_battle_system/README_自动分团系统.md" 
-                               class="action-btn inline-flex items-center px-4 py-2 text-xs rounded-sm">
-                                智能分团
-                            </a>
+                    </div>
+                    
+                    <div class="mt-auto pt-4 text-xs text-gray-600">
+                        <p>按 ESC 或点击外部关闭</p>
+                    </div>
+                </div>
+                
+                <!-- 右侧内容区 -->
+                <div class="flex-1 flex flex-col">
+                    <!-- 关闭按钮 -->
+                    <div class="flex justify-end p-4 border-b border-gray-800">
+                        <button onclick="closeDocsCenterModal()" class="text-gray-500 hover:text-white transition-colors">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- 内容区域 -->
+                    <div class="flex-1 p-6 overflow-y-auto">
+                        <!-- 更新公告内容 -->
+                        <div id="docs-panel-updates" class="docs-panel">
+                            <div class="flex items-center justify-between mb-6">
+                                <h2 class="text-xl font-bold text-gray-200">更新公告</h2>
+                                <button onclick="markAllDocsAsRead()" class="text-xs text-gray-500 hover:text-jade transition-colors flex items-center gap-1">
+                                    <i class="fas fa-check-double"></i>
+                                    <span>全部已读</span>
+                                </button>
+                            </div>
+                            
+                            <!-- 更新列表 -->
+                            <div id="docs-updates-list" class="space-y-4">
+                                <!-- 动态生成 -->
+                            </div>
+                        </div>
+                        
+                        <!-- 操作指南内容 -->
+                        <div id="docs-panel-guide" class="docs-panel hidden">
+                            <h2 class="text-xl font-bold text-gray-200 mb-6">操作指南</h2>
+                            <div class="text-center py-12 text-gray-500">
+                                <i class="fas fa-tools text-4xl mb-4 text-gray-700"></i>
+                                <p>操作指南内容正在筹备中</p>
+                                <p class="text-sm mt-2">请等待图片资源上传完成后更新</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+        
+        <!-- 详情弹窗 -->
+        <div id="docs-detail-modal" class="fixed inset-0 bg-black/80 backdrop-blur z-[60] hidden" onclick="closeDocsDetailModal(event)">
+            <div class="absolute right-0 top-0 bottom-0 w-full max-w-2xl bg-[#1a1a1a] border-l border-gray-800 p-6 overflow-y-auto" onclick="event.stopPropagation()">
+                <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-800">
+                    <div class="flex items-center gap-3">
+                        <span id="docs-detail-badge" class="px-3 py-1 rounded text-xs font-medium"></span>
+                        <h2 class="text-xl font-bold text-white" id="docs-detail-title"></h2>
+                    </div>
+                    <button onclick="closeDocsDetailModal()" class="text-gray-500 hover:text-white transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div id="docs-detail-content" class="prose prose-invert prose-sm max-w-none"></div>
+            </div>
+        </div>
         </div>
 
         <!-- 页脚 -->
@@ -621,6 +783,13 @@
                class="w-12 h-12 flex items-center justify-center text-gray-500 hover:text-[#c9a227] transition-all duration-300">
                 <i class="fas fa-gamepad text-xl"></i>
             </a>
+            <!-- 文档中心按钮 -->
+            <button id="docsCenterBtn"
+                    onclick="openDocsCenter()"
+                    title="文档中心"
+                    class="w-12 h-12 flex items-center justify-center text-gray-500 hover:text-[#00d4aa] transition-all duration-300 bg-transparent border-0 cursor-pointer">
+                <i class="fas fa-book text-xl"></i>
+            </button>
             <!-- 联系方式图标 - 悬停显示二维码 -->
             <span class="qr-trigger-right w-12 h-12 flex items-center justify-center text-gray-500 hover:text-[#00d4aa] transition-all duration-300 cursor-pointer">
                 <i class="fas fa-comment-dots text-xl"></i>
@@ -698,5 +867,411 @@
             </span>
         </div>
     </div>
+    
+    <!-- 文档中心 JavaScript -->
+    <script>
+        // 更新公告数据
+        const docsUpdatesData = [
+            {
+                version: '4.0.0',
+                date: '2026-04-20',
+                type: 'major',
+                title: '文档中心改版与多场数据管理增强',
+                summary: '全新文档中心设计，支持居中弹窗展示；多场数据管理功能增强，存储机制优化；全屏个人分析增加区服显示；参战率计算逻辑重构；新增高级权重配置隐藏功能。',
+                content: `
+                    <h3>🎉 重大更新内容</h3>
+                    
+                    <h4>📚 一、文档中心全面改版</h4>
+                    <ul>
+                        <li><strong>全新交互设计</strong>：从页面底部改为居中弹窗展示，沉浸式阅读体验</li>
+                        <li><strong>快速入口</strong>：右侧固定栏新增文档中心按钮（书本图标），一键打开</li>
+                        <li><strong>智能引导</strong>：首次访问或版本更新后自动弹窗，按钮高亮闪烁引导</li>
+                        <li><strong>标签页设计</strong>：左侧标签栏切换"更新公告"和"操作指南"</li>
+                        <li><strong>更新筛选</strong>：支持按大版本/小版本筛选更新内容</li>
+                        <li><strong>已读标记</strong>：自动记录已读版本，未读更新显示"新"标签</li>
+                        <li><strong>详情面板</strong>：点击更新项右侧滑出详情，支持富文本展示</li>
+                    </ul>
+                    
+                    <h4>📊 二、多场数据管理增强</h4>
+                    <ul>
+                        <li><strong>存储机制优化</strong>：修复localStorage存储上限问题，理论上支持无上限条数存储</li>
+                        <li><strong>存储状态监控</strong>：新增存储空间实时显示，预警空间不足</li>
+                        <li><strong>数据备份恢复</strong>：支持单场数据备份导出和导入恢复</li>
+                        <li><strong>多场看板</strong>：新增多维度数据对比视图，直观展示多场比赛数据</li>
+                        <li><strong>智能选择</strong>：分析时最多可选择10场数据进行对比，防止性能问题</li>
+                        <li><strong>数据持久化</strong>：采用分键存储策略，避免单键超限</li>
+                    </ul>
+                    
+                    <h4>👤 三、全屏个人分析增强</h4>
+                    <ul>
+                        <li><strong>区服显示</strong>：全屏界面新增区服信息展示，自动从个人档案读取</li>
+                        <li><strong>参战率重构</strong>：参战率计算逻辑优化，按帮会实际出现的场次数统计，而非总缓存场次数</li>
+                        <li><strong>趋势分析</strong>：新增多场数据趋势图，直观展示数据波动</li>
+                        <li><strong>波动比分析</strong>：计算并展示数据的波动比率，识别异常表现</li>
+                        <li><strong>截图优化</strong>：区服信息同步显示在截图中，便于分享</li>
+                    </ul>
+                    
+                    <h4>🔐 四、隐藏功能（密码进入）</h4>
+                    <ul>
+                        <li><strong>高级权重配置</strong>：密码 <code>4UND2</code>
+                            <ul>
+                                <li>支持自定义综合评分各项权重系数</li>
+                                <li>可调整输出、承伤、治疗、击破的权重占比</li>
+                                <li>实时预览权重调整后的评分变化</li>
+                                <li>权重配置自动保存到本地</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    
+                    <h4>🐛 五、Bug修复</h4>
+                    <ul>
+                        <li>修复存储超过10条数据时被错误删除的问题（实际为localStorage空间不足）</li>
+                        <li>修复数据导入失败时的回滚机制，确保数据完整性</li>
+                        <li>修复个人分析中参战率统计不准确的问题</li>
+                        <li>修复全屏模式下部分数据不显示的问题</li>
+                    </ul>
+                    
+                    <h4>⚡ 六、性能优化</h4>
+                    <ul>
+                        <li>优化大数据量渲染性能，减少页面卡顿</li>
+                        <li>图表渲染性能提升，支持更多数据点展示</li>
+                        <li>localStorage读写优化，采用批量操作策略</li>
+                    </ul>
+                `
+            },
+            {
+                version: '3.2.0',
+                date: '2026-04-18',
+                type: 'minor',
+                title: '职业末位检测与全屏分析优化',
+                summary: '新增职业末位检测隐藏功能（密码：OX208）；全屏分析界面增加职业对比图表；帮会名称支持本地缓存和快速填充；多项界面交互优化。',
+                content: `
+                    <h3>更新内容</h3>
+                    
+                    <h4>🔍 一、职业末位检测（隐藏功能）</h4>
+                    <ul>
+                        <li><strong>密码进入</strong>：输入 <code>OX208</code> 激活职业末位检测面板</li>
+                        <li><strong>自动识别</strong>：智能识别各职业排名末位的成员</li>
+                        <li><strong>多维度分析</strong>：支持按输出、承伤、治疗维度分别检测</li>
+                        <li><strong>可视化展示</strong>：末位成员高亮显示，便于快速定位</li>
+                        <li><strong>批量操作</strong>：支持一键导出末位成员名单</li>
+                    </ul>
+                    
+                    <h4>📈 二、全屏分析界面优化</h4>
+                    <ul>
+                        <li><strong>职业对比图表</strong>：新增全屏职业分布对比雷达图/柱状图</li>
+                        <li><strong>数据下钻</strong>：点击职业可查看该职业所有成员详情</li>
+                        <li><strong>对比模式</strong>：支持多职业间的数据对比分析</li>
+                        <li><strong>图表交互</strong>：支持缩放、拖拽、数据筛选</li>
+                    </ul>
+                    
+                    <h4>💾 三、帮会名称缓存</h4>
+                    <ul>
+                        <li><strong>自动记忆</strong>：自动保存最近使用的帮会名称</li>
+                        <li><strong>快速填充</strong>：输入时自动提示历史帮会名称</li>
+                        <li><strong>缓存管理</strong>：支持清理历史缓存数据</li>
+                        <li><strong>跨会话保留</strong>：关闭页面后缓存仍然有效</li>
+                    </ul>
+                    
+                    <h4>🎨 四、界面优化</h4>
+                    <ul>
+                        <li>优化全屏模式下的布局适配</li>
+                        <li>图表加载速度提升</li>
+                        <li>修复部分浏览器兼容性问题</li>
+                    </ul>
+                `
+            },
+            {
+                version: '3.1.0',
+                date: '2026-04-18',
+                type: 'minor',
+                title: '全屏详细分析与截图功能',
+                summary: '新增全屏详细分析视图，支持查看更多数据维度；一键截图保存功能，生成精美的分享图片；截图样式全面优化，适配各种展示场景。',
+                content: `
+                    <h3>更新内容</h3>
+                    
+                    <h4>🖥️ 一、全屏详细分析</h4>
+                    <ul>
+                        <li><strong>独立全屏视图</strong>：点击成员名称进入全屏详细分析模式</li>
+                        <li><strong>多维度展示</strong>：输出、承伤、治疗、击破数据一览无遗</li>
+                        <li><strong>排名信息</strong>：显示在帮会内的各项排名</li>
+                        <li><strong>占比分析</strong>：展示各项数据在帮会中的占比</li>
+                        <li><strong>趋势对比</strong>：与上次战斗数据对比，显示增减幅度</li>
+                        <li><strong>职业标识</strong>：清晰展示职业图标和名称</li>
+                    </ul>
+                    
+                    <h4>📸 二、一键截图保存</h4>
+                    <ul>
+                        <li><strong>智能截图</strong>：一键生成精美的数据分析截图</li>
+                        <li><strong>自动美化</strong>：截图自动应用主题配色和样式</li>
+                        <li><strong>高清输出</strong>：支持高分辨率图片导出</li>
+                        <li><strong>快速分享</strong>：截图可直接复制或下载保存</li>
+                        <li><strong>截图预览</strong>：生成前可预览截图效果</li>
+                    </ul>
+                    
+                    <h4>🎨 三、截图样式优化</h4>
+                    <ul>
+                        <li>采用暗色主题，护眼且专业</li>
+                        <li>数据卡片式布局，信息层次清晰</li>
+                        <li>自动添加水印和来源标识</li>
+                        <li>适配手机、电脑各种展示尺寸</li>
+                    </ul>
+                `
+            },
+            {
+                version: '3.0.0',
+                date: '2026-04-17',
+                type: 'major',
+                title: '图表系统重构与交互优化',
+                summary: '图表系统全面重构，职业分布改为折线统计图，样式升级为直角风格；支持双击编辑帮会名称，排行榜与图表数据实时同步；多项视觉和交互体验提升。',
+                content: `
+                    <h3>🎉 重大更新内容</h3>
+                    
+                    <h4>📊 一、图表系统重构</h4>
+                    <ul>
+                        <li><strong>折线统计图</strong>：职业分布从饼图升级为折线统计图，展示趋势更清晰</li>
+                        <li><strong>直角样式</strong>：图表整体改为直角风格，符合现代UI设计趋势</li>
+                        <li><strong>配色优化</strong>：采用新的配色方案，区分度更高，视觉效果更佳</li>
+                        <li><strong>动画效果</strong>：图表加载和数据更新增加平滑过渡动画</li>
+                        <li><strong>响应式设计</strong>：图表自适应容器大小，各屏幕尺寸完美展示</li>
+                    </ul>
+                    
+                    <h4>✏️ 二、帮会名称编辑</h4>
+                    <ul>
+                        <li><strong>双击编辑</strong>：双击帮会名称区域即可进入编辑模式</li>
+                        <li><strong>实时同步</strong>：修改后排行榜、图表各处数据实时同步更新</li>
+                        <li><strong>本地保存</strong>：编辑后的名称自动保存到本地存储</li>
+                        <li><strong>快捷操作</strong>：支持回车确认、ESC取消等快捷操作</li>
+                    </ul>
+                    
+                    <h4>🔄 三、数据同步机制</h4>
+                    <ul>
+                        <li>帮会名称修改后全页面联动更新</li>
+                        <li>图表标题与帮会名称保持一致</li>
+                        <li>导出数据时自动使用编辑后的名称</li>
+                    </ul>
+                    
+                    <h4>💎 四、视觉优化</h4>
+                    <ul>
+                        <li>整体UI风格统一，细节打磨</li>
+                        <li>卡片阴影和边框效果优化</li>
+                        <li>文字排版和间距调整</li>
+                        <li>交互动效更加流畅自然</li>
+                    </ul>
+                `
+            }
+        ];
+        
+        // 状态管理
+        let docsCurrentTab = 'updates';
+        let docsReadVersions = JSON.parse(localStorage.getItem('docs_read_versions') || '[]');
+        
+        // 当前版本号（每次更新时修改）
+        const CURRENT_VERSION = '4.0.0';
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDocsUpdates();
+            checkDocsUnread();
+            checkAndShowDocsCenter();
+        });
+        
+        // 检查并显示文档中心（首次访问或版本更新后）
+        function checkAndShowDocsCenter() {
+            const lastShownVersion = localStorage.getItem('docs_center_last_shown_version');
+            const hasSeenDocs = localStorage.getItem('docs_center_has_seen');
+            
+            // 如果是首次访问，或版本更新后，显示文档中心
+            if (!hasSeenDocs || lastShownVersion !== CURRENT_VERSION) {
+                // 延迟一点显示，让用户先看到主界面
+                setTimeout(() => {
+                    openDocsCenter(true);
+                    // 标记已显示
+                    localStorage.setItem('docs_center_last_shown_version', CURRENT_VERSION);
+                    localStorage.setItem('docs_center_has_seen', 'true');
+                }, 800);
+            }
+        }
+        
+        // 打开文档中心弹窗
+        function openDocsCenter(isAutoShow = false) {
+            const modal = document.getElementById('docsCenterModal');
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            
+            // 移除按钮高亮动画
+            const btn = document.getElementById('docsCenterBtn');
+            btn.classList.remove('docs-btn-highlight');
+            
+            // 如果是自动显示，给按钮添加高亮动画，引导用户
+            if (isAutoShow) {
+                setTimeout(() => {
+                    btn.classList.add('docs-btn-highlight');
+                }, 500);
+            }
+        }
+        
+        // 关闭文档中心弹窗
+        function closeDocsCenterModal(event) {
+            if (!event || event.target.id === 'docsCenterModal') {
+                const modal = document.getElementById('docsCenterModal');
+                const content = modal.querySelector('div[style*="animation"]');
+                
+                // 添加关闭动画
+                if (content) {
+                    content.classList.add('docs-modal-closing');
+                }
+                
+                // 动画结束后隐藏
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    if (content) {
+                        content.classList.remove('docs-modal-closing');
+                    }
+                    document.body.style.overflow = '';
+                }, 300);
+            }
+        }
+        
+        // 切换标签
+        function switchDocsTab(tab) {
+            docsCurrentTab = tab;
+            
+            // 更新按钮状态
+            document.querySelectorAll('.docs-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`docs-tab-${tab}`).classList.add('active');
+            
+            // 显示对应面板
+            document.querySelectorAll('.docs-panel').forEach(panel => {
+                panel.classList.add('hidden');
+            });
+            document.getElementById(`docs-panel-${tab}`).classList.remove('hidden');
+            
+            // 控制过滤器显示
+            document.getElementById('docs-filter').style.display = tab === 'updates' ? 'block' : 'none';
+        }
+        
+        // 渲染更新列表
+        function renderDocsUpdates() {
+            const list = document.getElementById('docs-updates-list');
+            const showMajor = document.getElementById('docs-filter-major').checked;
+            const showMinor = document.getElementById('docs-filter-minor').checked;
+            
+            const filtered = docsUpdatesData.filter(u => {
+                if (u.type === 'major' && !showMajor) return false;
+                if (u.type === 'minor' && !showMinor) return false;
+                return true;
+            });
+            
+            list.innerHTML = filtered.map((update, index) => {
+                const isRead = docsReadVersions.includes(update.version);
+                return `
+                    <div class="docs-update-item ${update.type} rounded-lg p-4 cursor-pointer" 
+                         onclick="showDocsDetail('${update.version}')"
+                         style="animation: fadeIn 0.3s ease ${index * 0.05}s both;">
+                        <div class="flex items-start gap-4">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="px-2 py-0.5 rounded text-xs font-medium ${update.type === 'major' ? 'version-badge-major' : 'version-badge-minor'}">
+                                        <i class="fas fa-${update.type === 'major' ? 'star' : 'circle'} mr-1"></i>
+                                        v${update.version}
+                                    </span>
+                                    <span class="text-xs text-gray-500">${update.date}</span>
+                                    ${!isRead ? '<span class="px-2 py-0.5 bg-red-500/20 text-red-400 rounded text-xs">新</span>' : ''}
+                                </div>
+                                <h3 class="text-base font-medium text-gray-200 mb-1">${update.title}</h3>
+                                <p class="text-sm text-gray-500">${update.summary}</p>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-chevron-right text-gray-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // 检查未读
+        function checkDocsUnread() {
+            const unread = docsUpdatesData.filter(u => !docsReadVersions.includes(u.version)).length;
+            const badge = document.getElementById('docs-unread-badge');
+            if (unread > 0) {
+                badge.textContent = unread;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+        
+        // 标记全部已读
+        function markAllDocsAsRead() {
+            docsReadVersions = docsUpdatesData.map(u => u.version);
+            localStorage.setItem('docs_read_versions', JSON.stringify(docsReadVersions));
+            renderDocsUpdates();
+            checkDocsUnread();
+        }
+        
+        // 显示详情
+        function showDocsDetail(version) {
+            const update = docsUpdatesData.find(u => u.version === version);
+            if (!update) return;
+            
+            document.getElementById('docs-detail-badge').className = `px-3 py-1 rounded text-xs font-medium ${update.type === 'major' ? 'version-badge-major' : 'version-badge-minor'}`;
+            document.getElementById('docs-detail-badge').innerHTML = `
+                <i class="fas fa-${update.type === 'major' ? 'star' : 'circle'} mr-1"></i>
+                ${update.type === 'major' ? '大版本' : '小版本'} v${update.version}
+            `;
+            document.getElementById('docs-detail-title').textContent = update.title;
+            document.getElementById('docs-detail-content').innerHTML = update.content;
+            
+            document.getElementById('docs-detail-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            
+            // 标记为已读
+            if (!docsReadVersions.includes(version)) {
+                docsReadVersions.push(version);
+                localStorage.setItem('docs_read_versions', JSON.stringify(docsReadVersions));
+                renderDocsUpdates();
+                checkDocsUnread();
+            }
+        }
+        
+        // 关闭详情
+        function closeDocsDetailModal(event) {
+            if (!event || event.target.id === 'docs-detail-modal' || event.target.closest === undefined) {
+                document.getElementById('docs-detail-modal').classList.add('hidden');
+                // 只有当文档中心也关闭时才恢复滚动
+                const docsModal = document.getElementById('docsCenterModal');
+                if (docsModal.classList.contains('hidden')) {
+                    document.body.style.overflow = '';
+                }
+            }
+        }
+        
+        // ESC关闭
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                // 先关闭详情弹窗，如果已经关闭则关闭文档中心
+                const detailModal = document.getElementById('docs-detail-modal');
+                if (!detailModal.classList.contains('hidden')) {
+                    closeDocsDetailModal();
+                } else {
+                    closeDocsCenterModal();
+                }
+            }
+        });
+        
+        // 添加淡入动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
 </body>
 </html>
