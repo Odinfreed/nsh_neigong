@@ -3313,8 +3313,33 @@
             document.getElementById(tabMap[tab]).classList.remove('hidden');
         }
 
+        // 防抖函数（用于优化频繁触发的事件）
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // 节流函数（用于限制执行频率）
+        function throttle(func, limit) {
+            let inThrottle;
+            return function(...args) {
+                if (!inThrottle) {
+                    func.apply(this, args);
+                    inThrottle = true;
+                    setTimeout(() => inThrottle = false, limit);
+                }
+            };
+        }
+
         // 更新全局排行视图
-        function updateLeaderboardView() {
+        const updateLeaderboardView = debounce(function() {
             const allPlayers = [...guild1Data, ...guild2Data];
             console.log('updateLeaderboardView - allPlayers数量:', allPlayers.length);
             console.log('updateLeaderboardView - guild1Data数量:', guild1Data.length);
@@ -3359,7 +3384,7 @@
                 .sort((a, b) => (parseInt(b['破塔卸甲']) || 0) - (parseInt(a['破塔卸甲']) || 0))
                 .slice(0, 20);
             updateLeaderboardTable('buildingArmorBreakLeaderboard', buildingArmorBreakLeaderboard, '破塔卸甲');
-        }
+        }, 100); // 100ms防抖延迟
 
         // 处理击败/清泉和复活/清泉字段,拆分为独立的字段
         function processDefeatQingquanField(player) {
@@ -8353,7 +8378,7 @@
         // 职业定位类型：bodyguard(保镖), defense(防守), attack(进攻), support(功能职业)
         let currentProfessionRole = 'auto';
 
-        // 职业定位配置
+        // 职业定位配置（基础配置）
         const professionRoleConfig = {
             bodyguard: {
                 label: '保镖',
@@ -8365,8 +8390,8 @@
                 description: '专注对人伤害、人伤卸甲、承受伤害',
                 damageMetrics: ['对玩家伤害', '人伤卸甲', '承受伤害'],
                 damageLabels: ['对人伤害', '人伤卸甲', '承受伤害'],
-                combatMetrics: ['击败', '破泉', '助攻', '焚骨', '重伤', '清泉'],
-                combatLabels: ['击败破泉', '助攻', '焚骨', '重伤', '清泉']
+                combatMetrics: ['击败', '破泉', '助攻', '重伤'],
+                combatLabels: ['击败', '破泉', '助攻', '重伤']
             },
             defense: {
                 label: '防守',
@@ -8378,8 +8403,8 @@
                 description: '专注对人伤害、人伤卸甲、承受伤害（与保镖一致）',
                 damageMetrics: ['对玩家伤害', '人伤卸甲', '承受伤害'],
                 damageLabels: ['对人伤害', '人伤卸甲', '承受伤害'],
-                combatMetrics: ['击败', '破泉', '助攻', '焚骨', '重伤', '清泉'],
-                combatLabels: ['击败破泉', '助攻', '焚骨', '重伤', '清泉']
+                combatMetrics: ['击败', '破泉', '助攻', '重伤'],
+                combatLabels: ['击败', '破泉', '助攻', '重伤']
             },
             attack: {
                 label: '进攻',
@@ -8391,8 +8416,8 @@
                 description: '专注对塔输出、破塔卸甲',
                 damageMetrics: ['对建筑伤害', '破塔卸甲', '承受伤害'],
                 damageLabels: ['对塔输出', '破塔卸甲', '承受伤害'],
-                combatMetrics: ['助攻', '重伤', '清泉'],
-                combatLabels: ['助攻', '重伤', '清泉']
+                combatMetrics: ['助攻', '重伤'],
+                combatLabels: ['助攻', '重伤']
             },
             support: {
                 label: '功能职业',
@@ -8404,10 +8429,56 @@
                 description: '全维度数据分析',
                 damageMetrics: ['对玩家伤害', '对建筑伤害', '人伤卸甲', '破塔卸甲', '承受伤害'],
                 damageLabels: ['对人伤害', '对塔伤害', '人伤卸甲', '破塔卸甲', '承受伤害'],
-                combatMetrics: ['击败', '破泉', '化羽', '助攻', '焚骨', '清泉', '重伤', '治疗值'],
-                combatLabels: ['击败破泉', '化羽', '助攻', '焚骨', '清泉', '重伤', '治疗']
+                combatMetrics: ['击败', '破泉', '助攻', '重伤', '治疗值'],
+                combatLabels: ['击败', '破泉', '助攻', '重伤', '治疗']
             }
         };
+
+        // 根据职业获取特定配置（动态添加职业特有字段）
+        function getProfessionConfig(role, profession) {
+            const baseConfig = professionRoleConfig[role] || professionRoleConfig['bodyguard'];
+            const config = {
+                ...baseConfig,
+                damageMetrics: [...baseConfig.damageMetrics],
+                damageLabels: [...baseConfig.damageLabels],
+                combatMetrics: [...baseConfig.combatMetrics],
+                combatLabels: [...baseConfig.combatLabels]
+            };
+
+            // 规则1：只有九灵才有焚骨系数
+            if (profession === '九灵') {
+                config.combatMetrics.push('焚骨');
+                config.combatLabels.push('焚骨');
+            }
+
+            // 规则2：只有鸿音和素问才有化羽系数
+            if (profession === '鸿音' || profession === '素问') {
+                config.combatMetrics.push('化羽');
+                config.combatLabels.push('化羽');
+            }
+
+            // 规则3：只有潮光才有清泉技数
+            if (profession === '潮光') {
+                config.combatMetrics.push('清泉');
+                config.combatLabels.push('清泉');
+            }
+
+            // 规则4：只有鸿音才有卸甲系数（两种卸甲）
+            if (profession === '鸿音') {
+                // 鸿音在damageMetrics中已包含人伤卸甲和破塔卸甲，无需额外添加
+                // 确保鸿音使用完整的damage配置
+                if (!config.damageMetrics.includes('人伤卸甲')) {
+                    config.damageMetrics.push('人伤卸甲');
+                    config.damageLabels.push('人伤卸甲');
+                }
+                if (!config.damageMetrics.includes('破塔卸甲')) {
+                    config.damageMetrics.push('破塔卸甲');
+                    config.damageLabels.push('破塔卸甲');
+                }
+            }
+
+            return config;
+        }
 
         // 职业定位显示文本映射
         const professionRoleDisplayMap = {
@@ -9247,7 +9318,8 @@
             if (role === 'auto') {
                 role = autoDetectProfessionRole(playerProfession);
             }
-            const config = professionRoleConfig[role] || professionRoleConfig['bodyguard'];
+            // 根据职业获取特定配置（包含职业特有字段如焚骨、化羽、清泉等）
+            const config = getProfessionConfig(role, playerProfession);
 
             // 计算该职业平均值（全维度）
             const professionAvg = {};
@@ -9287,21 +9359,46 @@
                 playerRanks[key] = rank >= 0 ? rank + 1 : '-';
             });
 
-            // 颜色配置
-            const colors = [
-                { bg: 'rgba(34, 197, 94, 0.7)', border: 'rgba(34, 197, 94, 1)' },
-                { bg: 'rgba(239, 68, 68, 0.7)', border: 'rgba(239, 68, 68, 1)' },
-                { bg: 'rgba(251, 191, 36, 0.7)', border: 'rgba(251, 191, 36, 1)' },
-                { bg: 'rgba(168, 85, 247, 0.7)', border: 'rgba(168, 85, 247, 1)' },
-                { bg: 'rgba(6, 182, 212, 0.7)', border: 'rgba(6, 182, 212, 1)' }
-            ];
+            // 固定的指标颜色映射（确保同一指标在不同图表中颜色一致）
+        // 使用截然不同的颜色，便于在图表中区分
+        const metricColorMap = {
+            // 伤害类指标 - 截然不同的颜色
+            '对建筑伤害': { bg: 'rgba(239, 68, 68, 0.7)', border: 'rgba(239, 68, 68, 1)' },    // 鲜红
+            '对玩家伤害': { bg: 'rgba(59, 130, 246, 0.7)', border: 'rgba(59, 130, 246, 1)' },   // 蓝
+            '对塔输出': { bg: 'rgba(239, 68, 68, 0.7)', border: 'rgba(239, 68, 68, 1)' },       // 鲜红
+            '对人伤害': { bg: 'rgba(59, 130, 246, 0.7)', border: 'rgba(59, 130, 246, 1)' },      // 蓝
+            // 卸甲类指标
+            '人伤卸甲': { bg: 'rgba(34, 197, 94, 0.7)', border: 'rgba(34, 197, 94, 1)' },       // 绿
+            '破塔卸甲': { bg: 'rgba(168, 85, 247, 0.7)', border: 'rgba(168, 85, 247, 1)' },     // 紫
+            // 生存类指标
+            '承受伤害': { bg: 'rgba(251, 146, 60, 0.7)', border: 'rgba(251, 146, 60, 1)' },     // 橙
+            '治疗值': { bg: 'rgba(236, 72, 153, 0.7)', border: 'rgba(236, 72, 153, 1)' },       // 粉
+            '治疗': { bg: 'rgba(236, 72, 153, 0.7)', border: 'rgba(236, 72, 153, 1)' },         // 粉
+            // 战斗类指标 - 各自使用截然不同的颜色
+            '击败': { bg: 'rgba(34, 197, 94, 0.7)', border: 'rgba(34, 197, 94, 1)' },           // 绿
+            '破泉': { bg: 'rgba(251, 191, 36, 0.7)', border: 'rgba(251, 191, 36, 1)' },         // 黄
+            '助攻': { bg: 'rgba(6, 182, 212, 0.7)', border: 'rgba(6, 182, 212, 1)' },           // 青
+            '重伤': { bg: 'rgba(139, 92, 246, 0.7)', border: 'rgba(139, 92, 246, 1)' },         // 紫
+            // 特殊类指标
+            '焚骨': { bg: 'rgba(244, 63, 94, 0.7)', border: 'rgba(244, 63, 94, 1)' },           // 玫红
+            '化羽': { bg: 'rgba(250, 204, 21, 0.7)', border: 'rgba(250, 204, 21, 1)' },         // 明黄
+            '清泉': { bg: 'rgba(14, 165, 233, 0.7)', border: 'rgba(14, 165, 233, 1)' },         // 天蓝
+            '资源': { bg: 'rgba(20, 184, 166, 0.7)', border: 'rgba(20, 184, 166, 1)' },         // 青绿
+            // 复活
+            '复活': { bg: 'rgba(232, 121, 249, 0.7)', border: 'rgba(232, 121, 249, 1)' }        // 亮粉
+        };
+
+        // 获取指标颜色的辅助函数
+        function getMetricColor(metric) {
+            return metricColorMap[metric] || { bg: 'rgba(148, 163, 184, 0.7)', border: 'rgba(148, 163, 184, 1)' };
+        }
 
             // 1. 职业伤害对比图（根据角色定位显示不同维度）
             if (fullscreenProfessionDamageChart) fullscreenProfessionDamageChart.destroy();
             const profDamageCtx = document.getElementById('fullscreenProfessionDamageChart');
             if (profDamageCtx) {
                 const damageDatasets = config.damageMetrics.map((metric, idx) => {
-                    const color = colors[idx % colors.length];
+                    const color = getMetricColor(metric);
                     return {
                         label: config.damageLabels[idx],
                         data: [guild2ProfessionAvg[metric] || 0, ...topPlayers.map(p => p[metric] || 0)],
@@ -9375,7 +9472,7 @@
             const profCombatCtx = document.getElementById('fullscreenProfessionCombatChart');
             if (profCombatCtx) {
                 const combatDatasets = config.combatMetrics.map((metric, idx) => {
-                    const color = colors[idx % colors.length];
+                    const color = getMetricColor(metric);
                     const isLine = metric === '治疗值';
                     return {
                         label: config.combatLabels[idx] || metric,
@@ -11250,8 +11347,217 @@
             updateLeaderboardView();
         }
         
+        // 显示全局加载动画
+        function showGlobalLoading(text = '数据加载中...') {
+            let loadingEl = document.getElementById('globalLoadingOverlay');
+            if (!loadingEl) {
+                loadingEl = document.createElement('div');
+                loadingEl.id = 'globalLoadingOverlay';
+                loadingEl.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-[9999]';
+                loadingEl.innerHTML = `
+                    <div class="flex flex-col items-center gap-4">
+                        <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                        <span id="globalLoadingText" class="text-white text-sm">${text}</span>
+                    </div>
+                `;
+                document.body.appendChild(loadingEl);
+            } else {
+                document.getElementById('globalLoadingText').textContent = text;
+                loadingEl.classList.remove('hidden');
+            }
+        }
+
+        // 隐藏全局加载动画
+        function hideGlobalLoading() {
+            const loadingEl = document.getElementById('globalLoadingOverlay');
+            if (loadingEl) {
+                loadingEl.classList.add('hidden');
+            }
+        }
+
+        // 更新加载文本
+        function updateLoadingText(text) {
+            const textEl = document.getElementById('globalLoadingText');
+            if (textEl) textEl.textContent = text;
+        }
+
+        // 异步分批处理数组（避免阻塞主线程）
+        function processBatchAsync(items, batchSize, processor, onProgress) {
+            return new Promise((resolve) => {
+                let index = 0;
+                const results = [];
+                
+                function processNextBatch() {
+                    const batch = items.slice(index, index + batchSize);
+                    for (const item of batch) {
+                        results.push(processor(item));
+                    }
+                    index += batchSize;
+                    
+                    if (onProgress) {
+                        onProgress(Math.min(index, items.length), items.length);
+                    }
+                    
+                    if (index < items.length) {
+                        // 使用setTimeout让出主线程，避免UI卡顿
+                        setTimeout(processNextBatch, 0);
+                    } else {
+                        resolve(results);
+                    }
+                }
+                
+                processNextBatch();
+            });
+        }
+
+        // 延迟初始化图表（只在标签页可见时初始化）
+        let chartsInitialized = {
+            profession: false,
+            combat: false,
+            radar: false
+        };
+
+        function initChartsLazy() {
+            const currentTab = document.querySelector('.tab-btn.active');
+            if (!currentTab) return;
+            
+            const tabId = currentTab.dataset.tab;
+            
+            // 只在图表标签页且未初始化时才更新
+            if (tabId === 'charts' && guild1Data.length > 0) {
+                requestAnimationFrame(() => {
+                    updateCharts();
+                });
+            }
+        }
+
+        // 优化后的数据初始化函数
+        async function initializeDataAsync() {
+            const savedData = localStorage.getItem('battleData');
+            if (!savedData) {
+                console.log('localStorage中没有数据，显示空状态');
+                loadExampleData();
+                return;
+            }
+
+            try {
+                showGlobalLoading('正在解析数据...');
+                
+                // 第一步：解析JSON（大数据量可能耗时）
+                await new Promise(resolve => setTimeout(resolve, 10));
+                const data = JSON.parse(savedData);
+                const guildKeys = Object.keys(data);
+
+                console.log('从localStorage读取的数据:', data);
+                console.log('检测到的帮会:', guildKeys);
+
+                const numericFields = ['重伤', '复活', '化羽', '焚骨', '资源', '助攻', '击败', '清泉'];
+
+                // 第二步：异步处理帮会1数据
+                if (guildKeys.length >= 1) {
+                    updateLoadingText(`正在处理帮会1数据 (${data[guildKeys[0]]?.length || 0}人)...`);
+                    await new Promise(resolve => setTimeout(resolve, 10));
+                    
+                    const rawData1 = data[guildKeys[0]] || [];
+                    guild1Data = await processBatchAsync(
+                        rawData1,
+                        50, // 每批处理50人，避免卡顿
+                        (player) => {
+                            const processed = processDefeatQingquanField({...player, '帮会': guildKeys[0]});
+                            numericFields.forEach(field => {
+                                if (processed[field] !== undefined && processed[field] !== '') {
+                                    const value = String(processed[field]).replace(/,/g, '').trim();
+                                    processed[field] = isNaN(value) ? 0 : parseFloat(value);
+                                } else {
+                                    processed[field] = 0;
+                                }
+                            });
+                            return processed;
+                        },
+                        (processed, total) => {
+                            if (processed % 100 === 0) {
+                                updateLoadingText(`正在处理帮会1: ${processed}/${total}人...`);
+                            }
+                        }
+                    );
+                    
+                    const savedGuild1Name = localStorage.getItem('xg_nsh_guild1Name');
+                    guild1Name = savedGuild1Name || guildKeys[0] || '帮会1';
+                    console.log(`帮会1: ${guild1Name}, 成员数: ${guild1Data.length}`);
+                }
+
+                // 第三步：异步处理帮会2数据
+                if (guildKeys.length >= 2) {
+                    updateLoadingText(`正在处理帮会2数据 (${data[guildKeys[1]]?.length || 0}人)...`);
+                    await new Promise(resolve => setTimeout(resolve, 10));
+                    
+                    const rawData2 = data[guildKeys[1]] || [];
+                    guild2Data = await processBatchAsync(
+                        rawData2,
+                        50,
+                        (player) => {
+                            const processed = processDefeatQingquanField({...player, '帮会': guildKeys[1]});
+                            numericFields.forEach(field => {
+                                if (processed[field] !== undefined && processed[field] !== '') {
+                                    const value = String(processed[field]).replace(/,/g, '').trim();
+                                    processed[field] = isNaN(value) ? 0 : parseFloat(value);
+                                } else {
+                                    processed[field] = 0;
+                                }
+                            });
+                            return processed;
+                        },
+                        (processed, total) => {
+                            if (processed % 100 === 0) {
+                                updateLoadingText(`正在处理帮会2: ${processed}/${total}人...`);
+                            }
+                        }
+                    );
+                    
+                    const savedGuild2Name = localStorage.getItem('xg_nsh_guild2Name');
+                    guild2Name = savedGuild2Name || guildKeys[1] || '帮会2';
+                    console.log(`帮会2: ${guild2Name}, 成员数: ${guild2Data.length}`);
+                } else {
+                    guild2Data = [];
+                    guild2Name = '无';
+                }
+
+                // 第四步：更新UI（分批执行，避免一次性大量DOM操作）
+                updateLoadingText('正在更新界面...');
+                await new Promise(resolve => setTimeout(resolve, 10));
+
+                document.getElementById('guild1NameDisplay').textContent = guild1Name;
+                document.getElementById('guild2NameDisplay').textContent = guild2Name;
+
+                // 先更新基础统计
+                updateStats();
+                
+                // 延迟初始化图表（让基础UI先渲染）
+                await new Promise(resolve => setTimeout(resolve, 50));
+                updateLoadingText('正在生成图表...');
+                updateCharts();
+
+                // 继续更新其他组件
+                await new Promise(resolve => setTimeout(resolve, 10));
+                allPlayers = [...guild1Data, ...guild2Data];
+                updatePlayerSelect();
+
+                await new Promise(resolve => setTimeout(resolve, 10));
+                updateLeaderboardView();
+                
+                await new Promise(resolve => setTimeout(resolve, 10));
+                applyNameMappingToData();
+
+            } catch (e) {
+                console.error('解析数据失败:', e);
+                loadExampleData();
+            } finally {
+                hideGlobalLoading();
+            }
+        }
+
         // 初始化
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             // 首先加载用户设置
             loadUserProfileSettings();
             
@@ -11262,109 +11568,8 @@
                 }, 500);
             }
             
-            // 从localStorage加载数据
-            const savedData = localStorage.getItem('battleData');
-            if (savedData) {
-                try {
-                    const data = JSON.parse(savedData);
-                    const guildKeys = Object.keys(data);
-
-                    console.log('从localStorage读取的数据:', data);
-                    console.log('检测到的帮会:', guildKeys);
-
-                    if (guildKeys.length >= 1) {
-                        guild1Data = (data[guildKeys[0]] || [])
-                            .map(player => ({ ...player, '帮会': guildKeys[0] }))
-                            .map(player => {
-                                const processed = processDefeatQingquanField(player);
-                                // 确保数值字段被正确解析
-                                const numericFields = ['重伤', '复活', '化羽', '焚骨', '资源', '助攻', '击败', '清泉'];
-                                numericFields.forEach(field => {
-                                    if (processed[field] !== undefined && processed[field] !== '') {
-                                        const value = String(processed[field]).replace(/,/g, '').trim();
-                                        processed[field] = isNaN(value) ? 0 : parseFloat(value);
-                                    } else {
-                                        processed[field] = 0;
-                                    }
-                                });
-                                return processed;
-                            });
-                        // 优先使用用户保存的帮会名称，如果没有则使用数据中的名称
-                        const savedGuild1Name = localStorage.getItem('xg_nsh_guild1Name');
-                        guild1Name = savedGuild1Name || guildKeys[0] || '帮会1';
-                        console.log(`帮会1: ${guild1Name}, 成员数: ${guild1Data.length}`);
-                        // 调试：打印第一个玩家的所有字段
-                        if (guild1Data.length > 0) {
-                            console.log('帮会1第一个玩家:', guild1Data[0]);
-                            console.log('重伤字段:', guild1Data[0]['重伤']);
-                            console.log('击败字段:', guild1Data[0]['击败']);
-                            console.log('清泉字段:', guild1Data[0]['清泉']);
-                            console.log('化羽字段:', guild1Data[0]['化羽']);
-                            console.log('复活字段:', guild1Data[0]['复活']);
-                            console.log('职业:', guild1Data[0]['职业']);
-                        }
-                    }
-
-                    if (guildKeys.length >= 2) {
-                        guild2Data = (data[guildKeys[1]] || [])
-                            .map(player => ({ ...player, '帮会': guildKeys[1] }))
-                            .map(player => {
-                                const processed = processDefeatQingquanField(player);
-                                // 确保数值字段被正确解析
-                                const numericFields = ['重伤', '复活', '化羽', '焚骨', '资源', '助攻', '击败', '清泉'];
-                                numericFields.forEach(field => {
-                                    if (processed[field] !== undefined && processed[field] !== '') {
-                                        const value = String(processed[field]).replace(/,/g, '').trim();
-                                        processed[field] = isNaN(value) ? 0 : parseFloat(value);
-                                    } else {
-                                        processed[field] = 0;
-                                    }
-                                });
-                                return processed;
-                            });
-                        // 优先使用用户保存的帮会名称，如果没有则使用数据中的名称
-                        const savedGuild2Name = localStorage.getItem('xg_nsh_guild2Name');
-                        guild2Name = savedGuild2Name || guildKeys[1] || '帮会2';
-                        console.log(`帮会2: ${guild2Name}, 成员数: ${guild2Data.length}`);
-                        // 调试：打印第一个玩家的所有字段
-                        if (guild2Data.length > 0) {
-                            console.log('帮会2第一个玩家:', guild2Data[0]);
-                            console.log('重伤字段:', guild2Data[0]['重伤']);
-                            console.log('击败字段:', guild2Data[0]['击败']);
-                            console.log('清泉字段:', guild2Data[0]['清泉']);
-                            console.log('化羽字段:', guild2Data[0]['化羽']);
-                        }
-                    } else {
-                        console.warn('只检测到一个帮会，第二个帮会使用空数据');
-                        guild2Data = [];
-                        guild2Name = '无';
-                    }
-
-                    // 更新显示
-                    document.getElementById('guild1NameDisplay').textContent = guild1Name;
-                    document.getElementById('guild2NameDisplay').textContent = guild2Name;
-
-                    updateStats();
-                    updateCharts();
-
-                    // 更新个人分析的玩家数据
-                    allPlayers = [...guild1Data, ...guild2Data];
-                    updatePlayerSelect();
-
-                    // 更新排行榜
-                    updateLeaderboardView();
-                    
-                    // 应用名称映射到新加载的数据
-                    applyNameMappingToData();
-                } catch (e) {
-                    console.error('解析数据失败:', e);
-                    loadExampleData();
-                }
-            } else {
-                console.log('localStorage中没有数据，显示空状态');
-                // 显示空状态，不加载虚拟数据
-                loadExampleData();
-            }
+            // 异步初始化数据（带加载动画）
+            await initializeDataAsync();
 
             // 初始化标签页
             switchTab('charts');
@@ -11377,10 +11582,6 @@
             
             // 初始化名称映射表（从localStorage加载后更新计数）
             updateNameMappingCount();
-            
-            // 档案码功能已禁用
-            // handleCardCodeUrlParams();
-            // setTimeout(() => { initGistUrlParser(); }, 1500);
         });
         
         // 处理档案码URL参数
@@ -11809,21 +12010,68 @@
             return result;
         }
 
-        // 导入额外数据
-        function importAdditionalData(event) {
+        // 异步处理玩家数据（分批处理避免卡顿）
+        async function processPlayersAsync(guildPlayers, guildName, onProgress) {
+            const numericFields = ['重伤', '复活', '化羽', '焚骨', '资源', '助攻', '击败', '清泉', '对玩家伤害', '对建筑伤害', '治疗值', '承受伤害', '人伤卸甲', '破塔卸甲'];
+            const results = [];
+            const batchSize = 100; // 每批处理100人
+            
+            for (let i = 0; i < guildPlayers.length; i += batchSize) {
+                const batch = guildPlayers.slice(i, i + batchSize);
+                
+                // 处理当前批次
+                const processedBatch = batch.map(player => {
+                    player = processDefeatQingquanField(player);
+                    numericFields.forEach(field => {
+                        if (player[field] !== undefined && player[field] !== '') {
+                            const value = String(player[field]).replace(/,/g, '').trim();
+                            player[field] = isNaN(value) ? 0 : parseFloat(value);
+                        } else {
+                            player[field] = 0;
+                        }
+                    });
+                    return { ...player, '帮会': guildName };
+                });
+                
+                results.push(...processedBatch);
+                
+                // 每处理100人让出主线程，更新进度
+                if (onProgress) {
+                    onProgress(Math.min(i + batchSize, guildPlayers.length), guildPlayers.length);
+                }
+                
+                // 让出主线程，避免UI卡顿
+                if (i + batchSize < guildPlayers.length) {
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                }
+            }
+            
+            return results;
+        }
+
+        // 导入额外数据（优化版，带加载动画和异步处理）
+        async function importAdditionalData(event) {
             const file = event.target.files[0];
             if (!file) return;
 
+            showGlobalLoading('正在读取文件...');
+
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 try {
                     const content = e.target.result;
+                    
+                    // 大文件解析可能耗时，让出主线程
+                    await new Promise(resolve => setTimeout(resolve, 10));
+                    
+                    updateLoadingText('正在解析CSV数据...');
                     const data = parseCSVData(content);
                     
                     // data 是 {帮会名: [玩家数据数组]} 的格式
                     const guildNames = Object.keys(data);
                     
                     if (guildNames.length === 0) {
+                        hideGlobalLoading();
                         alert('未找到有效的帮会数据');
                         return;
                     }
@@ -11837,24 +12085,21 @@
                     const fileName = file.name.replace('.csv', '');
                     const sessionId = `${fileName}_${timestamp}`;
                     
-                    // 遍历所有检测到的帮会
-                    guildNames.forEach(guildName => {
+                    // 遍历所有检测到的帮会（异步处理）
+                    for (let i = 0; i < guildNames.length; i++) {
+                        const guildName = guildNames[i];
                         const guildPlayers = data[guildName];
                         
-                        // 处理数据
-                        const processedPlayers = guildPlayers.map(player => {
-                            player = processDefeatQingquanField(player);
-                            const numericFields = ['重伤', '复活', '化羽', '焚骨', '资源', '助攻', '击败', '清泉', '对玩家伤害', '对建筑伤害', '治疗值', '承受伤害', '人伤卸甲', '破塔卸甲'];
-                            numericFields.forEach(field => {
-                                if (player[field] !== undefined && player[field] !== '') {
-                                    const value = String(player[field]).replace(/,/g, '').trim();
-                                    player[field] = isNaN(value) ? 0 : parseFloat(value);
-                                } else {
-                                    player[field] = 0;
-                                }
-                            });
-                            return { ...player, '帮会': guildName };
-                        });
+                        updateLoadingText(`正在处理帮会 "${guildName}" (${guildPlayers.length}人)...`);
+                        
+                        // 异步分批处理数据
+                        const processedPlayers = await processPlayersAsync(
+                            guildPlayers, 
+                            guildName,
+                            (processed, total) => {
+                                updateLoadingText(`正在处理 "${guildName}": ${processed}/${total}人...`);
+                            }
+                        );
                         
                         // 保存处理后的数据
                         processedGuildsData[guildName] = processedPlayers;
@@ -11867,7 +12112,12 @@
                         });
                         totalImported += processedPlayers.length;
                         importedGuilds.push(`${guildName}(${processedPlayers.length}人)`);
-                    });
+                        
+                        // 让出主线程
+                        await new Promise(resolve => setTimeout(resolve, 10));
+                    }
+                    
+                    updateLoadingText('正在保存数据...');
                     
                     // 构建场次数据并保存到 multiBattleCache
                     const battleSession = {
@@ -11897,17 +12147,26 @@
                     multiBattleCache.sort((a, b) => b.timestamp - a.timestamp);
                     saveMultiBattleCache();
                     
-                    // 更新UI
+                    // 更新UI（分批执行）
+                    await new Promise(resolve => setTimeout(resolve, 10));
                     updateDataSourceUI();
+                    await new Promise(resolve => setTimeout(resolve, 10));
                     updateGuildSelectOptions();
+                    await new Promise(resolve => setTimeout(resolve, 10));
                     updateMultiBattleUI();
                     
+                    hideGlobalLoading();
                     alert(`成功导入 ${totalImported} 条数据:\n${importedGuilds.join('\n')}`);
                     
                 } catch (error) {
+                    hideGlobalLoading();
                     console.error('导入数据失败:', error);
                     alert('导入数据失败: ' + error.message);
                 }
+            };
+            reader.onerror = function() {
+                hideGlobalLoading();
+                alert('文件读取失败');
             };
             reader.readAsText(file);
             
@@ -15389,7 +15648,17 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false },
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                color: '#e0e0e0',
+                                font: { size: 10 },
+                                padding: 10,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
                         datalabels: { display: false },
                         title: {
                             display: true,
