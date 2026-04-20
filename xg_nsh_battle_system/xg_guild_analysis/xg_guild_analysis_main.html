@@ -11549,6 +11549,15 @@
                     professionPlayers.sort((a, b) => (b['清泉'] || 0) - (a['清泉'] || 0));
                 }
                 
+                // 针对鸿音职业，按化羽次数从高到低排序（奶鸿在前，惊鸿在后）
+                if (profession === '鸿音') {
+                    professionPlayers.sort((a, b) => {
+                        const huayuA = (a['化羽'] || a['复活'] || 0);
+                        const huayuB = (b['化羽'] || b['复活'] || 0);
+                        return huayuB - huayuA;
+                    });
+                }
+                
                 updateProfessionPlayersTable(professionPlayers);
                 console.log('updateProfessionComparison completed');
             }, 100);
@@ -17890,7 +17899,7 @@
             
             <!-- 系统版本号 -->
             <div class="mt-8 pt-4 border-t border-gray-800 text-center">
-                <span class="text-xs text-gray-600">逆水寒帮战分析系统 v4.1.2</span>
+                <span class="text-xs text-gray-600">逆水寒帮战分析系统 v4.1.1</span>
             </div>
         </div>
     </div>
