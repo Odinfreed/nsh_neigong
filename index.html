@@ -1072,6 +1072,49 @@
         // 更新公告数据
         const docsUpdatesData = [
             {
+                version: '4.1.1',
+                date: '2026-04-20',
+                type: 'minor',
+                title: 'Bug修复与参战统计显示优化',
+                summary: '修复个人分析界面对比人员选择无法使用的致命Bug；多场看板成员参战统计改为显示"参加次数/总场次"格式；职业伤害对比和职业战斗对比严格执行职业专属数值显示规则。',
+                content: `
+                    <h3>🐛 Bug修复与优化</h3>
+                    
+                    <h4>🔧 一、个人分析对比系统修复</h4>
+                    <ul>
+                        <li><strong>修复致命Bug</strong>：个人分析界面对比人员选择场次数据无法选择的问题</li>
+                        <li><strong>根因</strong>：multiBattleCache 数据未在个人分析界面初始化时预加载</li>
+                        <li><strong>解决方案</strong>：页面加载时自动预加载多场数据缓存，确保对比系统可用</li>
+                    </ul>
+                    
+                    <h4>📊 二、成员参战统计显示优化</h4>
+                    <ul>
+                        <li><strong>显示格式变更</strong>：从纯百分比改为 "参加次数/总场次" 格式</li>
+                        <li><strong>示例</strong>：原来显示 "80%"，现在显示 "8/10"</li>
+                        <li><strong>进度条保留</strong>：进度条仍表示参战率百分比，直观展示参与度</li>
+                        <li><strong>计算逻辑不变</strong>：总场次仍为该帮会在所有导入数据中出现过的场次数</li>
+                    </ul>
+                    
+                    <h4>🎯 三、职业对比图表规则完善</h4>
+                    <ul>
+                        <li><strong>职业伤害对比图</strong>：严格执行职业专属数值显示规则
+                            <ul>
+                                <li>仅鸿音显示卸甲值（人伤卸甲/破塔卸甲）</li>
+                                <li>其他职业（保镖/防守/进攻）不再默认显示卸甲值</li>
+                            </ul>
+                        </li>
+                        <li><strong>职业战斗对比图</strong>：动态添加职业专属字段
+                            <ul>
+                                <li>仅九灵显示焚骨</li>
+                                <li>仅潮光显示清泉</li>
+                                <li>仅素问和鸿音显示化羽（原始数据为复活）</li>
+                            </ul>
+                        </li>
+                        <li><strong>基础配置清理</strong>：移除所有基础配置中的卸甲值，改为动态添加</li>
+                    </ul>
+                `
+            },
+            {
                 version: '4.1.0',
                 date: '2026-04-20',
                 type: 'minor',
@@ -1332,7 +1375,7 @@
         let docsReadVersions = JSON.parse(localStorage.getItem('docs_read_versions') || '[]');
         
         // 当前版本号（每次更新时修改）
-        const CURRENT_VERSION = '4.1.0';
+        const CURRENT_VERSION = '4.1.1';
         
         // 初始化
         document.addEventListener('DOMContentLoaded', () => {
