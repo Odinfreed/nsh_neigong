@@ -328,7 +328,7 @@
             <h1 class="main-title text-2xl md:text-3xl mb-2">帮会数据一键导入</h1>
             <div class="divider text-sm mb-2 max-w-md mx-auto"><i class="fas fa-yin-yang"></i></div>
             <p class="subtitle text-sm">支持导入多场帮战数据，自动整理供后续分析</p>
-            <p class="text-xs text-jade mt-2"><i class="fas fa-star mr-1"></i>v4.0.0 多场数据管理（无限制存储，最多选择10场分析）</p>
+            <p class="text-xs text-jade mt-2"><i class="fas fa-star mr-1"></i>v4.0.0 多场数据管理（存储无条数限制，分析时最多选10场）</p>
         </header>
 
         <!-- v4.0.0: 多场数据导入管理 -->
@@ -358,6 +358,9 @@
                         </div>
                         
                         <div class="mt-3 pt-3 border-t border-gray-800 space-y-2">
+                            <div id="storageStatus" class="text-xs text-gray-600 text-center">
+                                <i class="fas fa-database mr-1"></i>存储: <span id="storageCount">0</span> 场
+                            </div>
                             <div id="selectionControls" class="flex items-center justify-between text-xs text-gray-500 mb-2 hidden">
                                 <span>勾选 <span id="selectedCount" class="text-jade">0</span> 场导入</span>
                                 <div class="flex items-center gap-2">
@@ -760,12 +763,32 @@
             updateBattleListUI();
         }
 
-        // 保存多场数据
+        // 保存多场数据（带存储空间检测）
         function saveMultiBattleData() {
             try {
-                localStorage.setItem(MULTI_BATTLE_KEY, JSON.stringify(multiBattleData));
+                const dataStr = JSON.stringify(multiBattleData);
+                const dataSize = new Blob([dataStr]).size;
+                const sizeMB = (dataSize / 1024 / 1024).toFixed(2);
+                
+                // 检测数据大小，如果超过4MB给出警告
+                if (dataSize > 4 * 1024 * 1024) {
+                    console.warn(`帮战数据较大 (${sizeMB} MB)，接近浏览器存储上限`);
+                }
+                
+                localStorage.setItem(MULTI_BATTLE_KEY, dataStr);
+                console.log(`已保存 ${multiBattleData.length} 场帮战数据，大小: ${sizeMB} MB`);
+                return true;
             } catch (e) {
-                console.error('保存多场数据失败:', e);
+                if (e.name === 'QuotaExceededError' || e.code === 22) {
+                    // 存储空间已满
+                    const msg = `存储空间已满！当前有 ${multiBattleData.length} 场数据。\n\n建议：\n1. 导出备份后清空数据\n2. 或删除一些旧场次\n3. 浏览器存储上限约 5-10 MB`;
+                    alert(msg);
+                    console.error('localStorage 存储空间已满:', e);
+                } else {
+                    console.error('保存多场数据失败:', e);
+                    alert('保存数据失败: ' + e.message);
+                }
+                return false;
             }
         }
 
@@ -779,9 +802,11 @@
             const loadBtn = document.getElementById('loadToAnalysisBtn');
             const selectedCount = document.getElementById('selectedCount');
             const autoSelectCheckbox = document.getElementById('autoSelectCheckbox');
+            const storageCount = document.getElementById('storageCount');
             
             badge.textContent = `${multiBattleData.length} 场`;
             selectedCount.textContent = selectedBattleIds.size;
+            if (storageCount) storageCount.textContent = multiBattleData.length;
             
             // 同步自动选择复选框状态
             if (autoSelectCheckbox) {
@@ -1162,7 +1187,22 @@
                 }));
             }
 
-            window.location.href = '../xg_guild_analysis/xg_guild_analysis_main.html';
+            // 检查是否有待处理的档案码对比请求
+            const returnToCompare = localStorage.getItem('returnToCompare');
+            const pendingCardCode = localStorage.getItem('pendingCardCode');
+            const pendingCardMode = localStorage.getItem('pendingCardMode');
+            
+            if (returnToCompare === 'true' && pendingCardCode) {
+                // 清除标记
+                localStorage.removeItem('returnToCompare');
+                // 保留 pendingCardCode 和 pendingCardMode，让分析页面使用
+                
+                // 跳转到分析页面的对比系统，并带上档案码参数
+                window.location.href = `../xg_guild_analysis/xg_guild_analysis_main.html?card=${pendingCardCode}&mode=${pendingCardMode || 'compare'}`;
+            } else {
+                // 普通跳转
+                window.location.href = '../xg_guild_analysis/xg_guild_analysis_main.html';
+            }
         }
 
         // 导出所有数据
@@ -1202,6 +1242,7 @@
                     if (importData.battles && Array.isArray(importData.battles)) {
                         // 合并数据，避免重复
                         let importedCount = 0;
+                        let duplicateCount = 0;
                         importData.battles.forEach(battle => {
                             // 数据格式兼容处理
                             if (battle.guilds && !battle.data) {
@@ -1215,17 +1256,34 @@
                             if (!exists) {
                                 multiBattleData.push(battle);
                                 importedCount++;
+                            } else {
+                                duplicateCount++;
                             }
                         });
                         
                         // 按时间排序（不再限制数量，可以无限存储）
                         multiBattleData.sort((a, b) => b.timestamp - a.timestamp);
                         
-                        saveMultiBattleData();
+                        const saveSuccess = saveMultiBattleData();
+                        if (!saveSuccess) {
+                            // 保存失败，可能是空间不足，回滚添加的数据
+                            multiBattleData = multiBattleData.filter(b => 
+                                !importData.battles.some(ib => ib.id === b.id)
+                            );
+                            showStatus('导入失败：存储空间不足');
+                            event.target.value = '';
+                            return;
+                        }
+                        
                         // 导入后自动选择
                         autoSelectIfEmpty();
                         updateBattleListUI();
-                        showStatus(`成功导入 ${importedCount} 场数据`);
+                        
+                        const msg = `成功导入 ${importedCount} 场数据` + 
+                                   (duplicateCount > 0 ? `，跳过 ${duplicateCount} 场重复数据` : '') +
+                                   `\n当前共 ${multiBattleData.length} 场数据`;
+                        showStatus(msg);
+                        setTimeout(hideStatus, 3000);
                     } else {
                         alert('数据格式不正确');
                     }
@@ -1344,7 +1402,13 @@
             // 按时间排序（不限制存储数量）
             multiBattleData.sort((a, b) => b.timestamp - a.timestamp);
             
-            saveMultiBattleData();
+            const saveSuccess = saveMultiBattleData();
+            if (!saveSuccess) {
+                // 保存失败，回滚操作
+                multiBattleData = multiBattleData.filter(b => b.id !== battleId);
+                showStatus('导入失败：存储空间不足，请导出备份后清空数据');
+                return;
+            }
             
             // 根据自动选择设置处理
             if (multiBattleData.length <= MAX_BATTLE_SELECT) {
@@ -1363,8 +1427,8 @@
             // 重置表单
             resetImportForm();
             
-            showStatus(`成功导入！共 ${parsedFileInfo.totalPlayers} 条数据`);
-            setTimeout(hideStatus, 2000);
+            showStatus(`成功导入！共 ${parsedFileInfo.totalPlayers} 条数据，当前 ${multiBattleData.length} 场`);
+            setTimeout(hideStatus, 3000);
         }
 
         // 重置导入表单
