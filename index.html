@@ -541,9 +541,207 @@
         /* 响应式 */
         @media (max-width: 768px) {
             .main-title {
-                font-size: 1.75rem;
-                letter-spacing: 0.2em;
+                font-size: 1.5rem;
+                letter-spacing: 0.15em;
             }
+            
+            .subtitle {
+                font-size: 0.875rem;
+                letter-spacing: 0.1em;
+            }
+            
+            /* 系统卡片移动端优化 */
+            .system-card {
+                padding: 1rem;
+            }
+            
+            .system-card .relative.flex {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .icon-container {
+                width: 50px;
+                height: 50px;
+                margin: 0 auto;
+            }
+            
+            .icon-container i {
+                font-size: 1.25rem;
+            }
+            
+            /* 标签换行优化 */
+            .system-card .flex.flex-wrap.gap-2 {
+                gap: 0.375rem;
+            }
+            
+            .tag {
+                font-size: 0.65rem;
+                padding: 0.15rem 0.4rem;
+            }
+            
+            /* 按钮移动端优化 */
+            .action-btn {
+                width: 100%;
+                justify-content: center;
+                padding: 0.625rem 1rem;
+            }
+            
+            /* 文档中心弹窗移动端适配 */
+            #docsCenterModal > div {
+                width: 95% !important;
+                height: 85vh !important;
+                max-width: none !important;
+            }
+            
+            #docsCenterModal .w-64 {
+                width: 100% !important;
+                border-right: none;
+                border-bottom: 1px solid #374151;
+                max-height: 40%;
+                overflow-y: auto;
+            }
+            
+            #docsCenterModal > div > div:first-child {
+                flex-direction: column;
+            }
+            
+            #docsCenterModal .flex-1.flex.flex-col {
+                height: 60%;
+            }
+            
+            /* 更新列表项移动端优化 */
+            .docs-update-item .flex.items-start.gap-4 {
+                gap: 0.75rem;
+            }
+            
+            .docs-update-item h3 {
+                font-size: 0.875rem;
+            }
+            
+            .docs-update-item p {
+                font-size: 0.75rem;
+            }
+            
+            /* 详情弹窗移动端全屏 */
+            #docs-detail-modal > div {
+                width: 100% !important;
+                max-width: none !important;
+                left: 0 !important;
+                right: 0 !important;
+            }
+            
+            /* 右侧固定栏移动端调整 */
+            .fixed.right-6.bottom-6 {
+                right: 0.75rem;
+                bottom: 0.75rem;
+                gap: 0.5rem;
+            }
+            
+            .fixed.right-6.bottom-6 > * {
+                width: 2.5rem;
+                height: 2.5rem;
+            }
+            
+            .fixed.right-6.bottom-6 i {
+                font-size: 1rem;
+            }
+            
+            /* 二维码弹窗移动端调整 */
+            .qr-popup-right {
+                width: 200px;
+                right: 110%;
+            }
+            
+            .qr-popup-right img {
+                width: 200px;
+                padding: 12px;
+            }
+            
+            /* 致谢弹窗移动端调整 */
+            .thanks-popup {
+                width: 90vw;
+                left: 50%;
+                right: auto;
+            }
+            
+            /* 页脚移动端优化 */
+            footer p {
+                font-size: 0.65rem;
+            }
+            
+            /* 内边距调整 */
+            body {
+                padding: 1rem;
+            }
+            
+            header.mb-16 {
+                margin-bottom: 2rem;
+            }
+            
+            .mb-16 {
+                margin-bottom: 2rem;
+            }
+        }
+        
+        /* 超小屏幕额外优化 */
+        @media (max-width: 480px) {
+            .main-title {
+                font-size: 1.25rem;
+                letter-spacing: 0.1em;
+            }
+            
+            h2.main-title {
+                font-size: 1.125rem;
+            }
+            
+            .system-card h3 {
+                font-size: 1rem;
+            }
+            
+            .system-card p {
+                font-size: 0.75rem;
+            }
+            
+            /* 文档中心标签按钮移动端优化 */
+            .docs-tab-btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.75rem;
+            }
+            
+            /* 过滤器移动端隐藏（节省空间） */
+            #docs-filter {
+                display: none;
+            }
+        }
+        
+        /* 平板横屏适配 */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .system-card .relative.flex {
+                gap: 1rem;
+            }
+            
+            .icon-container {
+                width: 60px;
+                height: 60px;
+            }
+        }
+        
+        /* 文本截断 */
+        .line-clamp-2 {
+            display: -webkit-box;
+            display: box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .truncate {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -596,26 +794,26 @@
                 <div class="corner-decoration bottom-left"></div>
                 <div class="corner-decoration bottom-right"></div>
                 
-                <div class="relative flex items-start gap-5">
+                <div class="relative flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5">
                     <div class="icon-container rounded-sm flex-shrink-0">
                         <i class="fas fa-chart-line text-2xl text-gray-400"></i>
                     </div>
-                    <div class="flex-1 min-w-0">
-                        <h3 class="text-lg font-medium text-gray-200 mb-2 tracking-wide">
-                                    帮战分析系统
-                                    <span class="ml-2 text-xs bg-jade/20 text-jade px-2 py-0.5 rounded">v4.0.0</span>
-                                </h3>
-                                <p class="text-gray-500 text-sm mb-4 leading-relaxed">
-                                    多场帮战数据导入、缓存管理、趋势分析、参战率统计、多维度对比分析
-                                </p>
-                                <div class="flex flex-wrap gap-2 mb-4">
-                                    <span class="tag">多场数据</span>
-                                    <span class="tag">趋势分析</span>
-                                    <span class="tag">参战率</span>
-                                    <span class="tag">可视化</span>
-                                </div>
+                    <div class="flex-1 min-w-0 text-center sm:text-left">
+                        <h3 class="text-base sm:text-lg font-medium text-gray-200 mb-2 tracking-wide">
+                            帮战分析系统
+                            <span class="ml-2 text-xs bg-jade/20 text-jade px-2 py-0.5 rounded">v4.0.0</span>
+                        </h3>
+                        <p class="text-gray-500 text-xs sm:text-sm mb-4 leading-relaxed">
+                            多场帮战数据导入、缓存管理、趋势分析、参战率统计、多维度对比分析
+                        </p>
+                        <div class="flex flex-wrap justify-center sm:justify-start gap-2 mb-4">
+                            <span class="tag">多场数据</span>
+                            <span class="tag">趋势分析</span>
+                            <span class="tag">参战率</span>
+                            <span class="tag">可视化</span>
+                        </div>
                         <a href="xg_nsh_battle_system/xg_data_import/index.html" 
-                           class="action-btn inline-flex items-center px-5 py-2 text-sm rounded-sm">
+                           class="action-btn inline-flex items-center px-4 sm:px-5 py-2 text-xs sm:text-sm rounded-sm">
                             <i class="fas fa-arrow-right mr-2 text-xs"></i>
                             进入系统
                         </a>
@@ -631,24 +829,24 @@
                 <div class="corner-decoration bottom-left"></div>
                 <div class="corner-decoration bottom-right"></div>
                 
-                <div class="relative flex items-start gap-5">
+                <div class="relative flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5">
                     <div class="icon-container rounded-sm flex-shrink-0">
                         <i class="fas fa-users-cog text-2xl text-gray-400"></i>
                     </div>
-                    <div class="flex-1 min-w-0">
-                        <h3 class="text-lg font-medium text-gray-200 mb-2 tracking-wide">
+                    <div class="flex-1 min-w-0 text-center sm:text-left">
+                        <h3 class="text-base sm:text-lg font-medium text-gray-200 mb-2 tracking-wide">
                             联赛智能分团
                         </h3>
-                        <p class="text-gray-500 text-sm mb-4 leading-relaxed">
+                        <p class="text-gray-500 text-xs sm:text-sm mb-4 leading-relaxed">
                             接龙名单管理、一线牵配对、多算法智能分团
                         </p>
-                        <div class="flex flex-wrap gap-2 mb-4">
+                        <div class="flex flex-wrap justify-center sm:justify-start gap-2 mb-4">
                             <span class="tag">接龙管理</span>
                             <span class="tag">一线牵</span>
                             <span class="tag">智能分团</span>
                         </div>
                         <a href="xg_nsh_battle_system/xg_guild_analysis/xg_guild_analysis_backup.html" 
-                           class="action-btn inline-flex items-center px-5 py-2 text-sm rounded-sm">
+                           class="action-btn inline-flex items-center px-4 sm:px-5 py-2 text-xs sm:text-sm rounded-sm">
                             <i class="fas fa-arrow-right mr-2 text-xs"></i>
                             进入系统
                         </a>
@@ -660,10 +858,10 @@
 
         <!-- 文档中心弹窗 -->
         <div id="docsCenterModal" class="fixed inset-0 bg-black/80 backdrop-blur z-50 hidden" onclick="closeDocsCenterModal(event)">
-            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-[80vh] bg-[#1a1a1a] border border-gray-800 rounded-sm shadow-2xl flex overflow-hidden" 
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] md:w-full md:max-w-4xl h-[85vh] md:h-[80vh] bg-[#1a1a1a] border border-gray-800 rounded-sm shadow-2xl flex flex-col md:flex-row overflow-hidden" 
                  style="animation: docsModalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);" onclick="event.stopPropagation()">
                 <!-- 左侧标签栏 -->
-                <div class="w-64 border-r border-gray-800 p-4 flex flex-col">
+                <div class="w-full md:w-64 border-b md:border-b-0 md:border-r border-gray-800 p-4 flex flex-col flex-shrink-0 max-h-[35%] md:max-h-none overflow-y-auto">
                     <h3 class="text-base font-medium text-gray-200 mb-4 flex items-center">
                         <i class="fas fa-book mr-2 text-jade"></i>
                         文档中心
@@ -710,23 +908,24 @@
                 </div>
                 
                 <!-- 右侧内容区 -->
-                <div class="flex-1 flex flex-col">
+                <div class="flex-1 flex flex-col min-h-0">
                     <!-- 关闭按钮 -->
-                    <div class="flex justify-end p-4 border-b border-gray-800">
-                        <button onclick="closeDocsCenterModal()" class="text-gray-500 hover:text-white transition-colors">
-                            <i class="fas fa-times text-xl"></i>
+                    <div class="flex justify-end p-3 md:p-4 border-b border-gray-800 flex-shrink-0">
+                        <button onclick="closeDocsCenterModal()" class="text-gray-500 hover:text-white transition-colors p-1">
+                            <i class="fas fa-times text-lg md:text-xl"></i>
                         </button>
                     </div>
                     
                     <!-- 内容区域 -->
-                    <div class="flex-1 p-6 overflow-y-auto">
+                    <div class="flex-1 p-4 md:p-6 overflow-y-auto">
                         <!-- 更新公告内容 -->
                         <div id="docs-panel-updates" class="docs-panel">
-                            <div class="flex items-center justify-between mb-6">
-                                <h2 class="text-xl font-bold text-gray-200">更新公告</h2>
-                                <button onclick="markAllDocsAsRead()" class="text-xs text-gray-500 hover:text-jade transition-colors flex items-center gap-1">
+                            <div class="flex items-center justify-between mb-4 md:mb-6">
+                                <h2 class="text-lg md:text-xl font-bold text-gray-200">更新公告</h2>
+                                <button onclick="markAllDocsAsRead()" class="text-xs text-gray-500 hover:text-jade transition-colors flex items-center gap-1 whitespace-nowrap">
                                     <i class="fas fa-check-double"></i>
-                                    <span>全部已读</span>
+                                    <span class="hidden sm:inline">全部已读</span>
+                                    <span class="sm:hidden">已读</span>
                                 </button>
                             </div>
                             
@@ -752,14 +951,14 @@
         
         <!-- 详情弹窗 -->
         <div id="docs-detail-modal" class="fixed inset-0 bg-black/80 backdrop-blur z-[60] hidden" onclick="closeDocsDetailModal(event)">
-            <div class="absolute right-0 top-0 bottom-0 w-full max-w-2xl bg-[#1a1a1a] border-l border-gray-800 p-6 overflow-y-auto" onclick="event.stopPropagation()">
-                <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-800">
-                    <div class="flex items-center gap-3">
-                        <span id="docs-detail-badge" class="px-3 py-1 rounded text-xs font-medium"></span>
-                        <h2 class="text-xl font-bold text-white" id="docs-detail-title"></h2>
+            <div class="absolute inset-0 md:inset-auto md:right-0 md:top-0 md:bottom-0 w-full md:max-w-2xl bg-[#1a1a1a] border-0 md:border-l border-gray-800 p-4 md:p-6 overflow-y-auto" onclick="event.stopPropagation()">
+                <div class="flex items-center justify-between mb-4 md:mb-6 pb-3 md:pb-4 border-b border-gray-800">
+                    <div class="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+                        <span id="docs-detail-badge" class="px-2 md:px-3 py-1 rounded text-xs font-medium flex-shrink-0"></span>
+                        <h2 class="text-lg md:text-xl font-bold text-white truncate" id="docs-detail-title"></h2>
                     </div>
-                    <button onclick="closeDocsDetailModal()" class="text-gray-500 hover:text-white transition-colors">
-                        <i class="fas fa-times text-xl"></i>
+                    <button onclick="closeDocsDetailModal()" class="text-gray-500 hover:text-white transition-colors p-1 flex-shrink-0 ml-2">
+                        <i class="fas fa-times text-lg md:text-xl"></i>
                     </button>
                 </div>
                 <div id="docs-detail-content" class="prose prose-invert prose-sm max-w-none"></div>
@@ -873,26 +1072,49 @@
         // 更新公告数据
         const docsUpdatesData = [
             {
+                version: '4.1.0',
+                date: '2026-04-20',
+                type: 'minor',
+                title: '文档中心正式上线',
+                summary: '全新文档中心功能上线，集中管理系统更新公告和操作指南；支持居中弹窗展示、版本自动检测、已读标记等功能。',
+                content: `
+                    <h3>🎉 文档中心正式上线</h3>
+                    
+                    <h4>📚 一、功能介绍</h4>
+                    <ul>
+                        <li><strong>集中管理</strong>：统一查看系统更新公告和操作指南</li>
+                        <li><strong>弹窗展示</strong>：居中弹窗设计，沉浸式阅读体验</li>
+                        <li><strong>快捷入口</strong>：右侧固定栏书本图标，一键打开</li>
+                        <li><strong>智能提醒</strong>：大版本更新后自动弹出，第一时间了解新功能</li>
+                    </ul>
+                    
+                    <h4>✨ 二、核心特性</h4>
+                    <ul>
+                        <li><strong>版本分类</strong>：大版本/小版本更新清晰区分</li>
+                        <li><strong>已读标记</strong>：自动记录阅读状态，未读内容高亮提示</li>
+                        <li><strong>详情查看</strong>：点击更新项查看完整更新内容</li>
+                        <li><strong>筛选功能</strong>：支持按版本类型筛选更新公告</li>
+                    </ul>
+                    
+                    <h4>🎯 三、自动弹窗规则</h4>
+                    <ul>
+                        <li>首次访问网站时自动弹出</li>
+                        <li>大版本更新（如4.0.0 → 5.0.0）后自动弹出</li>
+                        <li>小版本更新不自动弹出，避免打扰</li>
+                        <li>可点击右侧书本图标随时手动打开</li>
+                    </ul>
+                `
+            },
+            {
                 version: '4.0.0',
                 date: '2026-04-20',
                 type: 'major',
-                title: '文档中心改版与多场数据管理增强',
-                summary: '全新文档中心设计，支持居中弹窗展示；多场数据管理功能增强，存储机制优化；全屏个人分析增加区服显示；参战率计算逻辑重构；新增高级权重配置隐藏功能。',
+                title: '多场数据管理与个人分析增强',
+                summary: '多场数据管理功能全面增强，存储机制优化解决上限问题；全屏个人分析增加区服显示，参战率计算逻辑重构；新增高级权重配置隐藏功能；多项Bug修复和性能优化。',
                 content: `
                     <h3>🎉 重大更新内容</h3>
                     
-                    <h4>📚 一、文档中心全面改版</h4>
-                    <ul>
-                        <li><strong>全新交互设计</strong>：从页面底部改为居中弹窗展示，沉浸式阅读体验</li>
-                        <li><strong>快速入口</strong>：右侧固定栏新增文档中心按钮（书本图标），一键打开</li>
-                        <li><strong>智能引导</strong>：首次访问或版本更新后自动弹窗，按钮高亮闪烁引导</li>
-                        <li><strong>标签页设计</strong>：左侧标签栏切换"更新公告"和"操作指南"</li>
-                        <li><strong>更新筛选</strong>：支持按大版本/小版本筛选更新内容</li>
-                        <li><strong>已读标记</strong>：自动记录已读版本，未读更新显示"新"标签</li>
-                        <li><strong>详情面板</strong>：点击更新项右侧滑出详情，支持富文本展示</li>
-                    </ul>
-                    
-                    <h4>📊 二、多场数据管理增强</h4>
+                    <h4>📊 一、多场数据管理增强</h4>
                     <ul>
                         <li><strong>存储机制优化</strong>：修复localStorage存储上限问题，理论上支持无上限条数存储</li>
                         <li><strong>存储状态监控</strong>：新增存储空间实时显示，预警空间不足</li>
@@ -902,7 +1124,7 @@
                         <li><strong>数据持久化</strong>：采用分键存储策略，避免单键超限</li>
                     </ul>
                     
-                    <h4>👤 三、全屏个人分析增强</h4>
+                    <h4>👤 二、全屏个人分析增强</h4>
                     <ul>
                         <li><strong>区服显示</strong>：全屏界面新增区服信息展示，自动从个人档案读取</li>
                         <li><strong>参战率重构</strong>：参战率计算逻辑优化，按帮会实际出现的场次数统计，而非总缓存场次数</li>
@@ -911,7 +1133,7 @@
                         <li><strong>截图优化</strong>：区服信息同步显示在截图中，便于分享</li>
                     </ul>
                     
-                    <h4>🔐 四、隐藏功能（密码进入）</h4>
+                    <h4>🔐 三、隐藏功能（密码进入）</h4>
                     <ul>
                         <li><strong>高级权重配置</strong>：密码 <code>4UND2</code>
                             <ul>
@@ -923,7 +1145,7 @@
                         </li>
                     </ul>
                     
-                    <h4>🐛 五、Bug修复</h4>
+                    <h4>🐛 四、Bug修复</h4>
                     <ul>
                         <li>修复存储超过10条数据时被错误删除的问题（实际为localStorage空间不足）</li>
                         <li>修复数据导入失败时的回滚机制，确保数据完整性</li>
@@ -931,7 +1153,7 @@
                         <li>修复全屏模式下部分数据不显示的问题</li>
                     </ul>
                     
-                    <h4>⚡ 六、性能优化</h4>
+                    <h4>⚡ 五、性能优化</h4>
                     <ul>
                         <li>优化大数据量渲染性能，减少页面卡顿</li>
                         <li>图表渲染性能提升，支持更多数据点展示</li>
@@ -1067,7 +1289,7 @@
         let docsReadVersions = JSON.parse(localStorage.getItem('docs_read_versions') || '[]');
         
         // 当前版本号（每次更新时修改）
-        const CURRENT_VERSION = '4.0.0';
+        const CURRENT_VERSION = '4.1.0';
         
         // 初始化
         document.addEventListener('DOMContentLoaded', () => {
@@ -1076,14 +1298,35 @@
             checkAndShowDocsCenter();
         });
         
-        // 检查并显示文档中心（首次访问或版本更新后）
+        // 检查并显示文档中心（首次访问或大版本更新后）
         function checkAndShowDocsCenter() {
             const lastShownVersion = localStorage.getItem('docs_center_last_shown_version');
             const hasSeenDocs = localStorage.getItem('docs_center_has_seen');
             
-            // 如果是首次访问，或版本更新后，显示文档中心
-            if (!hasSeenDocs || lastShownVersion !== CURRENT_VERSION) {
-                // 延迟一点显示，让用户先看到主界面
+            // 判断是否需要显示文档中心
+            let shouldShow = false;
+            let isMajorUpdate = false;
+            
+            if (!hasSeenDocs) {
+                // 首次访问
+                shouldShow = true;
+            } else if (lastShownVersion !== CURRENT_VERSION) {
+                // 版本变化，检查是否为大版本更新
+                const lastMajor = lastShownVersion ? lastShownVersion.split('.')[0] : '0';
+                const currentMajor = CURRENT_VERSION.split('.')[0];
+                
+                // 获取当前版本的更新类型
+                const currentUpdate = docsUpdatesData.find(u => u.version === CURRENT_VERSION);
+                
+                // 大版本号变化 或 当前版本标记为major类型
+                if (lastMajor !== currentMajor || (currentUpdate && currentUpdate.type === 'major')) {
+                    shouldShow = true;
+                    isMajorUpdate = true;
+                }
+            }
+            
+            if (shouldShow) {
+                // 延迟显示，让用户先看到主界面
                 setTimeout(() => {
                     openDocsCenter(true);
                     // 标记已显示
@@ -1168,24 +1411,24 @@
             list.innerHTML = filtered.map((update, index) => {
                 const isRead = docsReadVersions.includes(update.version);
                 return `
-                    <div class="docs-update-item ${update.type} rounded-lg p-4 cursor-pointer" 
+                    <div class="docs-update-item ${update.type} rounded-lg p-3 md:p-4 cursor-pointer" 
                          onclick="showDocsDetail('${update.version}')"
                          style="animation: fadeIn 0.3s ease ${index * 0.05}s both;">
-                        <div class="flex items-start gap-4">
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="px-2 py-0.5 rounded text-xs font-medium ${update.type === 'major' ? 'version-badge-major' : 'version-badge-minor'}">
-                                        <i class="fas fa-${update.type === 'major' ? 'star' : 'circle'} mr-1"></i>
+                        <div class="flex items-start gap-3 md:gap-4">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex flex-wrap items-center gap-1.5 md:gap-2 mb-1.5 md:mb-2">
+                                    <span class="px-1.5 md:px-2 py-0.5 rounded text-xs font-medium ${update.type === 'major' ? 'version-badge-major' : 'version-badge-minor'}">
+                                        <i class="fas fa-${update.type === 'major' ? 'star' : 'circle'} mr-0.5 md:mr-1"></i>
                                         v${update.version}
                                     </span>
                                     <span class="text-xs text-gray-500">${update.date}</span>
-                                    ${!isRead ? '<span class="px-2 py-0.5 bg-red-500/20 text-red-400 rounded text-xs">新</span>' : ''}
+                                    ${!isRead ? '<span class="px-1.5 md:px-2 py-0.5 bg-red-500/20 text-red-400 rounded text-xs flex-shrink-0">新</span>' : ''}
                                 </div>
-                                <h3 class="text-base font-medium text-gray-200 mb-1">${update.title}</h3>
-                                <p class="text-sm text-gray-500">${update.summary}</p>
+                                <h3 class="text-sm md:text-base font-medium text-gray-200 mb-0.5 md:mb-1 truncate">${update.title}</h3>
+                                <p class="text-xs md:text-sm text-gray-500 line-clamp-2">${update.summary}</p>
                             </div>
-                            <div class="flex items-center">
-                                <i class="fas fa-chevron-right text-gray-600"></i>
+                            <div class="flex items-center flex-shrink-0">
+                                <i class="fas fa-chevron-right text-gray-600 text-xs md:text-base"></i>
                             </div>
                         </div>
                     </div>
