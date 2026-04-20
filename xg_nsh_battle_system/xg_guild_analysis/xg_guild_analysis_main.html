@@ -26,7 +26,7 @@
     
     <!-- 个人分析多场数据对比模块 v4.0.0 -->
     <script src="player_multi_analysis.js"></script>
-    <!-- 档案码系统已禁用 - 2026
+    <!-- 档案码系统已禁用 - 2026.4.19
     <script src="xg_card_code_mappings.js"></script>
     <script src="xg_player_card_system.js"></script>
     <script src="xg_archive_gist.js"></script>
@@ -2837,22 +2837,41 @@
                             综合实力雷达图
                         </h2>
                     </div>
-                    <div style="flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; gap: 10px;">
+                    <!-- 帮会筛选区域 -->
+                    <div class="mb-2 flex-shrink-0">
+                        <div class="relative">
+                            <button id="guildFilterBtn" class="w-full px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-xs text-gray-200 flex items-center justify-between transition-colors">
+                                <span><i class="fas fa-filter mr-1"></i>筛选帮会</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div id="guildFilterPanel" class="hidden absolute z-50 left-0 right-0 mt-1 bg-gray-800 border border-gray-600 rounded shadow-lg max-h-56 overflow-hidden flex flex-col">
+                                <div class="p-2 border-b border-gray-600 flex items-center justify-between gap-2">
+                                    <button id="selectAllGuilds" class="px-2 py-1 text-xs text-jade hover:text-jade/80 hover:bg-gray-700 rounded transition-colors">全选</button>
+                                    <button id="clearAllGuilds" class="px-2 py-1 text-xs text-gray-400 hover:text-gray-300 hover:bg-gray-700 rounded transition-colors">清空</button>
+                                    <button id="applyGuildFilter" class="px-3 py-1 bg-jade hover:bg-jade/80 text-gray-900 rounded text-xs font-medium transition-colors">确定</button>
+                                </div>
+                                <div id="guildFilterList" class="space-y-1 p-2 overflow-y-auto flex-1" style="max-height: 160px;">
+                                    <!-- 动态生成帮会选项 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; gap: 4px;">
                         <!-- 平均值雷达图 -->
-                        <div class="flex-1 flex flex-col min-h-0">
-                            <h4 class="text-xs text-gray-400 mb-1 flex items-center">
+                        <div class="flex-1 flex flex-col min-h-0" style="max-height: 52%;">
+                            <h4 class="text-[10px] text-gray-500 mb-0.5 flex items-center flex-shrink-0">
                                 <i class="fas fa-chart-radar mr-1 text-jade"></i>平均值
                             </h4>
-                            <div class="relative flex-1" style="min-height: 150px;">
+                            <div class="relative flex-1" style="min-height: 140px;">
                                 <canvas id="sidebarRadarAvgChart"></canvas>
                             </div>
                         </div>
                         <!-- 总数雷达图 -->
-                        <div class="flex-1 flex flex-col min-h-0">
-                            <h4 class="text-xs text-gray-400 mb-1 flex items-center">
+                        <div class="flex-1 flex flex-col min-h-0" style="max-height: 52%;">
+                            <h4 class="text-[10px] text-gray-500 mb-0.5 flex items-center flex-shrink-0">
                                 <i class="fas fa-chart-radar mr-1 text-jade"></i>总数（最近一场）
                             </h4>
-                            <div class="relative flex-1" style="min-height: 150px;">
+                            <div class="relative flex-1" style="min-height: 140px;">
                                 <canvas id="sidebarRadarTotalChart"></canvas>
                             </div>
                         </div>
@@ -4997,7 +5016,7 @@
             }
         }
 
-        /* 档案码系统功能已禁用 - 2024
+        /* 档案码系统功能已禁用 - 2026.4.19
         // ==================== 档案码系统功能 ====================
 
         // 存储导入的玩家档案数据
@@ -6787,7 +6806,7 @@
                 showNotification('档案码加载失败: ' + error.message, 'error');
             }
         }
-        档案码系统功能已禁用 - 2024 */
+        档案码系统功能已禁用 - 2026.4.19 */
 
         // 档案码功能已禁用 - 空函数存根避免报错
         function initGistUrlParser() { console.log('档案码功能已禁用'); }
@@ -9147,6 +9166,7 @@
                         },
                         plugins: {
                             legend: { 
+                                backgroundColor: 'transparent',
                                 labels: { color: '#E5E7EB', font: { size: 12 } },
                                 position: 'top'
                             },
@@ -9253,6 +9273,7 @@
                         },
                         plugins: {
                             legend: { 
+                                backgroundColor: 'transparent',
                                 labels: { color: '#E5E7EB', font: { size: 12 } },
                                 position: 'top'
                             },
@@ -11573,6 +11594,9 @@
 
             // 初始化标签页
             switchTab('charts');
+            
+            // 初始化帮会筛选按钮事件
+            initGuildFilterEvents();
 
             // 初始化个人分析
             initPlayerAnalysis();
@@ -15214,11 +15238,21 @@
                 borderColor: colors[index % colors.length],
                 backgroundColor: colors[index % colors.length] + '20',
                 pointBackgroundColor: colors[index % colors.length],
-                pointBorderColor: '#fff',
+                pointBorderColor: 'transparent',
                 borderWidth: 2
             }));
 
             const ctx = canvas.getContext('2d');
+            
+            // 计算数据的最大值，用于动态调整雷达图范围
+            let maxDataValue = 0;
+            datasets.forEach(dataset => {
+                const values = dataset.data.map(v => parseFloat(v));
+                maxDataValue = Math.max(maxDataValue, ...values);
+            });
+            // 留出10%的边距，但最小值为50避免图形过小
+            const dynamicMax = Math.max(50, maxDataValue * 1.1);
+            
             multiDashboardCharts['radarAvg'] = new Chart(ctx, {
                 type: 'radar',
                 data: {
@@ -15228,18 +15262,41 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: 0
+                    },
                     plugins: {
-                        legend: { position: 'right', labels: { color: '#e0e0e0', font: { size: 11 } } },
+                        legend: { 
+                            position: 'right',
+                            backgroundColor: 'transparent',
+                            labels: { 
+                                color: '#e0e0e0', 
+                                font: { size: 10 },
+                                boxWidth: 10,
+                                padding: 5,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            } 
+                        },
                         datalabels: { display: false }
                     },
                     scales: {
                         r: {
                             angleLines: { color: '#333' },
                             grid: { color: '#333' },
-                            pointLabels: { color: '#888', font: { size: 10 }, backdropColor: 'transparent' },
-                            ticks: { display: false, backdropColor: 'transparent' },
-                            suggestedMin: 0,
-                            suggestedMax: 100
+                            pointLabels: { 
+                                color: '#888', 
+                                font: { size: 9 }, 
+                                backdropColor: 'transparent',
+                                padding: 0
+                            },
+                            ticks: { 
+                                display: false, 
+                                backdropColor: 'transparent'
+                            },
+                            min: 0,
+                            max: dynamicMax,
+                            startAngle: -90
                         }
                     }
                 }
@@ -15293,11 +15350,21 @@
                 borderColor: colors[index % colors.length],
                 backgroundColor: colors[index % colors.length] + '20',
                 pointBackgroundColor: colors[index % colors.length],
-                pointBorderColor: '#fff',
+                pointBorderColor: 'transparent',
                 borderWidth: 2
             }));
 
             const ctx = canvas.getContext('2d');
+            
+            // 计算数据的最大值，用于动态调整雷达图范围
+            let maxDataValue = 0;
+            datasets.forEach(dataset => {
+                const values = dataset.data.map(v => parseFloat(v));
+                maxDataValue = Math.max(maxDataValue, ...values);
+            });
+            // 留出10%的边距，但最小值为50避免图形过小
+            const dynamicMax = Math.max(50, maxDataValue * 1.1);
+            
             multiDashboardCharts['radarTotal'] = new Chart(ctx, {
                 type: 'radar',
                 data: {
@@ -15307,18 +15374,41 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: 0
+                    },
                     plugins: {
-                        legend: { position: 'right', labels: { color: '#e0e0e0', font: { size: 11 } } },
+                        legend: { 
+                            position: 'right',
+                            backgroundColor: 'transparent',
+                            labels: { 
+                                color: '#e0e0e0', 
+                                font: { size: 10 },
+                                boxWidth: 10,
+                                padding: 5,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            } 
+                        },
                         datalabels: { display: false }
                     },
                     scales: {
                         r: {
                             angleLines: { color: '#333' },
                             grid: { color: '#333' },
-                            pointLabels: { color: '#888', font: { size: 10 }, backdropColor: 'transparent' },
-                            ticks: { display: false, backdropColor: 'transparent' },
-                            suggestedMin: 0,
-                            suggestedMax: 100
+                            pointLabels: { 
+                                color: '#888', 
+                                font: { size: 9 }, 
+                                backdropColor: 'transparent',
+                                padding: 0
+                            },
+                            ticks: { 
+                                display: false, 
+                                backdropColor: 'transparent'
+                            },
+                            min: 0,
+                            max: dynamicMax,
+                            startAngle: -90
                         }
                     }
                 }
@@ -15328,12 +15418,193 @@
         // 侧边栏雷达图实例
         let sidebarRadarAvgChart = null;
         let sidebarRadarTotalChart = null;
-        let sidebarRadarMode = 'avg'; // 默认模式
+        
+        // 帮会筛选状态管理
+        const GuildFilterState = {
+            selected: new Set(),      // 当前选中的帮会
+            available: [],            // 所有可用帮会列表
+            
+            // 初始化/更新可用帮会列表
+            updateAvailable(guildNames) {
+                this.available = [...guildNames];
+                // 如果是首次加载，默认全选
+                if (this.selected.size === 0 && this.available.length > 0) {
+                    this.available.forEach(name => this.selected.add(name));
+                }
+            },
+            
+            // 设置选中的帮会
+            setSelected(guildNames) {
+                this.selected.clear();
+                guildNames.forEach(name => this.selected.add(name));
+            },
+            
+            // 检查帮会是否被选中
+            isSelected(guildName) {
+                return this.selected.has(guildName);
+            },
+            
+            // 获取选中的帮会数组
+            getSelectedArray() {
+                return [...this.selected];
+            }
+        };
+        
+        // 初始化帮会筛选按钮事件
+        function initGuildFilterEvents() {
+            const filterBtn = document.getElementById('guildFilterBtn');
+            const filterPanel = document.getElementById('guildFilterPanel');
+            const selectAllBtn = document.getElementById('selectAllGuilds');
+            const clearAllBtn = document.getElementById('clearAllGuilds');
+            const applyBtn = document.getElementById('applyGuildFilter');
+            
+            if (!filterBtn || !filterPanel) return;
+            
+            // 点击按钮展开/收起面板
+            filterBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isHidden = filterPanel.classList.contains('hidden');
+                if (isHidden) {
+                    renderGuildFilterPanel();
+                    filterPanel.classList.remove('hidden');
+                } else {
+                    filterPanel.classList.add('hidden');
+                }
+            });
+            
+            // 点击面板外部收起
+            document.addEventListener('click', (e) => {
+                if (!filterPanel.contains(e.target) && e.target !== filterBtn) {
+                    filterPanel.classList.add('hidden');
+                }
+            });
+            
+            // 全选按钮
+            selectAllBtn?.addEventListener('click', () => {
+                filterPanel.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+            });
+            
+            // 清空按钮
+            clearAllBtn?.addEventListener('click', () => {
+                filterPanel.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            });
+            
+            // 应用筛选按钮
+            applyBtn?.addEventListener('click', () => {
+                const checkedBoxes = filterPanel.querySelectorAll('input[type="checkbox"]:checked');
+                const selectedNames = Array.from(checkedBoxes).map(cb => cb.value);
+                GuildFilterState.setSelected(selectedNames);
+                filterPanel.classList.add('hidden');
+                // 重新渲染两个雷达图
+                renderSidebarRadarAvgChart();
+                renderSidebarRadarTotalChart();
+            });
+        }
+        
+        // 渲染帮会筛选面板
+        function renderGuildFilterPanel() {
+            const guildListEl = document.getElementById('guildFilterList');
+            if (!guildListEl) return;
+            
+            guildListEl.innerHTML = '';
+            
+            if (GuildFilterState.available.length === 0) {
+                guildListEl.innerHTML = '<div class="text-xs text-gray-500 text-center py-2">暂无帮会数据</div>';
+                return;
+            }
+            
+            GuildFilterState.available.forEach(guildName => {
+                const isSelected = GuildFilterState.isSelected(guildName);
+                const item = document.createElement('div');
+                item.className = 'flex items-center gap-2 p-1.5 hover:bg-gray-700 rounded cursor-pointer';
+                item.innerHTML = `
+                    <input type="checkbox" value="${guildName}" ${isSelected ? 'checked' : ''} 
+                        class="w-3 h-3 rounded border-gray-500 text-jade focus:ring-jade cursor-pointer">
+                    <span class="text-xs text-gray-300 truncate select-none">${guildName}</span>
+                `;
+                item.addEventListener('click', (e) => {
+                    if (e.target.type !== 'checkbox') {
+                        const checkbox = item.querySelector('input');
+                        checkbox.checked = !checkbox.checked;
+                    }
+                });
+                guildListEl.appendChild(item);
+            });
+        }
         
         // 渲染侧边栏雷达图（同时渲染平均值和总数）
         function renderSidebarRadarCharts() {
             renderSidebarRadarAvgChart();
             renderSidebarRadarTotalChart();
+        }
+        
+        // 统一获取雷达图数据（确保两个雷达图使用相同的帮会筛选逻辑）
+        function getRadarChartData() {
+            if (multiBattleCache.length === 0) {
+                return { success: false, message: '暂无数据' };
+            }
+            
+            // 从场均数据中获取所有帮会列表（作为基准）
+            const avgStatsData = getCurrentOrLatestBattleAvgStats();
+            let allStats = Object.values(avgStatsData);
+            
+            if (allStats.length === 0) {
+                return { success: false, message: '暂无帮会数据' };
+            }
+            
+            // 获取所有帮会名称
+            const allGuildNames = allStats.map(s => s.name);
+            
+            // 更新筛选状态（首次加载时全选）
+            GuildFilterState.updateAvailable(allGuildNames);
+            
+            // 根据选中的帮会过滤
+            const filteredStats = allStats.filter(g => GuildFilterState.isSelected(g.name));
+            
+            return {
+                success: true,
+                allGuildNames,
+                filteredStats,
+                allStats
+            };
+        }
+        
+        // 批量更新雷达图刻度范围（优化性能，合并更新）
+        let radarUpdateTimeout = null;
+        function updateBothRadarScales() {
+            if (radarUpdateTimeout) {
+                clearTimeout(radarUpdateTimeout);
+            }
+            radarUpdateTimeout = setTimeout(() => {
+                updateRadarScaleRange(sidebarRadarAvgChart);
+                updateRadarScaleRange(sidebarRadarTotalChart);
+                radarUpdateTimeout = null;
+            }, 50); // 50ms 防抖，合并快速连续点击
+        }
+        
+        // 更新雷达图刻度范围（根据可见数据动态调整）
+        function updateRadarScaleRange(chart) {
+            if (!chart) return;
+            
+            let maxDataValue = 0;
+            let hasVisibleData = false;
+            chart.data.datasets.forEach((dataset, index) => {
+                if (chart.isDatasetVisible(index)) {
+                    hasVisibleData = true;
+                    const values = dataset.data.map(v => parseFloat(v));
+                    maxDataValue = Math.max(maxDataValue, ...values);
+                }
+            });
+            
+            // 如果没有可见数据，保持默认范围
+            if (!hasVisibleData) return;
+            
+            // 留出10%的边距，但最小值为50避免图形过小
+            const newMax = Math.max(50, maxDataValue * 1.1);
+            
+            // 更新刻度范围
+            chart.options.scales.r.max = newMax;
+            chart.update('none'); // 使用 'none' 模式避免重新动画
         }
         
         // 获取当前场次或最近一场的帮会数据（用于总数显示）
@@ -15574,22 +15845,31 @@
             const canvas = document.getElementById('sidebarRadarAvgChart');
             if (!canvas) return;
             
-            // 获取多维度看板数据
-            if (multiBattleCache.length === 0) {
+            // 获取数据
+            const result = getRadarChartData();
+            if (!result.success) {
                 const ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.fillStyle = '#666';
                 ctx.font = '12px sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('暂无数据', canvas.width / 2, canvas.height / 2);
+                ctx.fillText(result.message, canvas.width / 2, canvas.height / 2);
                 return;
             }
             
-            // 使用新的数据获取逻辑（优先当前场次，否则最近一场）
-            const guildStats = getCurrentOrLatestBattleAvgStats();
-            const stats = Object.values(guildStats);
+            // 更新筛选状态
+            GuildFilterState.updateAvailable(result.allGuildNames);
+            const stats = result.filteredStats;
             
-            if (stats.length === 0) return;
+            if (stats.length === 0) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#888';
+                ctx.font = '11px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('请选择帮会', canvas.width / 2, canvas.height / 2);
+                return;
+            }
             
             const colors = ['#00d4aa', '#c9a227', '#2E86DE', '#FF4757', '#9b59b6', '#e67e22'];
             
@@ -15628,7 +15908,7 @@
                 borderColor: colors[index % colors.length],
                 backgroundColor: colors[index % colors.length] + '20',
                 pointBackgroundColor: colors[index % colors.length],
-                pointBorderColor: '#fff',
+                pointBorderColor: 'transparent',
                 borderWidth: 2
             }));
             
@@ -15636,6 +15916,15 @@
             if (sidebarRadarAvgChart) {
                 sidebarRadarAvgChart.destroy();
             }
+            
+            // 计算数据的最大值，用于动态调整雷达图范围
+            let maxDataValue = 0;
+            datasets.forEach(dataset => {
+                const values = dataset.data.map(v => parseFloat(v));
+                maxDataValue = Math.max(maxDataValue, ...values);
+            });
+            // 留出10%的边距，但最小值为50避免图形过小
+            const dynamicMax = Math.max(50, maxDataValue * 1.1);
             
             const ctx = canvas.getContext('2d');
             sidebarRadarAvgChart = new Chart(ctx, {
@@ -15647,24 +15936,30 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: 0
+                    },
                     plugins: {
                         legend: {
                             display: true,
                             position: 'bottom',
+                            backgroundColor: 'transparent',
                             labels: {
                                 color: '#e0e0e0',
-                                font: { size: 10 },
-                                padding: 10,
-                                usePointStyle: true,
-                                pointStyle: 'circle'
-                            }
+                                font: { size: 9 },
+                                padding: 4,
+                                usePointStyle: false,
+                                boxWidth: 8
+                            },
+                            onClick: null // 禁用图例点击，使用筛选按钮控制
                         },
                         datalabels: { display: false },
                         title: {
                             display: true,
                             text: '场均数据雷达图',
                             color: '#e0e0e0',
-                            font: { size: 12 }
+                            font: { size: 11 },
+                            padding: { top: 0, bottom: 5 }
                         }
                     },
                     scales: {
@@ -15673,12 +15968,14 @@
                             grid: { color: '#333' },
                             pointLabels: { 
                                 color: '#888', 
-                                font: { size: 8 }, 
-                                backdropColor: 'transparent' 
+                                font: { size: 7 }, 
+                                backdropColor: 'transparent',
+                                padding: 0
                             },
                             ticks: { display: false, backdropColor: 'transparent' },
-                            suggestedMin: 0,
-                            suggestedMax: 100
+                            min: 0,
+                            max: dynamicMax,
+                            startAngle: -90
                         }
                     }
                 }
@@ -15690,21 +15987,29 @@
             const canvas = document.getElementById('sidebarRadarTotalChart');
             if (!canvas) return;
             
-            if (multiBattleCache.length === 0) {
+            // 获取数据（复用平均值雷达图的数据筛选结果，确保一致性）
+            const result = getRadarChartData();
+            if (!result.success) {
                 const ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.fillStyle = '#666';
                 ctx.font = '12px sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('暂无数据', canvas.width / 2, canvas.height / 2);
+                ctx.fillText(result.message, canvas.width / 2, canvas.height / 2);
                 return;
             }
             
-            // 使用新的数据获取逻辑（优先当前场次，否则最近一场）
-            const battleStats = getCurrentOrLatestBattleStats();
-            const stats = Object.values(battleStats);
+            const stats = result.filteredStats;
             
-            if (stats.length === 0) return;
+            if (stats.length === 0) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#888';
+                ctx.font = '11px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('请选择帮会', canvas.width / 2, canvas.height / 2);
+                return;
+            }
             
             const colors = ['#00d4aa', '#c9a227', '#2E86DE', '#FF4757', '#9b59b6', '#e67e22'];
             
@@ -15743,13 +16048,22 @@
                 borderColor: colors[index % colors.length],
                 backgroundColor: colors[index % colors.length] + '20',
                 pointBackgroundColor: colors[index % colors.length],
-                pointBorderColor: '#fff',
+                pointBorderColor: 'transparent',
                 borderWidth: 2
             }));
             
             if (sidebarRadarTotalChart) {
                 sidebarRadarTotalChart.destroy();
             }
+            
+            // 计算数据的最大值，用于动态调整雷达图范围
+            let maxDataValue = 0;
+            datasets.forEach(dataset => {
+                const values = dataset.data.map(v => parseFloat(v));
+                maxDataValue = Math.max(maxDataValue, ...values);
+            });
+            // 留出10%的边距，但最小值为50避免图形过小
+            const dynamicMax = Math.max(50, maxDataValue * 1.1);
             
             const ctx = canvas.getContext('2d');
             sidebarRadarTotalChart = new Chart(ctx, {
@@ -15761,14 +16075,21 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: 0
+                    },
                     plugins: {
-                        legend: { display: false },
+                        legend: { 
+                            display: false,
+                            backgroundColor: 'transparent'
+                        },
                         datalabels: { display: false },
                         title: {
                             display: true,
                             text: '总数数据雷达图',
                             color: '#e0e0e0',
-                            font: { size: 12 }
+                            font: { size: 11 },
+                            padding: { top: 0, bottom: 5 }
                         }
                     },
                     scales: {
@@ -15777,12 +16098,14 @@
                             grid: { color: '#333' },
                             pointLabels: { 
                                 color: '#888', 
-                                font: { size: 8 }, 
-                                backdropColor: 'transparent' 
+                                font: { size: 7 }, 
+                                backdropColor: 'transparent',
+                                padding: 0
                             },
                             ticks: { display: false, backdropColor: 'transparent' },
-                            suggestedMin: 0,
-                            suggestedMax: 100
+                            min: 0,
+                            max: dynamicMax,
+                            startAngle: -90
                         }
                     }
                 }
