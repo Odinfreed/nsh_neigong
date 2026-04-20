@@ -9905,10 +9905,11 @@
             
             const playerName = currentPlayer['玩家名字'];
             const currentProfession = currentPlayer['职业'];
-            console.log('当前玩家:', playerName, '职业:', currentProfession);
+            const playerGuildName = getPlayerGuildName(playerName);
+            console.log('当前玩家:', playerName, '职业:', currentProfession, '帮会:', playerGuildName);
             
-            // 显示参战率（按游戏ID统计，不区分职业）
-            const attendanceInfo = PlayerMultiAnalysis.getAttendanceInfo(playerName);
+            // 显示参战率（按游戏ID统计，不区分职业，只统计该帮会出现的场次）
+            const attendanceInfo = PlayerMultiAnalysis.getAttendanceInfo(playerName, playerGuildName);
             console.log('参战率信息:', attendanceInfo);
             
             if (attendanceInfo && attendanceInfo.total > 0) {
