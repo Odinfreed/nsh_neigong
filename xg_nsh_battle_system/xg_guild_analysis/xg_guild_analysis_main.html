@@ -983,6 +983,10 @@
                 <p class="header-subtitle">逆水寒 - 实时战力对比与战术分析平台</p>
             </div>
             <div class="header-actions">
+                <button onclick="window.location.href='../../index.html'" class="action-button" title="返回首页">
+                    <i class="fas fa-home"></i>
+                    <span>返回首页</span>
+                </button>
                 <button onclick="showProfileSetupModal()" class="action-button" title="个人设置">
                     <i class="fas fa-user-cog"></i>
                     <span>个人档案</span>
@@ -9356,7 +9360,7 @@
         // 职业定位类型：bodyguard(保镖), defense(防守), attack(进攻), support(功能职业)
         let currentProfessionRole = 'auto';
 
-        // 职业定位配置（基础配置）
+        // 职业定位配置（基础配置）- 卸甲值仅鸿音显示，不在基础配置中包含
         const professionRoleConfig = {
             bodyguard: {
                 label: '保镖',
@@ -9365,9 +9369,9 @@
                 textClass: 'text-blue-400',
                 borderClass: 'border-blue-500/40',
                 hoverClass: 'hover:bg-blue-500/30',
-                description: '专注对人伤害、人伤卸甲、承受伤害',
-                damageMetrics: ['对玩家伤害', '人伤卸甲', '承受伤害'],
-                damageLabels: ['对人伤害', '人伤卸甲', '承受伤害'],
+                description: '专注对人伤害、承受伤害',
+                damageMetrics: ['对玩家伤害', '承受伤害'],
+                damageLabels: ['对人伤害', '承受伤害'],
                 combatMetrics: ['击败', '破泉', '助攻', '重伤'],
                 combatLabels: ['击败', '破泉', '助攻', '重伤']
             },
@@ -9378,9 +9382,9 @@
                 textClass: 'text-green-400',
                 borderClass: 'border-green-500/40',
                 hoverClass: 'hover:bg-green-500/30',
-                description: '专注对人伤害、人伤卸甲、承受伤害（与保镖一致）',
-                damageMetrics: ['对玩家伤害', '人伤卸甲', '承受伤害'],
-                damageLabels: ['对人伤害', '人伤卸甲', '承受伤害'],
+                description: '专注对人伤害、承受伤害（与保镖一致）',
+                damageMetrics: ['对玩家伤害', '承受伤害'],
+                damageLabels: ['对人伤害', '承受伤害'],
                 combatMetrics: ['击败', '破泉', '助攻', '重伤'],
                 combatLabels: ['击败', '破泉', '助攻', '重伤']
             },
@@ -9391,9 +9395,9 @@
                 textClass: 'text-red-400',
                 borderClass: 'border-red-500/40',
                 hoverClass: 'hover:bg-red-500/30',
-                description: '专注对塔输出、破塔卸甲',
-                damageMetrics: ['对建筑伤害', '破塔卸甲', '承受伤害'],
-                damageLabels: ['对塔输出', '破塔卸甲', '承受伤害'],
+                description: '专注对塔输出、承受伤害',
+                damageMetrics: ['对建筑伤害', '承受伤害'],
+                damageLabels: ['对塔输出', '承受伤害'],
                 combatMetrics: ['助攻', '重伤'],
                 combatLabels: ['助攻', '重伤']
             },
@@ -9404,9 +9408,9 @@
                 textClass: 'text-purple-400',
                 borderClass: 'border-purple-500/40',
                 hoverClass: 'hover:bg-purple-500/30',
-                description: '全维度数据分析',
-                damageMetrics: ['对玩家伤害', '对建筑伤害', '人伤卸甲', '破塔卸甲', '承受伤害'],
-                damageLabels: ['对人伤害', '对塔伤害', '人伤卸甲', '破塔卸甲', '承受伤害'],
+                description: '全维度数据分析（不含卸甲）',
+                damageMetrics: ['对玩家伤害', '对建筑伤害', '承受伤害'],
+                damageLabels: ['对人伤害', '对塔伤害', '承受伤害'],
                 combatMetrics: ['击败', '破泉', '助攻', '重伤', '治疗值'],
                 combatLabels: ['击败', '破泉', '助攻', '重伤', '治疗']
             }
@@ -9429,7 +9433,7 @@
                 config.combatLabels.push('焚骨');
             }
 
-            // 规则2：只有鸿音和素问才有化羽系数
+            // 规则2：只有鸿音和素问才有化羽系数（原始数据为"复活"，前端映射为"化羽"）
             if (profession === '鸿音' || profession === '素问') {
                 config.combatMetrics.push('化羽');
                 config.combatLabels.push('化羽');
@@ -9441,10 +9445,9 @@
                 config.combatLabels.push('清泉');
             }
 
-            // 规则4：只有鸿音才有卸甲系数（两种卸甲）
+            // 规则4：只有鸿音才有卸甲系数（人伤卸甲和破塔卸甲）
             if (profession === '鸿音') {
-                // 鸿音在damageMetrics中已包含人伤卸甲和破塔卸甲，无需额外添加
-                // 确保鸿音使用完整的damage配置
+                // 鸿音特有：在damageMetrics中添加人伤卸甲和破塔卸甲
                 if (!config.damageMetrics.includes('人伤卸甲')) {
                     config.damageMetrics.push('人伤卸甲');
                     config.damageLabels.push('人伤卸甲');
