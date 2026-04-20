@@ -105,20 +105,13 @@ function getPlayerMultiBattleData(playerName) {
             });
             
             if (player) {
-                // 根据索引获取自定义名称
-                let displayGuildName;
-                if (index === 0 && battle.guild1Name) {
-                    displayGuildName = battle.guild1Name;
-                } else if (index === 1 && battle.guild2Name) {
-                    displayGuildName = battle.guild2Name;
-                } else {
-                    displayGuildName = rawGuildName;
-                }
+                // 使用真实帮会名称，如果没有则使用默认名称
+                const realGuildName = battle.guild1Name || battle.guild2Name || guildNames[index] || (index === 0 ? '帮会一' : '帮会二');
                 
                 playerData.push({
                     battleTime: battle.dateTime || battle.battleTime,
                     timestamp: battle.timestamp,
-                    guildName: displayGuildName,
+                    guildName: realGuildName,
                     guild1Name: battle.guild1Name || guildNames[0],
                     guild2Name: battle.guild2Name || guildNames[1],
                     ...player
@@ -134,26 +127,74 @@ function getPlayerMultiBattleData(playerName) {
 
 /**
  * 获取指定玩家的参战率信息（按ID统计，不区分职业）
+ * @param {string} playerName - 玩家名称
+ * @param {string} guildName - 可选，指定帮会名称。如果提供，则只统计该帮会出现的场次
  */
-function getPlayerAttendanceInfo(playerName) {
+function getPlayerAttendanceInfo(playerName, guildName = null) {
     const cache = getMultiBattleCache();
     if (cache.length === 0) return null;
     
     let attended = 0;
+    let totalBattles = 0;
+    
     cache.forEach(battle => {
         const guilds = battle.guilds || battle.data || {};
-        Object.values(guilds).forEach(players => {
-            if (players.find(p => p['玩家名字'] === playerName)) {
-                attended++;
+        
+        // 如果指定了帮会，只统计该帮会出现的场次
+        if (guildName) {
+            // 检查该帮会是否在这场中有数据
+            const guildPlayers = getGuildPlayersByDisplayName(battle, guildName);
+            if (guildPlayers && guildPlayers.length > 0) {
+                totalBattles++;
+                // 检查玩家是否在该帮会的这场数据中
+                if (guildPlayers.find(p => p['玩家名字'] === playerName)) {
+                    attended++;
+                }
             }
-        });
+        } else {
+            // 未指定帮会，统计所有场次（原逻辑）
+            Object.values(guilds).forEach(players => {
+                if (players.find(p => p['玩家名字'] === playerName)) {
+                    attended++;
+                }
+            });
+            totalBattles = cache.length;
+        }
     });
     
+    if (totalBattles === 0) return null;
+    
     return {
-        total: cache.length,
+        total: totalBattles,
         attended: attended,
-        rate: Math.round((attended / cache.length) * 100)
+        rate: Math.round((attended / totalBattles) * 100)
     };
+}
+
+/**
+ * 根据显示名称获取帮会玩家数据
+ */
+function getGuildPlayersByDisplayName(battle, displayGuildName) {
+    const guilds = battle.guilds || battle.data || {};
+    
+    // 首先尝试直接匹配键名
+    if (guilds[displayGuildName]) {
+        return guilds[displayGuildName];
+    }
+    
+    // 尝试匹配手动设置的帮会名称
+    const guild1Name = battle.guild1Name;
+    const guild2Name = battle.guild2Name;
+    const guildKeys = Object.keys(guilds);
+    
+    if (guild1Name === displayGuildName && guildKeys[0]) {
+        return guilds[guildKeys[0]];
+    }
+    if (guild2Name === displayGuildName && guildKeys[1]) {
+        return guilds[guildKeys[1]];
+    }
+    
+    return null;
 }
 
 // ==================== 涨幅波动比计算 ====================
@@ -538,9 +579,11 @@ const PlayerMultiAnalysis = {
 
     /**
      * 获取玩家参战率信息（按ID统计，不区分职业）
+     * @param {string} playerName - 玩家名称
+     * @param {string} guildName - 可选，指定帮会名称
      */
-    getAttendanceInfo(playerName) {
-        return getPlayerAttendanceInfo(playerName);
+    getAttendanceInfo(playerName, guildName) {
+        return getPlayerAttendanceInfo(playerName, guildName);
     }
 };
 
