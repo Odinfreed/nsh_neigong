@@ -777,7 +777,7 @@
             </div>
             
             <p class="subtitle text-sm md:text-base">
-                帮派战数据分析 · 多场数据管理 · 联赛智能分团
+                帮派战数据分析 · 多场数据管理 · 联赛智能分团 
             </p>
             <p class="text-xs text-jade mt-2">
                 <i class="fas fa-star mr-1"></i>v4.0.0 已发布：支持多场帮战数据管理与趋势分析
@@ -1071,6 +1071,36 @@
     <script>
         // 更新公告数据
         const docsUpdatesData = [
+            {
+                version: '4.1.2',
+                date: '2026-04-20',
+                type: 'minor',
+                title: '职业对比鸿音类型标记',
+                summary: '职业对比表格新增鸿音类型标记功能，根据化羽次数自动区分奶鸿和惊鸿。',
+                content: `
+                    <h3>🎯 鸿音类型标记</h3>
+                    
+                    <h4>📊 职业对比表格增强</h4>
+                    <ul>
+                        <li><strong>自动类型识别</strong>：根据化羽次数自动标记鸿音类型
+                            <ul>
+                                <li>化羽次数 ≥ 1：标记为 <span style="color:#f472b6">奶鸿</span>（粉色标签）</li>
+                                <li>化羽次数 < 1：标记为 <span style="color:#f87171">惊鸿</span>（红色标签）</li>
+                            </ul>
+                        </li>
+                        <li><strong>新增"类型"列</strong>：在职业对比表格的玩家名字后新增类型列</li>
+                        <li><strong>兼容数据字段</strong>：同时支持「化羽」和「复活」字段判断</li>
+                        <li><strong>仅鸿音显示</strong>：其他职业该列为空，保持界面整洁</li>
+                    </ul>
+                    
+                    <h4>💡 使用场景</h4>
+                    <ul>
+                        <li>快速识别帮会中鸿音玩家的定位倾向</li>
+                        <li>辅助分团决策，区分治疗型和输出型鸿音</li>
+                        <li>数据统计时一目了然鸿音职业分布</li>
+                    </ul>
+                `
+            },
             {
                 version: '4.1.1',
                 date: '2026-04-20',
@@ -1375,7 +1405,7 @@
         let docsReadVersions = JSON.parse(localStorage.getItem('docs_read_versions') || '[]');
         
         // 当前版本号（每次更新时修改）
-        const CURRENT_VERSION = '4.1.1';
+        const CURRENT_VERSION = '4.1.2';
         
         // 初始化
         document.addEventListener('DOMContentLoaded', () => {
