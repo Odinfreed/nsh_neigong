@@ -1072,41 +1072,11 @@
         // 更新公告数据
         const docsUpdatesData = [
             {
-                version: '4.1.2',
-                date: '2026-04-20',
-                type: 'minor',
-                title: '职业对比鸿音类型标记',
-                summary: '职业对比表格新增鸿音类型标记功能，根据化羽次数自动区分奶鸿和惊鸿。',
-                content: `
-                    <h3>🎯 鸿音类型标记</h3>
-                    
-                    <h4>📊 职业对比表格增强</h4>
-                    <ul>
-                        <li><strong>自动类型识别</strong>：根据化羽次数自动标记鸿音类型
-                            <ul>
-                                <li>化羽次数 ≥ 1：标记为 <span style="color:#f472b6">奶鸿</span>（粉色标签）</li>
-                                <li>化羽次数 < 1：标记为 <span style="color:#f87171">惊鸿</span>（红色标签）</li>
-                            </ul>
-                        </li>
-                        <li><strong>新增"类型"列</strong>：在职业对比表格的玩家名字后新增类型列</li>
-                        <li><strong>兼容数据字段</strong>：同时支持「化羽」和「复活」字段判断</li>
-                        <li><strong>仅鸿音显示</strong>：其他职业该列为空，保持界面整洁</li>
-                    </ul>
-                    
-                    <h4>💡 使用场景</h4>
-                    <ul>
-                        <li>快速识别帮会中鸿音玩家的定位倾向</li>
-                        <li>辅助分团决策，区分治疗型和输出型鸿音</li>
-                        <li>数据统计时一目了然鸿音职业分布</li>
-                    </ul>
-                `
-            },
-            {
                 version: '4.1.1',
                 date: '2026-04-20',
                 type: 'minor',
-                title: 'Bug修复与参战统计显示优化',
-                summary: '修复个人分析界面对比人员选择无法使用的致命Bug；多场看板成员参战统计改为显示"参加次数/总场次"格式；职业伤害对比和职业战斗对比严格执行职业专属数值显示规则。',
+                title: 'Bug修复、参战统计优化与鸿音类型标记',
+                summary: '修复个人分析界面对比人员选择无法使用的致命Bug；多场看板成员参战统计改为显示"参加次数/总场次"格式；职业伤害对比和职业战斗对比严格执行职业专属数值显示规则；职业对比新增鸿音类型标记功能。',
                 content: `
                     <h3>🐛 Bug修复与优化</h3>
                     
@@ -1141,6 +1111,19 @@
                             </ul>
                         </li>
                         <li><strong>基础配置清理</strong>：移除所有基础配置中的卸甲值，改为动态添加</li>
+                    </ul>
+                    
+                    <h4>🎵 四、鸿音类型标记（职业对比）</h4>
+                    <ul>
+                        <li><strong>自动类型识别</strong>：根据化羽次数自动标记鸿音类型并排序
+                            <ul>
+                                <li>化羽次数 ≥ 1：标记为 <span style="color:#f472b6">奶鸿</span>（粉色标签），按化羽从高到低排序</li>
+                                <li>化羽次数 < 1：标记为 <span style="color:#f87171">惊鸿</span>（红色标签），排在奶鸿之后</li>
+                            </ul>
+                        </li>
+                        <li><strong>新增"类型"列</strong>：在职业对比表格的玩家名字后新增类型列</li>
+                        <li><strong>兼容数据字段</strong>：同时支持「化羽」和「复活」字段判断</li>
+                        <li><strong>仅鸿音显示</strong>：其他职业该列为空，保持界面整洁</li>
                     </ul>
                 `
             },
@@ -1405,7 +1388,7 @@
         let docsReadVersions = JSON.parse(localStorage.getItem('docs_read_versions') || '[]');
         
         // 当前版本号（每次更新时修改）
-        const CURRENT_VERSION = '4.1.2';
+        const CURRENT_VERSION = '4.1.1';
         
         // 初始化
         document.addEventListener('DOMContentLoaded', () => {
