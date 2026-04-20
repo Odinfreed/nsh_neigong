@@ -1645,6 +1645,7 @@
                                                 <tr>
                                                     <th>排名</th>
                                                     <th>玩家名字</th>
+                                                    <th>类型</th>
                                                     <th>击败</th>
                                                     <th>破泉</th>
                                                     <th>化羽</th>
@@ -12019,10 +12020,21 @@
             const tbody = document.getElementById('professionPlayersTable');
             if (!tbody) return;
 
-            tbody.innerHTML = players.map((player, index) => `
+            tbody.innerHTML = players.map((player, index) => {
+                // 判断鸿音类型：化羽次数 >= 1 为奶鸿，< 1 为惊鸿
+                let hongyinType = '';
+                if (player['职业'] === '鸿音') {
+                    const huayuCount = player['化羽'] || player['复活'] || 0;
+                    hongyinType = huayuCount >= 1 ? 
+                        '<span class="text-pink-400 text-xs">奶鸿</span>' : 
+                        '<span class="text-red-400 text-xs">惊鸿</span>';
+                }
+                
+                return `
                 <tr>
                     <td>${index + 1}</td>
                     <td class="font-bold whitespace-nowrap">${player['玩家名字']}</td>
+                    <td>${hongyinType}</td>
                     <td>${player['击败'] || 0}</td>
                     <td>${player['破泉'] || 0}</td>
                     <td>${player['化羽'] || 0}</td>
@@ -12037,7 +12049,7 @@
                     <td>${player['重伤'] || 0}</td>
                     <td>${player['清泉'] || 0}</td>
                 </tr>
-            `).join('');
+            `}).join('');
         }
 
 
@@ -17878,7 +17890,7 @@
             
             <!-- 系统版本号 -->
             <div class="mt-8 pt-4 border-t border-gray-800 text-center">
-                <span class="text-xs text-gray-600">逆水寒帮战分析系统 v4.1.1</span>
+                <span class="text-xs text-gray-600">逆水寒帮战分析系统 v4.1.2</span>
             </div>
         </div>
     </div>
