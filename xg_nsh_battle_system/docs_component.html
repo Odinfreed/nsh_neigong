@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文档中心组件</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+        
+        :root {
+            --ink-black: #0d0d0d;
+            --ink-dark: #1a1a1a;
+            --ink-gray: #2a2a2a;
+            --jade: #00d4aa;
+            --jade-dim: #00d4aa40;
+            --gold: #c9a227;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--ink-black);
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .docs-tab-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: #888;
+            transition: all 0.3s ease;
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            font-size: 0.875rem;
+        }
+        
+        .docs-tab-btn:hover {
+            background: rgba(255, 255, 255, 0.03);
+            color: #ccc;
+        }
+        
+        .docs-tab-btn.active {
+            background: rgba(0, 212, 170, 0.1);
+            border-color: rgba(0, 212, 170, 0.3);
+            color: var(--jade);
+        }
+        
+        .docs-update-item {
+            border-left: 3px solid transparent;
+            background: linear-gradient(145deg, rgba(26, 26, 26, 0.5) 0%, rgba(13, 13, 13, 0.5) 100%);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .docs-update-item:hover {
+            background: linear-gradient(145deg, rgba(26, 26, 26, 0.8) 0%, rgba(13, 13, 13, 0.8) 100%);
+        }
+        
+        .docs-update-item.major {
+            border-left-color: var(--gold);
+            background: linear-gradient(90deg, rgba(201, 162, 39, 0.05) 0%, rgba(26, 26, 26, 0.5) 100%);
+        }
+        
+        .docs-update-item.minor {
+            border-left-color: var(--jade);
+        }
+        
+        .version-badge-major {
+            background: rgba(201, 162, 39, 0.2);
+            color: var(--gold);
+            border: 1px solid rgba(201, 162, 39, 0.3);
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .version-badge-minor {
+            background: rgba(0, 212, 170, 0.2);
+            color: var(--jade);
+            border: 1px solid rgba(0, 212, 170, 0.3);
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .hidden { display: none !important; }
+        
+        /* 滚动条 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+        
+        /* 动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-in {
+            animation: fadeIn 0.3s ease forwards;
+        }
+        
+        /* Prose 样式 */
+        .prose { color: #e0e0e0; }
+        .prose h3 { color: var(--jade); font-size: 1.1rem; margin: 1.5rem 0 0.75rem; }
+        .prose h4 { color: #ccc; font-size: 0.95rem; margin: 1.25rem 0 0.5rem; }
+        .prose ul { margin: 0.5rem 0; padding-left: 1.5rem; }
+        .prose li { margin: 0.25rem 0; color: #aaa; }
+        .prose code { 
+            background: rgba(0, 212, 170, 0.1); 
+            color: var(--jade); 
+            padding: 0.125rem 0.375rem; 
+            border-radius: 0.25rem;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="flex h-screen">
+        <!-- 左侧标签栏 -->
+        <div class="w-64 border-r border-gray-800 p-4 flex flex-col">
+            <h3 class="text-base font-medium text-gray-200 mb-4 flex items-center">
+                <i class="fas fa-book mr-2" style="color: var(--jade);"></i>
+                文档中心
+            </h3>
+            
+            <!-- 标签列表 -->
+            <div class="space-y-2">
+                <button id="tab-updates" class="docs-tab-btn active" onclick="switchTab('updates')">
+                    <i class="fas fa-bullhorn w-5 mr-2"></i>
+                    <span>更新公告</span>
+                    <span id="unread-badge" class="ml-auto px-2 py-0.5 bg-red-500/20 text-red-400 rounded text-xs hidden">0</span>
+                </button>
+                
+                <button id="tab-guide" class="docs-tab-btn" onclick="switchTab('guide')">
+                    <i class="fas fa-map-signs w-5 mr-2"></i>
+                    <span>操作指南</span>
+                </button>
+            </div>
+            
+            <!-- 过滤器 -->
+            <div id="filter-section" class="mt-6 pt-4 border-t border-gray-800">
+                <p class="text-xs text-gray-500 mb-3">显示类型</p>
+                <div class="space-y-2">
+                    <label class="flex items-center gap-2 text-sm text-gray-400 cursor-pointer hover:text-gray-300">
+                        <input type="checkbox" id="filter-major" checked onchange="renderUpdates()" style="accent-color: var(--jade);">
+                        <span>大版本更新</span>
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-gray-400 cursor-pointer hover:text-gray-300">
+                        <input type="checkbox" id="filter-minor" checked onchange="renderUpdates()" style="accent-color: var(--jade);">
+                        <span>小版本更新</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 右侧内容区 -->
+        <div class="flex-1 p-6 overflow-y-auto" id="content-area">
+            <!-- 更新公告内容 -->
+            <div id="panel-updates">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-200">更新公告</h2>
+                    <button onclick="markAllAsRead()" class="text-xs text-gray-500 hover:text-gray-300 transition-colors flex items-center gap-1">
+                        <i class="fas fa-check-double"></i>
+                        <span>全部已读</span>
+                    </button>
+                </div>
+                
+                <div id="updates-list" class="space-y-4"></div>
+            </div>
+            
+            <!-- 操作指南内容 -->
+            <div id="panel-guide" class="hidden">
+                <h2 class="text-xl font-bold text-gray-200 mb-6">操作指南</h2>
+                <div class="text-center py-12 text-gray-500">
+                    <i class="fas fa-tools text-4xl mb-4 text-gray-700"></i>
+                    <p>操作指南内容正在筹备中</p>
+                    <p class="text-sm mt-2">请等待图片资源上传完成后更新</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 详情面板（右侧滑出） -->
+    <div id="detail-panel" class="fixed inset-0 bg-black/50 hidden" onclick="closeDetail()">
+        <div class="absolute right-0 top-0 bottom-0 w-full max-w-xl bg-[#1a1a1a] border-l border-gray-800 p-6 overflow-y-auto" 
+             style="animation: slideIn 0.3s ease;" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-800">
+                <div class="flex items-center gap-3">
+                    <span id="detail-badge"></span>
+                    <h2 class="text-xl font-bold text-white" id="detail-title"></h2>
+                </div>
+                <button onclick="closeDetail()" class="text-gray-500 hover:text-white transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="detail-content" class="prose"></div>
+        </div>
+    </div>
+    
+    <style>
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+    </style>
+
+    <script>
+        // 更新公告数据
+        const updatesData = [
+            {
+                version: '4.0.0',
+                date: '2026-04-20',
+                type: 'major',
+                title: '多场数据管理与个人分析增强',
+                summary: '新增多场数据管理功能，支持导入多场帮战数据进行对比分析；全屏分析界面增加区服显示；参战率计算逻辑优化。',
+                content: `
+                    <h3>主要更新内容</h3>
+                    <h4>1. 多场数据管理</h4>
+                    <ul>
+                        <li>支持导入多场帮战数据（存储无条数限制）</li>
+                        <li>新增"多场看板"标签页，查看多维度数据对比</li>
+                        <li>参战率统计按帮会实际出现的场次数计算</li>
+                        <li>分析时最多可选择10场数据进行对比</li>
+                    </ul>
+                    <h4>2. 全屏分析增强</h4>
+                    <ul>
+                        <li>新增区服显示（从个人档案读取）</li>
+                        <li>参战率计算优化</li>
+                        <li>多场数据趋势图和波动比分析</li>
+                    </ul>
+                    <h4>3. 隐藏功能</h4>
+                    <ul>
+                        <li>新增高级权重配置（密码：<code>4UND2</code>）</li>
+                        <li>支持自定义综合评分各项权重</li>
+                    </ul>
+                `
+            },
+            {
+                version: '3.2.0',
+                date: '2026-04-18',
+                type: 'minor',
+                title: '职业末位检测与全屏分析优化',
+                summary: '新增职业末位检测隐藏功能；全屏分析界面优化；帮会名称缓存功能。',
+                content: `
+                    <h4>新增功能</h4>
+                    <ul>
+                        <li>职业末位检测（密码：OX208）</li>
+                        <li>全屏职业对比图表</li>
+                        <li>帮会名称缓存</li>
+                    </ul>
+                `
+            },
+            {
+                version: '3.1.0',
+                date: '2026-04-18',
+                type: 'minor',
+                title: '全屏详细分析',
+                summary: '新增全屏详细分析功能，支持一键截图保存。',
+                content: `
+                    <h4>新增功能</h4>
+                    <ul>
+                        <li>全屏详细分析视图</li>
+                        <li>一键截图保存</li>
+                        <li>截图样式优化</li>
+                    </ul>
+                `
+            },
+            {
+                version: '3.0.0',
+                date: '2026-04-17',
+                type: 'major',
+                title: '图表优化与帮会名称编辑',
+                summary: '图表样式全面优化，支持双击编辑帮会名称。',
+                content: `
+                    <h4>主要更新</h4>
+                    <ul>
+                        <li>职业分布改为折线统计图</li>
+                        <li>图表改为直角样式</li>
+                        <li>双击编辑帮会名称</li>
+                        <li>排行榜帮会名称动态同步</li>
+                    </ul>
+                `
+            }
+        ];
+        
+        let currentTab = 'updates';
+        let readVersions = JSON.parse(localStorage.getItem('docs_read_versions') || '[]');
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            renderUpdates();
+            checkUnread();
+        });
+        
+        // 切换标签
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            document.getElementById('tab-updates').classList.toggle('active', tab === 'updates');
+            document.getElementById('tab-guide').classList.toggle('active', tab === 'guide');
+            
+            document.getElementById('panel-updates').classList.toggle('hidden', tab !== 'updates');
+            document.getElementById('panel-guide').classList.toggle('hidden', tab !== 'guide');
+            
+            document.getElementById('filter-section').style.display = tab === 'updates' ? 'block' : 'none';
+        }
+        
+        // 渲染更新列表
+        function renderUpdates() {
+            const list = document.getElementById('updates-list');
+            const showMajor = document.getElementById('filter-major').checked;
+            const showMinor = document.getElementById('filter-minor').checked;
+            
+            const filtered = updatesData.filter(u => {
+                if (u.type === 'major' && !showMajor) return false;
+                if (u.type === 'minor' && !showMinor) return false;
+                return true;
+            });
+            
+            list.innerHTML = filtered.map((update, index) => {
+                const isRead = readVersions.includes(update.version);
+                return `
+                    <div class="docs-update-item ${update.type} rounded-lg p-4 animate-in" 
+                         onclick="showDetail('${update.version}')"
+                         style="animation-delay: ${index * 0.05}s">
+                        <div class="flex items-start gap-4">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="${update.type === 'major' ? 'version-badge-major' : 'version-badge-minor'}">
+                                        <i class="fas fa-${update.type === 'major' ? 'star' : 'circle'} mr-1"></i>
+                                        v${update.version}
+                                    </span>
+                                    <span class="text-xs text-gray-500">${update.date}</span>
+                                    ${!isRead ? '<span class="ml-2 px-2 py-0.5 bg-red-500/20 text-red-400 rounded text-xs">新</span>' : ''}
+                                </div>
+                                <h3 class="text-base font-medium text-gray-200 mb-1">${update.title}</h3>
+                                <p class="text-sm text-gray-500">${update.summary}</p>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-chevron-right text-gray-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // 检查未读
+        function checkUnread() {
+            const unread = updatesData.filter(u => !readVersions.includes(u.version)).length;
+            const badge = document.getElementById('unread-badge');
+            badge.classList.toggle('hidden', unread === 0);
+            badge.textContent = unread;
+        }
+        
+        // 标记全部已读
+        function markAllAsRead() {
+            readVersions = updatesData.map(u => u.version);
+            localStorage.setItem('docs_read_versions', JSON.stringify(readVersions));
+            renderUpdates();
+            checkUnread();
+        }
+        
+        // 显示详情
+        function showDetail(version) {
+            const update = updatesData.find(u => u.version === version);
+            if (!update) return;
+            
+            const badge = document.getElementById('detail-badge');
+            badge.className = update.type === 'major' ? 'version-badge-major' : 'version-badge-minor';
+            badge.innerHTML = `<i class="fas fa-${update.type === 'major' ? 'star' : 'circle'} mr-1"></i>${update.type === 'major' ? '大版本' : '小版本'} v${update.version}`;
+            
+            document.getElementById('detail-title').textContent = update.title;
+            document.getElementById('detail-content').innerHTML = update.content;
+            document.getElementById('detail-panel').classList.remove('hidden');
+            
+            if (!readVersions.includes(version)) {
+                readVersions.push(version);
+                localStorage.setItem('docs_read_versions', JSON.stringify(readVersions));
+                renderUpdates();
+                checkUnread();
+            }
+        }
+        
+        // 关闭详情
+        function closeDetail() {
+            document.getElementById('detail-panel').classList.add('hidden');
+        }
+        
+        // ESC关闭
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeDetail();
+        });
+    </script>
+</body>
+</html>
