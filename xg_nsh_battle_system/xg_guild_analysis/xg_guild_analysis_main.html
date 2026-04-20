@@ -1137,6 +1137,7 @@
                             <div class="tab" onclick="switchTab('multibattle', this)">多场看板</div>
                             <div class="tab" onclick="switchTab('multidashboard', this)">多维度看板</div>
                             <div id="lowperformTab" class="tab hidden" onclick="switchTab('lowperform', this)">职业末位</div>
+                            <div id="weightconfigTab" class="tab hidden" onclick="switchTab('weightconfig', this)">权重配置</div>
                         </div>
                     </div>
                     <div class="flex-1 p-4" style="overflow-y: auto; overflow-x: hidden;">
@@ -1381,6 +1382,11 @@
                                                    class="w-full p-3 pl-10 bg-dark border border-gray-600 rounded-none text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent"
                                                    oninput="filterPlayerSelect()">
                                             <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                                        </div>
+                                        
+                                        <!-- 高级权重配置解锁提示 -->
+                                        <div id="advancedWeightUnlockHint" class="text-[10px] text-gray-600 mb-2 hidden">
+                                            <i class="fas fa-lock mr-1"></i>高级权重配置已解锁
                                         </div>
                                     
                                         <!-- 快捷筛选按钮 -->
@@ -2090,6 +2096,44 @@
                             </div>
                         </div>
 
+                        <!-- 权重配置视图 -->
+                        <div id="weightconfigView" class="hidden">
+                            <div class="space-y-4">
+                                <!-- 操作栏（按钮放在上面） -->
+                                <div class="flex items-center justify-between bg-gray-800/50 rounded-lg p-3 border border-gray-700">
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="resetDynamicWeights()" class="px-4 py-2 rounded-none bg-gray-700 text-gray-300 hover:bg-gray-600 text-sm">
+                                            <i class="fas fa-undo mr-2"></i>重置默认
+                                        </button>
+                                        <button onclick="applyDynamicWeights()" class="px-4 py-2 rounded-none bg-purple-600 text-white hover:bg-purple-700 text-sm">
+                                            <i class="fas fa-check mr-2"></i>应用配置
+                                        </button>
+                                        <button onclick="exportWeightConfig()" class="px-4 py-2 rounded-none bg-blue-600 text-white hover:bg-blue-700 text-sm">
+                                            <i class="fas fa-download mr-2"></i>导出配置
+                                        </button>
+                                    </div>
+                                    <div id="weightSumBadge" class="px-3 py-1 bg-green-600/30 text-green-300 rounded text-sm font-mono">
+                                        权重总和: <span id="weightSumValue">100</span>%
+                                    </div>
+                                </div>
+
+                                <!-- 权重滑块区域 -->
+                                <div class="glass-card rounded-none p-6 shadow-xl">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <h3 class="text-lg font-bold flex items-center">
+                                            <i class="fas fa-sliders-h mr-2 text-purple-400"></i>
+                                            维度权重调整
+                                        </h3>
+                                        <span class="text-xs text-gray-500">勾选启用维度，拖动调整权重</span>
+                                    </div>
+                                    
+                                    <div id="weightSlidersContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[600px] overflow-y-auto pr-2">
+                                        <!-- 动态生成权重滑块 -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- 智能分团视图 - 帮会分团排表优化模块 -->
                         <div id="teamView" class="hidden">
                             <!-- 模块标签 -->
@@ -2601,51 +2645,49 @@
                             综合评分权重分配
                         </h2>
                     </div>
+                    <div id="weightScoreContent" class="space-y-3" style="flex: 1; overflow-y: auto;">
+                        <!-- 动态渲染权重明细 -->
+                    </div>
+                </div>
+
+                <!-- 高级权重配置面板（默认隐藏，输入4UND2解锁） -->
+                <div id="advancedWeightConfigCard" class="card hidden" style="flex: 1; display: none; flex-direction: column; min-height: 0;">
+                    <div class="card-header" style="flex-shrink: 0;">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-lg font-bold flex items-center">
+                                <i class="fas fa-sliders-h mr-2 text-purple-400"></i>
+                                高级权重配置
+                            </h2>
+                            <button onclick="toggleAdvancedWeightPanel()" class="text-xs text-gray-400 hover:text-white">
+                                <i class="fas fa-times"></i> 关闭
+                            </button>
+                        </div>
+                    </div>
                     <div class="space-y-3" style="flex: 1; overflow-y: auto;">
-                        <div class="mini-stat">
-                            <div class="text-xs text-gray-400 mb-1">成员数量 (15%)</div>
-                            <div class="flex items-center justify-center gap-2">
-                                <span class="mini-stat-value text-primary" id="weight-g1-members">-</span>
-                                <span class="vs-badge mx-1">vs</span>
-                                <span class="mini-stat-value text-secondary" id="weight-g2-members">-</span>
-                            </div>
-                            <div class="text-xs mt-1">得分: <span class="text-primary" id="score-g1-members">-</span> vs <span class="text-secondary" id="score-g2-members">-</span></div>
+                        <!-- 说明文字 -->
+                        <div class="text-xs text-gray-500 bg-[#0d0d0d] rounded p-2">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            从所有导入数据中自动识别维度，自定义权重百分比
                         </div>
-                        <div class="mini-stat">
-                            <div class="text-xs text-gray-400 mb-1">击败能力 (25%)</div>
-                            <div class="flex items-center justify-center gap-2">
-                                <span class="mini-stat-value text-primary" id="weight-g1-kills">-</span>
-                                <span class="vs-badge mx-1">vs</span>
-                                <span class="mini-stat-value text-secondary" id="weight-g2-kills">-</span>
-                            </div>
-                            <div class="text-xs mt-1">得分: <span class="text-primary" id="score-g1-kills">-</span> vs <span class="text-secondary" id="score-g2-kills">-</span></div>
+                        
+                        <!-- 维度列表 -->
+                        <div id="dynamicWeightDimensions" class="space-y-2">
+                            <!-- 动态生成维度权重滑块 -->
                         </div>
-                        <div class="mini-stat">
-                            <div class="text-xs text-gray-400 mb-1">助攻贡献 (15%)</div>
-                            <div class="flex items-center justify-center gap-2">
-                                <span class="mini-stat-value text-primary" id="weight-g1-assists">-</span>
-                                <span class="vs-badge mx-1">vs</span>
-                                <span class="mini-stat-value text-secondary" id="weight-g2-assists">-</span>
-                            </div>
-                            <div class="text-xs mt-1">得分: <span class="text-primary" id="score-g1-assists">-</span> vs <span class="text-secondary" id="score-g2-assists">-</span></div>
+                        
+                        <!-- 权重总和提示 -->
+                        <div id="weightSumIndicator" class="text-xs text-center py-2 rounded bg-gray-800">
+                            当前权重总和: <span id="weightSumValue" class="font-bold">100</span>%
                         </div>
-                        <div class="mini-stat">
-                            <div class="text-xs text-gray-400 mb-1">治疗能力 (20%)</div>
-                            <div class="flex items-center justify-center gap-2">
-                                <span class="mini-stat-value text-primary" id="weight-g1-healing">-</span>
-                                <span class="vs-badge mx-1">vs</span>
-                                <span class="mini-stat-value text-secondary" id="weight-g2-healing">-</span>
-                            </div>
-                            <div class="text-xs mt-1">得分: <span class="text-primary" id="score-g1-healing">-</span> vs <span class="text-secondary" id="score-g2-healing">-</span></div>
-                        </div>
-                        <div class="mini-stat">
-                            <div class="text-xs text-gray-400 mb-1">综合伤害 (25%)</div>
-                            <div class="flex items-center justify-center gap-2">
-                                <span class="mini-stat-value text-primary" id="weight-g1-damage">-</span>
-                                <span class="vs-badge mx-1">vs</span>
-                                <span class="mini-stat-value text-secondary" id="weight-g2-damage">-</span>
-                            </div>
-                            <div class="text-xs mt-1">得分: <span class="text-primary" id="score-g1-damage">-</span> vs <span class="text-secondary" id="score-g2-damage">-</span></div>
+                        
+                        <!-- 操作按钮 -->
+                        <div class="flex gap-2">
+                            <button onclick="resetDynamicWeights()" class="flex-1 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-xs transition-colors">
+                                <i class="fas fa-undo mr-1"></i>重置
+                            </button>
+                            <button onclick="applyDynamicWeights()" class="flex-1 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded text-xs transition-colors">
+                                <i class="fas fa-check mr-1"></i>应用
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -3131,7 +3173,7 @@
             }
 
             // 隐藏所有存在的视图
-            const views = ['leaderboardView', 'chartsView', 'playerView', 'professionView', 'teamView', 'lowperformView', 'multibattleView', 'multidashboardView'];
+            const views = ['leaderboardView', 'chartsView', 'playerView', 'professionView', 'teamView', 'lowperformView', 'multibattleView', 'multidashboardView', 'weightconfigView'];
             views.forEach(viewId => {
                 const view = document.getElementById(viewId);
                 if (view) {
@@ -3164,8 +3206,16 @@
                     updateLowPerformMembers();
                 }
 
-                // 如果切换到个人分析视图，默认折叠面板并尝试自动选择玩家
+                // 如果切换到权重配置视图，初始化权重配置面板
+                if (tab === 'weightconfig') {
+                    initWeightConfigPanel();
+                }
+
+                // 如果切换到个人分析视图，刷新玩家数据并初始化对比系统
                 if (tab === 'player') {
+                    // 刷新个人分析的玩家数据
+                    initPlayerAnalysis();
+                    
                     // 延迟执行以确保DOM已更新
                     setTimeout(() => {
                         // 默认折叠面板
@@ -3269,11 +3319,17 @@
                 setTimeout(updateCharts, 10);
             }
 
-            // 如果是个人分析视图，且已选择玩家，则初始化对比系统
-            if (tab === 'player' && currentPlayer) {
-                setTimeout(() => {
-                    initPlayerAnalysisCompareSystem();
-                }, 100);
+            // 如果是个人分析视图，刷新玩家数据并初始化对比系统
+            if (tab === 'player') {
+                // 刷新个人分析的玩家数据
+                initPlayerAnalysis();
+                
+                // 如果已选择玩家，初始化对比系统
+                if (currentPlayer) {
+                    setTimeout(() => {
+                        initPlayerAnalysisCompareSystem();
+                    }, 100);
+                }
             }
 
             // 控制名称变更按钮显示（仅在个人分析模块显示）
@@ -3302,7 +3358,8 @@
                 'multibattle': '多场看板',
                 'multidashboard': '多维度看板',
                 'team': '智能分团',
-                'lowperform': '职业末位'
+                'lowperform': '职业末位',
+                'weightconfig': '权重配置'
             };
             return labels[tab] || tab;
         }
@@ -3778,6 +3835,12 @@
             // 计算并更新战力评分
             calculateCombatRating(g1, g2);
 
+            // 确保权重卡片已渲染（动态生成）
+            renderWeightScoreCard();
+            
+            // 显式更新权重卡片数值（确保数据正确显示）
+            updateWeightScoreDisplay();
+
             // 更新权重分析视图
             updateWeightsView(g1, g2);
 
@@ -3857,63 +3920,90 @@
 
         // 更新权重分析视图
         function updateWeightsView(g1, g2) {
-            // 计算各项得分
-            const g1MembersScore = Math.min(100, (g1.members / Math.max(g1.members, g2.members, 1)) * 100);
-            const g2MembersScore = Math.min(100, (g2.members / Math.max(g1.members, g2.members, 1)) * 100);
+            // 始终使用 calculateGuildStats 获取中文键名的数据，确保格式一致
+            const g1Stats = calculateGuildStats(guild1Data);
+            const g2Stats = calculateGuildStats(guild2Data);
+            
+            // 检查是否使用高级权重配置
+            // 只要启用了高级维度（非标准5维度），就使用高级计算
+            const enabledDims = DynamicWeightConfig.getEnabledDimensions();
+            const standardDefaultDims = ['成员数量', '击败', '助攻', '治疗值', '对玩家伤害'];
+            const hasAdvancedDims = enabledDims.some(dim => !standardDefaultDims.includes(dim));
+            
+            if (DynamicWeightConfig.initialized && enabledDims.length > 0 && hasAdvancedDims) {
+                // 使用高级权重配置计算
+                calculateAdvancedWeightedScore(g1Stats, g2Stats);
+                return;
+            }
+            
+            // 使用默认权重计算
+            calculateDefaultWeightedScore(g1Stats, g2Stats);
+        }
+        
+        // 使用默认固定权重计算
+        function calculateDefaultWeightedScore(g1, g2) {
+            // 如果没有传入参数或数据格式不对，重新计算
+            if (!g1 || !g2 || !g1['成员数量']) {
+                g1 = calculateGuildStats(guild1Data);
+                g2 = calculateGuildStats(guild2Data);
+            }
+            
+            // 计算各项得分（使用中文键名）
+            const g1MembersScore = Math.min(100, (g1['成员数量'] / Math.max(g1['成员数量'], g2['成员数量'], 1)) * 100);
+            const g2MembersScore = Math.min(100, (g2['成员数量'] / Math.max(g1['成员数量'], g2['成员数量'], 1)) * 100);
 
-            const g1KillsScore = Math.min(100, (g1.kills / Math.max(g1.kills, g2.kills, 1)) * 100);
-            const g2KillsScore = Math.min(100, (g2.kills / Math.max(g1.kills, g2.kills, 1)) * 100);
+            const g1KillsScore = Math.min(100, (g1['击败'] / Math.max(g1['击败'], g2['击败'], 1)) * 100);
+            const g2KillsScore = Math.min(100, (g2['击败'] / Math.max(g1['击败'], g2['击败'], 1)) * 100);
 
-            const g1AssistsScore = Math.min(100, (g1.assists / Math.max(g1.assists, g2.assists, 1)) * 100);
-            const g2AssistsScore = Math.min(100, (g2.assists / Math.max(g1.assists, g2.assists, 1)) * 100);
+            const g1AssistsScore = Math.min(100, (g1['助攻'] / Math.max(g1['助攻'], g2['助攻'], 1)) * 100);
+            const g2AssistsScore = Math.min(100, (g2['助攻'] / Math.max(g1['助攻'], g2['助攻'], 1)) * 100);
 
-            const g1HealingScore = Math.min(100, (g1.healing / Math.max(g1.healing, g2.healing, 1)) * 100);
-            const g2HealingScore = Math.min(100, (g2.healing / Math.max(g1.healing, g2.healing, 1)) * 100);
+            const g1HealingScore = Math.min(100, (g1['治疗值'] / Math.max(g1['治疗值'], g2['治疗值'], 1)) * 100);
+            const g2HealingScore = Math.min(100, (g2['治疗值'] / Math.max(g1['治疗值'], g2['治疗值'], 1)) * 100);
 
-            const g1DamageScore = Math.min(100, (g1.playerDamage / Math.max(g1.playerDamage, g2.playerDamage, 1)) * 100);
-            const g2DamageScore = Math.min(100, (g2.playerDamage / Math.max(g1.playerDamage, g2.playerDamage, 1)) * 100);
+            const g1DamageScore = Math.min(100, (g1['对玩家伤害'] / Math.max(g1['对玩家伤害'], g2['对玩家伤害'], 1)) * 100);
+            const g2DamageScore = Math.min(100, (g2['对玩家伤害'] / Math.max(g1['对玩家伤害'], g2['对玩家伤害'], 1)) * 100);
 
-            // 更新权重显示
-            document.getElementById('weight-g1-members').textContent = g1.members;
-            document.getElementById('weight-g2-members').textContent = g2.members;
-            document.getElementById('score-g1-members').textContent = g1MembersScore.toFixed(0);
-            document.getElementById('score-g2-members').textContent = g2MembersScore.toFixed(0);
+            // 更新权重显示（检查元素是否存在）
+            const updateEl = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = value;
+            };
+            
+            updateEl('weight-g1-members', g1['成员数量']);
+            updateEl('weight-g2-members', g2['成员数量']);
+            updateEl('score-g1-members', g1MembersScore.toFixed(0));
+            updateEl('score-g2-members', g2MembersScore.toFixed(0));
 
-            document.getElementById('weight-g1-kills').textContent = g1.kills;
-            document.getElementById('weight-g2-kills').textContent = g2.kills;
-            document.getElementById('score-g1-kills').textContent = g1KillsScore.toFixed(0);
-            document.getElementById('score-g2-kills').textContent = g2KillsScore.toFixed(0);
+            updateEl('weight-g1-kills', g1['击败']);
+            updateEl('weight-g2-kills', g2['击败']);
+            updateEl('score-g1-kills', g1KillsScore.toFixed(0));
+            updateEl('score-g2-kills', g2KillsScore.toFixed(0));
 
-            document.getElementById('weight-g1-assists').textContent = g1.assists;
-            document.getElementById('weight-g2-assists').textContent = g2.assists;
-            document.getElementById('score-g1-assists').textContent = g1AssistsScore.toFixed(0);
-            document.getElementById('score-g2-assists').textContent = g2AssistsScore.toFixed(0);
+            updateEl('weight-g1-assists', g1['助攻']);
+            updateEl('weight-g2-assists', g2['助攻']);
+            updateEl('score-g1-assists', g1AssistsScore.toFixed(0));
+            updateEl('score-g2-assists', g2AssistsScore.toFixed(0));
 
-            document.getElementById('weight-g1-healing').textContent = formatNumber(g1.healing);
-            document.getElementById('weight-g2-healing').textContent = formatNumber(g2.healing);
-            document.getElementById('score-g1-healing').textContent = g1HealingScore.toFixed(0);
-            document.getElementById('score-g2-healing').textContent = g2HealingScore.toFixed(0);
+            updateEl('weight-g1-healing', formatNumber(g1['治疗值']));
+            updateEl('weight-g2-healing', formatNumber(g2['治疗值']));
+            updateEl('score-g1-healing', g1HealingScore.toFixed(0));
+            updateEl('score-g2-healing', g2HealingScore.toFixed(0));
 
-            document.getElementById('weight-g1-damage').textContent = formatNumber(g1.playerDamage);
-            document.getElementById('weight-g2-damage').textContent = formatNumber(g2.playerDamage);
-            document.getElementById('score-g1-damage').textContent = g1DamageScore.toFixed(0);
-            document.getElementById('score-g2-damage').textContent = g2DamageScore.toFixed(0);
+            updateEl('weight-g1-damage', formatNumber(g1['对玩家伤害']));
+            updateEl('weight-g2-damage', formatNumber(g2['对玩家伤害']));
+            updateEl('score-g1-damage', g1DamageScore.toFixed(0));
+            updateEl('score-g2-damage', g2DamageScore.toFixed(0));
+            
+            // 同时更新动态权重卡片显示
+            updateWeightScoreDisplay();
 
-            // 更新权重表格
-            const weights = [
-                { name: '成员数量', weight: '15%', g1Score: g1MembersScore, g2Score: g2MembersScore },
-                { name: '击败能力', weight: '25%', g1Score: g1KillsScore, g2Score: g2KillsScore },
-                { name: '助攻贡献', weight: '15%', g1Score: g1AssistsScore, g2Score: g2AssistsScore },
-                { name: '治疗能力', weight: '20%', g1Score: g1HealingScore, g2Score: g2HealingScore },
-                { name: '综合伤害', weight: '25%', g1Score: g1DamageScore, g2Score: g2DamageScore }
-            ];
-
-            // 计算最终得分（提前计算供后续使用）
+            // 计算最终得分
             const g1Final = (g1MembersScore * 0.15 + g1KillsScore * 0.25 + g1AssistsScore * 0.15 + g1HealingScore * 0.2 + g1DamageScore * 0.25).toFixed(1);
             const g2Final = (g2MembersScore * 0.15 + g2KillsScore * 0.25 + g2AssistsScore * 0.15 + g2HealingScore * 0.2 + g2DamageScore * 0.25).toFixed(1);
             const finalDiff = (parseFloat(g1Final) - parseFloat(g2Final)).toFixed(1);
 
-            // 渲染加权得分明细表格到左侧卡片
+            // 渲染加权得分明细表格到左侧卡片（按分组显示）
             const weightsSection = document.getElementById('weightsDetailSection');
             const weightsTableBody = document.getElementById('weightsTableBody');
             const weightG1Header = document.getElementById('weightG1Header');
@@ -3926,21 +4016,33 @@
                 if (weightG1Header) weightG1Header.textContent = guild1Name.substring(0, 4);
                 if (weightG2Header) weightG2Header.textContent = guild2Name.substring(0, 4);
 
-                // 渲染表格行
-                weightsTableBody.innerHTML = weights.map(w => {
-                    const g1Higher = w.g1Score > w.g2Score;
-                    const g2Higher = w.g2Score > w.g1Score;
+                // 按分组计算并渲染
+                // 对人伤害: 击败 25% + 助攻 15% + 对玩家伤害 25% = 65%
+                // 对塔伤害: 0%（默认权重无对塔数据）
+                // 功能数据: 成员数量 15%（默认权重无清泉、承受伤害、资源、焚骨）
+                // 综合治疗: 助攻 15% + 治疗 20% = 35%
+                
+                const groupScores = [
+                    { name: '对人伤害', weight: 65, g1Score: (g1KillsScore * 0.25 + g1AssistsScore * 0.15 + g1DamageScore * 0.25) / 0.65, g2Score: (g2KillsScore * 0.25 + g2AssistsScore * 0.15 + g2DamageScore * 0.25) / 0.65 },
+                    { name: '对塔伤害', weight: 0, g1Score: 0, g2Score: 0, showZero: true },
+                    { name: '功能数据', weight: 15, g1Score: g1MembersScore, g2Score: g2MembersScore },
+                    { name: '综合治疗', weight: 35, g1Score: (g1AssistsScore * 0.15 + g1HealingScore * 0.2) / 0.35, g2Score: (g2AssistsScore * 0.15 + g2HealingScore * 0.2) / 0.35 }
+                ];
+
+                weightsTableBody.innerHTML = groupScores.map(g => {
+                    const g1Higher = g.g1Score > g.g2Score;
+                    const g2Higher = g.g2Score > g.g1Score;
                     return `
                         <tr class="border-b border-gray-800 hover:bg-gray-800/50">
-                            <td class="py-1.5 px-1 text-gray-300">${w.name}</td>
-                            <td class="py-1.5 px-1 text-center text-gray-500">${w.weight}</td>
-                            <td class="py-1.5 px-1 text-right ${g1Higher ? 'text-jade font-medium' : 'text-gray-400'}">${w.g1Score.toFixed(1)}</td>
-                            <td class="py-1.5 px-1 text-right ${g2Higher ? 'text-jade font-medium' : 'text-gray-400'}">${w.g2Score.toFixed(1)}</td>
+                            <td class="py-1.5 px-1 text-gray-200 font-medium">${g.name}</td>
+                            <td class="py-1.5 px-1 text-center text-gray-400">${g.weight}%</td>
+                            <td class="py-1.5 px-1 text-right ${g1Higher ? 'text-jade font-medium' : 'text-gray-400'}">${g.g1Score.toFixed(1)}</td>
+                            <td class="py-1.5 px-1 text-right ${g2Higher ? 'text-jade font-medium' : 'text-gray-400'}">${g.g2Score.toFixed(1)}</td>
                         </tr>
                     `;
                 }).join('');
 
-                // 更新最终得分
+                // 更新tfoot中的综合得分
                 const finalG1Score = document.getElementById('finalG1Score');
                 const finalG2Score = document.getElementById('finalG2Score');
                 if (finalG1Score) finalG1Score.textContent = g1Final;
@@ -4696,6 +4798,9 @@
                     }
                 }
             });
+            
+            // 更新左侧权重卡片数值（使用动态权重配置）
+            updateWeightScoreDisplay();
         }
 
         function updateProfessionAnalysis() {
@@ -7440,23 +7545,877 @@
         function filterPlayerSelect() {
             applyPlayerFilters();
 
-            // 检测隐藏命令 OX208
+            // 检测隐藏命令 OX208 和 4UND2
             const searchInput = document.getElementById('playerSearchInput');
             const lowperformTab = document.getElementById('lowperformTab');
 
-            if (searchInput && lowperformTab) {
+            if (searchInput) {
                 const searchValue = searchInput.value.trim();
 
-                if (searchValue === 'OX208') {
-                    // 显示职业末位标签
-                    lowperformTab.classList.remove('hidden');
-                    // 自动切换到职业末位视图
-                    switchTab('lowperform');
-                } else if (searchValue === '' && !lowperformTab.classList.contains('hidden')) {
-                    // 如果输入为空且标签当前可见，隐藏标签并切换到数据图表
-                    lowperformTab.classList.add('hidden');
-                    switchTab('charts');
+                // 检测职业末位密码 OX208
+                if (lowperformTab) {
+                    if (searchValue === 'OX208') {
+                        lowperformTab.classList.remove('hidden');
+                        switchTab('lowperform');
+                    } else if (searchValue === '' && !lowperformTab.classList.contains('hidden')) {
+                        lowperformTab.classList.add('hidden');
+                        switchTab('charts');
+                    }
                 }
+                
+                // 检测高级权重配置密码 4UND2
+                if (searchValue === '4UND2') {
+                    unlockAdvancedWeightConfig();
+                }
+            }
+        }
+        
+        // 解锁高级权重配置
+        let isAdvancedWeightUnlocked = false;
+        function unlockAdvancedWeightConfig() {
+            if (isAdvancedWeightUnlocked) return;
+            
+            isAdvancedWeightUnlocked = true;
+            
+            // 显示权重配置导航标签
+            const weightconfigTab = document.getElementById('weightconfigTab');
+            if (weightconfigTab) {
+                weightconfigTab.classList.remove('hidden');
+            }
+            
+            // 自动切换到权重配置模块
+            switchTab('weightconfig');
+            
+            // 初始化动态权重配置
+            initDynamicWeightConfig();
+            
+            // 清空搜索框
+            const searchInput = document.getElementById('playerSearchInput');
+            if (searchInput) searchInput.value = '';
+            
+            // 触发筛选更新
+            applyPlayerFilters();
+            
+            // 显示解锁提示
+            showToast('权重配置模块已解锁！', 'success');
+        }
+        
+        // 切换高级权重配置面板
+        function toggleAdvancedWeightPanel() {
+            const panel = document.getElementById('advancedWeightConfigCard');
+            const weightScoreCard = document.getElementById('weightScoreCard');
+            
+            if (!panel) return;
+            
+            if (panel.classList.contains('hidden')) {
+                // 显示高级配置面板，隐藏普通权重面板
+                panel.classList.remove('hidden');
+                panel.style.display = 'flex';
+                if (weightScoreCard) {
+                    weightScoreCard.classList.add('hidden');
+                    weightScoreCard.style.display = 'none';
+                }
+                // 初始化配置
+                initDynamicWeightConfig();
+            } else {
+                // 隐藏高级配置面板，显示普通权重面板
+                panel.classList.add('hidden');
+                panel.style.display = 'none';
+                if (weightScoreCard) {
+                    weightScoreCard.classList.remove('hidden');
+                    weightScoreCard.style.display = 'flex';
+                }
+            }
+        }
+        
+        // 动态权重配置管理
+        const DynamicWeightConfig = {
+            // 从所有数据中提取的维度配置
+            dimensions: {},
+            // 当前权重配置
+            weights: {},
+            // 是否已初始化
+            initialized: false,
+            
+            // 标准维度列表（与多场看板-各场详细数据保持一致）
+            standardDimensions: [
+                '成员数量',
+                '对玩家伤害',
+                '击败',
+                '治疗值',
+                '对建筑伤害',
+                '助攻',
+                '承受伤害',
+                '重伤',
+                '化羽',      // 复活映射为化羽
+                '焚骨',
+                '资源',
+                '人伤卸甲',
+                '破塔卸甲',
+                '清泉'
+            ],
+            
+            // 维度名称映射（中文显示名）
+            dimensionLabels: {
+                '成员数量': '成员数量',
+                '对玩家伤害': '对玩家伤害',
+                '击败': '击败',
+                '治疗值': '治疗值',
+                '对建筑伤害': '对建筑伤害',
+                '助攻': '助攻',
+                '承受伤害': '承受伤害',
+                '重伤': '重伤',
+                '化羽': '化羽',
+                '焚骨': '焚骨',
+                '资源': '资源',
+                '人伤卸甲': '人伤卸甲',
+                '破塔卸甲': '破塔卸甲',
+                '清泉': '清泉'
+            },
+            
+            // 维度分组配置（用于左侧加权得分明细显示）
+            // 顺序：对人伤害 -> 对塔伤害 -> 功能数据 -> 综合治疗 -> 综合得分
+            dimensionGroups: {
+                '对人伤害': ['人伤卸甲', '击败', '对玩家伤害', '助攻'],
+                '对塔伤害': ['破塔卸甲', '对建筑伤害'],
+                '功能数据': ['清泉', '承受伤害', '资源', '焚骨', '成员数量'],
+                '综合治疗': ['助攻', '化羽', '治疗值']
+            },
+            
+            // localStorage 键名
+            STORAGE_KEY: 'xg_dynamic_weight_config',
+            
+            // 配置版本（当维度结构变化时递增，强制重置缓存）
+            CONFIG_VERSION: 2,
+            
+            // 从localStorage加载配置
+            loadFromStorage() {
+                try {
+                    const saved = localStorage.getItem(this.STORAGE_KEY);
+                    if (saved) {
+                        const config = JSON.parse(saved);
+                        if (config.weights && config.dimensions) {
+                            // 检查版本（配置结构变化时强制重置）
+                            if (config.version !== this.CONFIG_VERSION) {
+                                console.log('[权重配置] 配置版本已更新，重置为默认配置');
+                                return false;
+                            }
+                            
+                            this.weights = config.weights;
+                            this.dimensions = config.dimensions;
+                            
+                            // 检查是否需要更新维度（新增维度）
+                            const currentDims = Object.keys(this.dimensions);
+                            const needsUpdate = this.standardDimensions.some(dim => !currentDims.includes(dim));
+                            
+                            if (needsUpdate) {
+                                console.log('[权重配置] 检测到新维度，正在更新配置...');
+                                // 添加新维度
+                                this.standardDimensions.forEach(dim => {
+                                    if (!this.dimensions[dim]) {
+                                        this.dimensions[dim] = {
+                                            label: this.dimensionLabels[dim] || dim,
+                                            enabled: true
+                                        };
+                                        this.weights[dim] = 5; // 默认权重
+                                    }
+                                });
+                                // 移除旧的维度
+                                currentDims.forEach(dim => {
+                                    if (!this.standardDimensions.includes(dim)) {
+                                        delete this.dimensions[dim];
+                                        delete this.weights[dim];
+                                    }
+                                });
+                                // 重新均衡化权重
+                                this.normalize();
+                            }
+                            
+                            this.initialized = true;
+                            console.log('[权重配置] 已从缓存加载配置');
+                            return true;
+                        }
+                    }
+                } catch (e) {
+                    console.error('[权重配置] 加载缓存失败:', e);
+                }
+                return false;
+            },
+            
+            // 保存配置到localStorage
+            saveToStorage() {
+                try {
+                    const config = {
+                        weights: this.weights,
+                        dimensions: this.dimensions,
+                        version: this.CONFIG_VERSION,
+                        savedAt: new Date().toISOString()
+                    };
+                    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(config));
+                    console.log('[权重配置] 已保存到缓存');
+                    return true;
+                } catch (e) {
+                    console.error('[权重配置] 保存缓存失败:', e);
+                    return false;
+                }
+            },
+            
+            // 清除缓存
+            clearStorage() {
+                try {
+                    localStorage.removeItem(this.STORAGE_KEY);
+                    console.log('[权重配置] 已清除缓存');
+                    return true;
+                } catch (e) {
+                    console.error('[权重配置] 清除缓存失败:', e);
+                    return false;
+                }
+            },
+            
+            // 从所有导入数据中提取维度（只使用标准维度）
+            extractDimensions() {
+                // 返回预定义的标准维度列表（与多场看板保持一致）
+                return [...this.standardDimensions];
+            },
+            
+            // 初始化权重配置
+            init() {
+                if (this.initialized) return;
+                
+                // 优先尝试从缓存加载
+                if (this.loadFromStorage()) {
+                    return;
+                }
+                
+                // 没有缓存时使用标准维度初始化
+                const dims = this.extractDimensions();
+                
+                // 初始化每个维度的权重（平均分配）
+                const defaultWeight = Math.floor(100 / dims.length);
+                dims.forEach(dim => {
+                    this.dimensions[dim] = {
+                        label: this.dimensionLabels[dim] || dim,
+                        enabled: true
+                    };
+                    this.weights[dim] = defaultWeight;
+                });
+                
+                // 调整最后一个权重使总和为100
+                const sum = Object.values(this.weights).reduce((a, b) => a + b, 0);
+                if (sum !== 100 && dims.length > 0) {
+                    this.weights[dims[dims.length - 1]] += (100 - sum);
+                }
+                
+                this.initialized = true;
+            },
+            
+            // 更新权重
+            updateWeight(dimension, value) {
+                value = Math.max(0, Math.min(100, parseInt(value) || 0));
+                this.weights[dimension] = value;
+            },
+            
+            // 获取权重总和
+            getSum() {
+                return Object.values(this.weights).reduce((a, b) => a + b, 0);
+            },
+            
+            // 获取启用的维度
+            getEnabledDimensions() {
+                return Object.keys(this.dimensions).filter(dim => this.dimensions[dim].enabled);
+            },
+            
+            // 重置为平均权重
+            reset() {
+                const enabledDims = this.getEnabledDimensions();
+                if (enabledDims.length === 0) return;
+                
+                const defaultWeight = Math.floor(100 / enabledDims.length);
+                enabledDims.forEach(dim => {
+                    this.weights[dim] = defaultWeight;
+                });
+                
+                // 调整最后一个权重使总和为100
+                const sum = Object.values(this.weights).reduce((a, b) => a + b, 0);
+                if (sum !== 100 && enabledDims.length > 0) {
+                    this.weights[enabledDims[enabledDims.length - 1]] += (100 - sum);
+                }
+            },
+            
+            // 均衡化权重（自动调整使总和为100）
+            normalize() {
+                const enabledDims = this.getEnabledDimensions();
+                if (enabledDims.length === 0) return;
+                
+                const sum = this.getSum();
+                if (sum === 0) {
+                    this.reset();
+                    return;
+                }
+                
+                // 按比例调整
+                enabledDims.forEach(dim => {
+                    this.weights[dim] = Math.round((this.weights[dim] / sum) * 100);
+                });
+                
+                // 修正舍入误差
+                const newSum = this.getSum();
+                if (newSum !== 100 && enabledDims.length > 0) {
+                    this.weights[enabledDims[0]] += (100 - newSum);
+                }
+            }
+        };
+        
+        // 初始化动态权重配置面板
+        function initDynamicWeightConfig() {
+            DynamicWeightConfig.init();
+            renderDynamicWeightControls();
+            updateWeightSumDisplay();
+        }
+        
+        // 渲染动态权重控制面板
+        function renderDynamicWeightControls() {
+            const container = document.getElementById('dynamicWeightDimensions');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            Object.keys(DynamicWeightConfig.dimensions).forEach(dim => {
+                const config = DynamicWeightConfig.dimensions[dim];
+                const weight = DynamicWeightConfig.weights[dim];
+                
+                const item = document.createElement('div');
+                item.className = 'bg-gray-800 rounded p-2';
+                item.innerHTML = `
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="text-xs text-gray-300 flex items-center">
+                            <input type="checkbox" ${config.enabled ? 'checked' : ''} 
+                                onchange="toggleDimensionEnabled('${dim}', this.checked)"
+                                class="mr-2 w-3 h-3 rounded border-gray-500 text-purple-500 focus:ring-purple-500">
+                            ${config.label}
+                        </label>
+                        <span class="text-xs font-bold text-purple-400" id="weight-value-${dim}">${weight}%</span>
+                    </div>
+                    <input type="range" min="0" max="100" value="${weight}" 
+                        oninput="updateDynamicWeight('${dim}', this.value)"
+                        class="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer ${config.enabled ? '' : 'opacity-50'}"
+                        ${config.enabled ? '' : 'disabled'}>
+                `;
+                container.appendChild(item);
+            });
+        }
+        
+        // 切换维度启用状态
+        function toggleDimensionEnabled(dimension, enabled) {
+            DynamicWeightConfig.dimensions[dimension].enabled = enabled;
+            renderDynamicWeightControls();
+            updateWeightSumDisplay();
+        }
+        
+        // 更新动态权重
+        function updateDynamicWeight(dimension, value) {
+            DynamicWeightConfig.updateWeight(dimension, value);
+            const valueEl = document.getElementById(`weight-value-${dimension}`);
+            if (valueEl) valueEl.textContent = `${value}%`;
+            updateWeightSumDisplay();
+        }
+        
+        // 更新权重总和显示
+        function updateWeightSumDisplay() {
+            const sum = DynamicWeightConfig.getSum();
+            const sumEl = document.getElementById('weightSumValue');
+            const indicator = document.getElementById('weightSumIndicator');
+            
+            if (sumEl) sumEl.textContent = sum;
+            if (indicator) {
+                if (sum === 100) {
+                    indicator.className = 'text-xs text-center py-2 rounded bg-green-800 text-green-200';
+                } else if (sum < 100) {
+                    indicator.className = 'text-xs text-center py-2 rounded bg-yellow-800 text-yellow-200';
+                } else {
+                    indicator.className = 'text-xs text-center py-2 rounded bg-red-800 text-red-200';
+                }
+            }
+        }
+        
+        // 重置动态权重
+        function resetDynamicWeights() {
+            DynamicWeightConfig.reset();
+            renderDynamicWeightControls();
+            updateWeightSumDisplay();
+            // 同时更新权重配置视图
+            renderWeightConfigSliders();
+            updateWeightConfigSumDisplay();
+            // 重新渲染左侧权重卡片
+            renderWeightScoreCard();
+            // 保存重置后的配置
+            DynamicWeightConfig.saveToStorage();
+            showToast('权重已重置为默认配置', 'success');
+        }
+        
+        // 应用动态权重
+        function applyDynamicWeights() {
+            const sum = DynamicWeightConfig.getSum();
+            if (sum !== 100) {
+                // 自动均衡化
+                DynamicWeightConfig.normalize();
+                renderDynamicWeightControls();
+                updateWeightSumDisplay();
+                // 同时更新权重配置视图的显示
+                renderWeightConfigSliders();
+                updateWeightConfigSumDisplay();
+            }
+            
+            // 保存到localStorage
+            DynamicWeightConfig.saveToStorage();
+            
+            // 重新渲染左侧权重卡片（全局应用）
+            renderWeightScoreCard();
+            
+            // 使用动态权重计算综合评分
+            calculateAdvancedWeightedScore();
+            
+            // 显示成功提示
+            showWeightConfigNotification('权重配置已保存并应用到全局');
+        }
+        
+        // 显示权重配置通知
+        function showWeightConfigNotification(message) {
+            // 检查是否已有通知
+            let notif = document.getElementById('weightConfigNotification');
+            if (!notif) {
+                notif = document.createElement('div');
+                notif.id = 'weightConfigNotification';
+                notif.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50 transition-opacity duration-300';
+                document.body.appendChild(notif);
+            }
+            
+            notif.textContent = message;
+            notif.style.opacity = '1';
+            
+            setTimeout(() => {
+                notif.style.opacity = '0';
+            }, 3000);
+        }
+        
+        // 初始化权重配置面板（用于权重配置子模块）
+        function initWeightConfigPanel() {
+            // 确保配置已初始化
+            if (!DynamicWeightConfig.initialized) {
+                DynamicWeightConfig.init();
+            }
+            
+            // 渲染权重滑块到权重配置视图
+            renderWeightConfigSliders();
+            
+            // 更新总和显示
+            updateWeightConfigSumDisplay();
+        }
+        
+        // 渲染右侧综合评分权重分配卡片（按原始维度显示，不按分组）
+        function renderWeightScoreCard() {
+            const container = document.getElementById('weightScoreContent');
+            if (!container) return;
+            
+            // 确保配置已初始化
+            if (!DynamicWeightConfig.initialized) {
+                DynamicWeightConfig.init();
+            }
+            
+            const enabledDims = DynamicWeightConfig.getEnabledDimensions();
+            
+            if (enabledDims.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-500 py-4">暂无权重配置</div>';
+                return;
+            }
+            
+            // 按原始维度渲染权重明细
+            container.innerHTML = enabledDims.map(dim => {
+                const label = DynamicWeightConfig.dimensionLabels[dim] || dim;
+                const weight = DynamicWeightConfig.weights[dim] || 0;
+                // 使用维度名称的hash作为唯一标识，支持中文
+                const dimKey = btoa(unescape(encodeURIComponent(dim))).replace(/[^a-zA-Z0-9]/g, '').substring(0, 16);
+                
+                return `
+                    <div class="mini-stat">
+                        <div class="text-xs text-gray-400 mb-1">${label} (${weight}%)</div>
+                        <div class="flex items-center justify-center gap-2">
+                            <span class="mini-stat-value text-primary" id="weight-g1-${dimKey}">-</span>
+                            <span class="vs-badge mx-1">vs</span>
+                            <span class="mini-stat-value text-secondary" id="weight-g2-${dimKey}">-</span>
+                        </div>
+                        <div class="text-xs mt-1">得分: <span class="text-primary" id="score-g1-${dimKey}">-</span> vs <span class="text-secondary" id="score-g2-${dimKey}">-</span></div>
+                    </div>
+                `;
+            }).join('');
+            
+            // 触发更新权重数值显示
+            if (typeof updateWeightScoreDisplay === 'function') {
+                updateWeightScoreDisplay();
+            }
+        }
+        
+        // 更新右侧权重卡片中的数值显示（按原始维度计算）
+        function updateWeightScoreDisplay() {
+            // 获取当前帮会数据
+            const g1 = calculateGuildStats(guild1Data);
+            const g2 = calculateGuildStats(guild2Data);
+            
+            const enabledDims = DynamicWeightConfig.getEnabledDimensions();
+            
+            // 按原始维度计算和显示
+            enabledDims.forEach(dim => {
+                // 使用维度名称的hash作为唯一标识，支持中文
+                const dimKey = btoa(unescape(encodeURIComponent(dim))).replace(/[^a-zA-Z0-9]/g, '').substring(0, 16);
+                const g1Value = g1[dim] || 0;
+                const g2Value = g2[dim] || 0;
+                const maxValue = Math.max(g1Value, g2Value, 1);
+                
+                const g1Score = (g1Value / maxValue) * 100;
+                const g2Score = (g2Value / maxValue) * 100;
+                
+                // 更新数值
+                const g1El = document.getElementById(`weight-g1-${dimKey}`);
+                const g2El = document.getElementById(`weight-g2-${dimKey}`);
+                const score1El = document.getElementById(`score-g1-${dimKey}`);
+                const score2El = document.getElementById(`score-g2-${dimKey}`);
+                
+                if (g1El) g1El.textContent = formatWeightValue(g1Value, dim);
+                if (g2El) g2El.textContent = formatWeightValue(g2Value, dim);
+                if (score1El) score1El.textContent = g1Score.toFixed(1);
+                if (score2El) score2El.textContent = g2Score.toFixed(1);
+            });
+        }
+        
+        // 格式化权重数值显示
+        function formatWeightValue(value, dimOrGroup) {
+            // 如果是成员数据分组或成员数量维度，显示整数
+            if (dimOrGroup === '成员数量' || dimOrGroup === '成员数据') return Math.round(value).toString();
+            if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
+            if (value >= 1000) return (value / 1000).toFixed(1) + 'K';
+            return Math.round(value).toString();
+        }
+        
+        // 渲染权重配置滑块（专用于权重配置子模块视图）
+        function renderWeightConfigSliders() {
+            const container = document.getElementById('weightSlidersContainer');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            Object.keys(DynamicWeightConfig.dimensions).forEach(dim => {
+                const config = DynamicWeightConfig.dimensions[dim];
+                const weight = DynamicWeightConfig.weights[dim];
+                
+                const item = document.createElement('div');
+                item.className = 'bg-gray-800/50 rounded-lg p-3 border border-gray-700';
+                item.innerHTML = `
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-sm text-gray-300 flex items-center cursor-pointer">
+                            <input type="checkbox" ${config.enabled ? 'checked' : ''} 
+                                onchange="toggleWeightConfigDimension('${dim}', this.checked)"
+                                class="mr-2 w-4 h-4 rounded border-gray-500 text-purple-500 focus:ring-purple-500">
+                            <span class="${config.enabled ? 'text-white' : 'text-gray-500'}">${config.label}</span>
+                        </label>
+                        <span class="text-sm font-bold ${config.enabled ? 'text-purple-400' : 'text-gray-600'}" id="weightconfig-value-${dim}">${weight}%</span>
+                    </div>
+                    <input type="range" min="0" max="100" value="${weight}" 
+                        oninput="updateWeightConfigValue('${dim}', this.value)"
+                        class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer ${config.enabled ? '' : 'opacity-30'}"
+                        ${config.enabled ? '' : 'disabled'}
+                        id="weightconfig-slider-${dim}">
+                `;
+                container.appendChild(item);
+            });
+        }
+        
+        // 切换维度启用状态（权重配置视图专用）
+        function toggleWeightConfigDimension(dimension, enabled) {
+            DynamicWeightConfig.dimensions[dimension].enabled = enabled;
+            renderWeightConfigSliders();
+            updateWeightConfigSumDisplay();
+        }
+        
+        // 更新权重值（权重配置视图专用）
+        function updateWeightConfigValue(dimension, value) {
+            DynamicWeightConfig.updateWeight(dimension, value);
+            const valueEl = document.getElementById(`weightconfig-value-${dimension}`);
+            if (valueEl) valueEl.textContent = `${value}%`;
+            updateWeightConfigSumDisplay();
+        }
+        
+        // 更新权重总和显示（权重配置视图专用）
+        function updateWeightConfigSumDisplay() {
+            const sum = DynamicWeightConfig.getSum();
+            const sumValueEl = document.getElementById('weightSumValue');
+            const sumBadgeEl = document.getElementById('weightSumBadge');
+            
+            if (sumValueEl) sumValueEl.textContent = sum;
+            
+            if (sumBadgeEl) {
+                if (sum === 100) {
+                    sumBadgeEl.className = 'px-3 py-1 bg-green-600/30 text-green-300 rounded text-sm font-mono';
+                } else if (sum < 100) {
+                    sumBadgeEl.className = 'px-3 py-1 bg-yellow-600/30 text-yellow-300 rounded text-sm font-mono';
+                } else {
+                    sumBadgeEl.className = 'px-3 py-1 bg-red-600/30 text-red-300 rounded text-sm font-mono';
+                }
+            }
+        }
+        
+        // 导出权重配置
+        function exportWeightConfig() {
+            const config = {
+                dimensions: DynamicWeightConfig.dimensions,
+                weights: DynamicWeightConfig.weights,
+                exportTime: new Date().toISOString()
+            };
+            
+            const dataStr = JSON.stringify(config, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `权重配置_${new Date().toLocaleDateString()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast('权重配置已导出', 'success');
+        }
+        
+        // 从玩家数据计算帮会统计
+        function calculateGuildStats(players) {
+            if (!players || players.length === 0) {
+                return { '成员数量': 0, '击败': 0, '助攻': 0, '治疗值': 0, '对玩家伤害': 0 };
+            }
+            
+            // 复活映射为化羽（复活数据合并到化羽中）
+            const fuhuo = players.reduce((sum, p) => sum + (parseFloat(p['复活']) || 0), 0);
+            const huayu = players.reduce((sum, p) => sum + (parseFloat(p['化羽']) || 0), 0);
+            
+            return {
+                '成员数量': players.length,
+                '击败': players.reduce((sum, p) => sum + (parseFloat(p['击败']) || 0), 0),
+                '助攻': players.reduce((sum, p) => sum + (parseFloat(p['助攻']) || 0), 0),
+                '治疗值': players.reduce((sum, p) => sum + (parseFloat(p['治疗值']) || 0), 0),
+                '对玩家伤害': players.reduce((sum, p) => sum + (parseFloat(p['对玩家伤害']) || 0), 0),
+                // 包含所有标准维度（与多场看板-各场详细数据保持一致）
+                '对建筑伤害': players.reduce((sum, p) => sum + (parseFloat(p['对建筑伤害']) || 0), 0),
+                '承受伤害': players.reduce((sum, p) => sum + (parseFloat(p['承受伤害']) || 0), 0),
+                '重伤': players.reduce((sum, p) => sum + (parseFloat(p['重伤']) || 0), 0),
+                '化羽': fuhuo + huayu,  // 复活+化羽合并显示为化羽
+                '焚骨': players.reduce((sum, p) => sum + (parseFloat(p['焚骨']) || 0), 0),
+                '资源': players.reduce((sum, p) => sum + (parseFloat(p['资源']) || 0), 0),
+                '人伤卸甲': players.reduce((sum, p) => sum + (parseFloat(p['人伤卸甲']) || 0), 0),
+                '破塔卸甲': players.reduce((sum, p) => sum + (parseFloat(p['破塔卸甲']) || 0), 0),
+                '清泉': players.reduce((sum, p) => sum + (parseFloat(p['清泉']) || 0), 0)
+            };
+        }
+        
+        // 使用高级动态权重计算综合评分
+        function calculateAdvancedWeightedScore(g1, g2) {
+            // 如果没有传入参数，尝试从全局数据构建
+            if (!g1 || !g2) {
+                g1 = calculateGuildStats(guild1Data);
+                g2 = calculateGuildStats(guild2Data);
+            }
+            
+            // 获取启用的维度及其权重
+            const enabledDims = DynamicWeightConfig.getEnabledDimensions();
+            const weights = DynamicWeightConfig.weights;
+            
+            if (enabledDims.length === 0) {
+                alert('请至少启用一个维度');
+                return;
+            }
+            
+            // 计算各维度得分和加权总分
+            let g1TotalScore = 0;
+            let g2TotalScore = 0;
+            const dimensionScores = [];
+            
+            // 遍历所有标准维度（不只是启用的），这样左侧分组才能显示完整数据
+            const allDims = DynamicWeightConfig.standardDimensions;
+            allDims.forEach(dim => {
+                const g1Value = g1[dim] || 0;
+                const g2Value = g2[dim] || 0;
+                const maxValue = Math.max(g1Value, g2Value, 1);
+                
+                const g1Score = (g1Value / maxValue) * 100;
+                const g2Score = (g2Value / maxValue) * 100;
+                
+                // 只有启用的维度才参与总分计算
+                const isEnabled = enabledDims.includes(dim);
+                const weight = isEnabled ? (weights[dim] || 0) / 100 : 0;
+                
+                if (isEnabled) {
+                    g1TotalScore += g1Score * weight;
+                    g2TotalScore += g2Score * weight;
+                }
+                
+                dimensionScores.push({
+                    name: DynamicWeightConfig.dimensionLabels[dim] || dim,
+                    weight: weights[dim] || 0,
+                    g1Value,
+                    g2Value,
+                    g1Score,
+                    g2Score,
+                    enabled: isEnabled
+                });
+            });
+            
+            // 更新综合评分显示（右侧始终显示数值）
+            const guild1ScoreEl = document.getElementById('guild1Score');
+            const guild2ScoreEl = document.getElementById('guild2Score');
+            if (guild1ScoreEl) guild1ScoreEl.textContent = g1TotalScore.toFixed(1);
+            if (guild2ScoreEl) guild2ScoreEl.textContent = g2TotalScore.toFixed(1);
+            
+            // 更新胜负判定
+            const diff = g1TotalScore - g2TotalScore;
+            const winnerEl = document.getElementById('winnerAnnounce');
+            if (winnerEl) {
+                if (Math.abs(diff) < 1) {
+                    winnerEl.innerHTML = `
+                        <div class="bg-gradient-to-r from-yellow-600/30 to-orange-600/30 p-3 rounded-none border border-yellow-500/30">
+                            <div class="flex items-center">
+                                <i class="fas fa-balance-scale text-yellow-500 mr-2"></i>
+                                <span class="font-medium text-yellow-300">势均力敌</span>
+                            </div>
+                            <div class="text-sm text-gray-400 mt-1">双方综合评分相差小于1分</div>
+                        </div>
+                    `;
+                } else if (diff > 0) {
+                    winnerEl.innerHTML = `
+                        <div class="bg-gradient-to-r from-red-600/30 to-red-800/30 p-3 rounded-none border border-red-500/30">
+                            <div class="flex items-center">
+                                <i class="fas fa-trophy text-yellow-500 mr-2"></i>
+                                <span class="font-medium text-red-300">${guild1Name} 领先</span>
+                            </div>
+                            <div class="text-sm text-gray-400 mt-1">综合评分领先 ${diff.toFixed(1)} 分</div>
+                        </div>
+                    `;
+                } else {
+                    winnerEl.innerHTML = `
+                        <div class="bg-gradient-to-r from-blue-600/30 to-blue-800/30 p-3 rounded-none border border-blue-500/30">
+                            <div class="flex items-center">
+                                <i class="fas fa-trophy text-yellow-500 mr-2"></i>
+                                <span class="font-medium text-blue-300">${guild2Name} 领先</span>
+                            </div>
+                            <div class="text-sm text-gray-400 mt-1">综合评分领先 ${Math.abs(diff).toFixed(1)} 分</div>
+                        </div>
+                    `;
+                }
+            }
+            
+            // 更新权重明细表格
+            updateAdvancedWeightsTable(dimensionScores, g1TotalScore, g2TotalScore);
+        }
+        
+        // 更新高级权重明细表格
+        function updateAdvancedWeightsTable(dimensionScores, g1Final, g2Final) {
+            const weightsSection = document.getElementById('weightsDetailSection');
+            const weightsTableBody = document.getElementById('weightsTableBody');
+            const weightG1Header = document.getElementById('weightG1Header');
+            const weightG2Header = document.getElementById('weightG2Header');
+            
+            if (weightsSection && weightsTableBody) {
+                weightsSection.style.display = 'block';
+                
+                if (weightG1Header) weightG1Header.textContent = guild1Name.substring(0, 4);
+                if (weightG2Header) weightG2Header.textContent = guild2Name.substring(0, 4);
+                
+                // 构建维度得分映射，使用多种可能的键名格式
+                const dimScoreMap = {};
+                dimensionScores.forEach(w => {
+                    // 使用name作为键
+                    dimScoreMap[w.name] = w;
+                    // 同时尝试用dimensionLabels反向查找原始维度名作为键
+                    Object.keys(DynamicWeightConfig.dimensionLabels).forEach(key => {
+                        if (DynamicWeightConfig.dimensionLabels[key] === w.name) {
+                            dimScoreMap[key] = w;
+                        }
+                    });
+                });
+                
+                // 调试输出（开发时有用）
+                console.log('[权重明细] dimensionScores:', dimensionScores);
+                console.log('[权重明细] dimScoreMap keys:', Object.keys(dimScoreMap));
+                
+                // 获取维度分组配置
+                const groups = DynamicWeightConfig.dimensionGroups;
+                let tableHTML = '';
+                
+                // 按分组渲染（始终显示所有4个分组）
+                Object.keys(groups).forEach(groupName => {
+                    const groupDims = groups[groupName];
+                    let groupWeightSum = 0;
+                    let groupG1ScoreSum = 0;
+                    let groupG2ScoreSum = 0;
+                    
+                    // 先计算该组的权重和得分，并收集有数据的维度
+                    const activeDims = [];
+                    groupDims.forEach(dimName => {
+                        // 尝试多种方式查找维度数据
+                        let dimData = dimScoreMap[dimName];
+                        if (!dimData) {
+                            const dimLabel = DynamicWeightConfig.dimensionLabels[dimName];
+                            if (dimLabel) {
+                                dimData = dimScoreMap[dimLabel];
+                            }
+                        }
+                        
+                        if (dimData) {
+                            groupWeightSum += dimData.weight;
+                            groupG1ScoreSum += dimData.g1Score * (dimData.weight / 100);
+                            groupG2ScoreSum += dimData.g2Score * (dimData.weight / 100);
+                            activeDims.push({ dimName, dimLabel: DynamicWeightConfig.dimensionLabels[dimName] || dimName, dimData });
+                        } else {
+                            console.log(`[权重明细] 未找到维度: ${dimName}`, '可用键:', Object.keys(dimScoreMap));
+                        }
+                    });
+                    
+                    // 标准化得分（归一化）
+                    const g1Score = groupWeightSum > 0 ? (groupG1ScoreSum / groupWeightSum) * 100 : 0;
+                    const g2Score = groupWeightSum > 0 ? (groupG2ScoreSum / groupWeightSum) * 100 : 0;
+                    
+                    const g1Higher = g1Score > g2Score;
+                    const g2Higher = g2Score > g1Score;
+                    
+                    // 渲染分组标题行
+                    tableHTML += `
+                        <tr class="border-b border-gray-700 bg-gray-800/30">
+                            <td class="py-1.5 px-1 text-gray-100 font-bold">${groupName}</td>
+                            <td class="py-1.5 px-1 text-center text-jade font-medium">${groupWeightSum}%</td>
+                            <td class="py-1.5 px-1 text-right ${g1Higher ? 'text-jade font-bold' : 'text-gray-300'}">${g1Score.toFixed(1)}</td>
+                            <td class="py-1.5 px-1 text-right ${g2Higher ? 'text-jade font-bold' : 'text-gray-300'}">${g2Score.toFixed(1)}</td>
+                        </tr>
+                    `;
+                    
+                    // 渲染该分组下的每个维度明细行
+                    activeDims.forEach(({ dimName, dimLabel, dimData }) => {
+                        const dimG1Higher = dimData.g1Score > dimData.g2Score;
+                        const dimG2Higher = dimData.g2Score > dimData.g1Score;
+                        tableHTML += `
+                            <tr class="border-b border-gray-800/50 hover:bg-gray-800/20">
+                                <td class="py-1 px-1 pl-4 text-gray-400 text-xs">├─ ${dimLabel}</td>
+                                <td class="py-1 px-1 text-center text-gray-500 text-xs">${dimData.weight}%</td>
+                                <td class="py-1 px-1 text-right text-xs ${dimG1Higher ? 'text-jade' : 'text-gray-500'}">${dimData.g1Score.toFixed(1)}</td>
+                                <td class="py-1 px-1 text-right text-xs ${dimG2Higher ? 'text-jade' : 'text-gray-500'}">${dimData.g2Score.toFixed(1)}</td>
+                            </tr>
+                        `;
+                    });
+                });
+                
+                weightsTableBody.innerHTML = tableHTML;
+                
+                // 更新tfoot中的综合得分
+                const finalG1Score = document.getElementById('finalG1Score');
+                const finalG2Score = document.getElementById('finalG2Score');
+                if (finalG1Score) finalG1Score.textContent = g1Final.toFixed(1);
+                if (finalG2Score) finalG2Score.textContent = g2Final.toFixed(1);
             }
         }
         
@@ -11359,6 +12318,10 @@
             // 更新显示
             updateStats();
             updateCharts();
+            
+            // 渲染权重卡片并更新数值（即使没有数据也要渲染）
+            renderWeightScoreCard();
+            updateWeightScoreDisplay();
 
             // 更新个人分析的玩家数据
             allPlayers = [...guild1Data, ...guild2Data];
@@ -11553,6 +12516,10 @@
                 // 先更新基础统计
                 updateStats();
                 
+                // 渲染权重卡片并更新数值
+                renderWeightScoreCard();
+                updateWeightScoreDisplay();
+                
                 // 延迟初始化图表（让基础UI先渲染）
                 await new Promise(resolve => setTimeout(resolve, 50));
                 updateLoadingText('正在生成图表...');
@@ -11588,6 +12555,12 @@
                     showProfileSetupModal(true);
                 }, 500);
             }
+            
+            // 初始化权重配置（从localStorage加载）
+            DynamicWeightConfig.init();
+            
+            // 渲染左侧权重卡片（应用保存的配置）
+            renderWeightScoreCard();
             
             // 异步初始化数据（带加载动画）
             await initializeDataAsync();
@@ -12348,6 +13321,14 @@
                     updateGuildSelectOptions();
                     renderMultiBattleTrendCharts();
                     
+                    // 同步最新数据到主页面（用于个人分析等模块）
+                    syncLatestBattleToMainData();
+                    
+                    // 如果当前在多场看板页面，刷新显示
+                    if (activeTab === 'multibattle') {
+                        initMultiBattleDashboard();
+                    }
+                    
                     // 清空输入
                     document.getElementById('multiBattleDateTime').value = '';
                     document.getElementById('multiGuild1Name').value = '';
@@ -12362,6 +13343,48 @@
             };
             reader.readAsText(file);
             event.target.value = '';
+        }
+        
+        // 将最新场次数据同步到主页面数据（用于个人分析等模块）
+        function syncLatestBattleToMainData() {
+            if (multiBattleCache.length === 0) return;
+            
+            // 获取最新一场数据
+            const latestBattle = multiBattleCache[0]; // 已按时间排序，最新的在前面
+            const guildsData = latestBattle.guilds || {};
+            const guildNames = Object.keys(guildsData);
+            
+            if (guildNames.length >= 1) {
+                guild1Name = latestBattle.guild1Name || guildNames[0];
+                guild1Data = guildsData[guildNames[0]] || [];
+                
+                // 保存帮会名称
+                localStorage.setItem('xg_nsh_guild1Name', guild1Name);
+                localStorage.setItem('battleData', JSON.stringify(guildsData));
+            }
+            
+            if (guildNames.length >= 2) {
+                guild2Name = latestBattle.guild2Name || guildNames[1];
+                guild2Data = guildsData[guildNames[1]] || [];
+                localStorage.setItem('xg_nsh_guild2Name', guild2Name);
+            }
+            
+            // 更新全局 allPlayers
+            allPlayers = [...guild1Data, ...guild2Data];
+            
+            // 更新UI显示
+            const g1Display = document.getElementById('guild1NameDisplay');
+            const g2Display = document.getElementById('guild2NameDisplay');
+            if (g1Display) g1Display.textContent = guild1Name;
+            if (g2Display) g2Display.textContent = guild2Name;
+            
+            // 更新个人分析模块
+            initPlayerAnalysis();
+            
+            // 更新主页面统计
+            updateStats();
+            
+            console.log(`已同步最新场次数据到主页面: ${guild1Name} (${guild1Data.length}人) vs ${guild2Name} (${guild2Data.length}人)`);
         }
         
         // 更新多场数据UI
