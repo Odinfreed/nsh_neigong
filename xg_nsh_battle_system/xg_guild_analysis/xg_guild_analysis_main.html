@@ -3329,12 +3329,16 @@
                 // 刷新个人分析的玩家数据
                 initPlayerAnalysis();
                 
-                // 如果已选择玩家，初始化对比系统
-                if (currentPlayer) {
-                    setTimeout(() => {
-                        initPlayerAnalysisCompareSystem();
-                    }, 100);
-                }
+                // 初始化对比系统（无论是否选择了玩家，都需要初始化场次选择）
+                setTimeout(() => {
+                    initCompareSystem();
+                    // 如果已选择玩家，额外初始化对比图表
+                    if (currentPlayer) {
+                        isCompareMode = true;
+                        updatePlayerCharts();
+                        updateCompareBarChart();
+                    }
+                }, 100);
             }
 
             // 控制名称变更按钮显示（仅在个人分析模块显示）
