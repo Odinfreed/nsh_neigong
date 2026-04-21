@@ -4943,7 +4943,7 @@
         let isCompareMode = false;
         let comparePlayer = null; // 对比玩家数据
         let compareBattleId = null; // 对比场次ID
-        let selectedDimensions = ['对建筑伤害', '对玩家伤害', '击败', '治疗值']; // 条形图默认选中维度
+        let selectedDimensions = ['对建筑伤害', '对玩家伤害', '击败', '治疗值', '重伤', '助攻', '承受伤害']; // 条形图默认选中维度
         let professionPieChart = null;
         
         // 对比系统筛选状态
@@ -7320,7 +7320,7 @@
                 return;
             }
             
-            // 所有可选维度配置
+            // 所有可选维度配置（完整维度）
             const allDimensions = [
                 { key: '对建筑伤害', label: '对塔输出', icon: 'fa-building', color: '#a855f7' },
                 { key: '对玩家伤害', label: '对人伤害', icon: 'fa-user-slash', color: '#ef4444' },
@@ -7329,7 +7329,14 @@
                 { key: '助攻', label: '助攻', icon: 'fa-hands-helping', color: '#3b82f6' },
                 { key: '承受伤害', label: '承受伤害', icon: 'fa-shield-alt', color: '#f97316' },
                 { key: '破泉', label: '破泉', icon: 'fa-water', color: '#06b6d4' },
-                { key: '化羽', label: '化羽', icon: 'fa-feather-alt', color: '#14b8a6' }
+                { key: '化羽', label: '化羽', icon: 'fa-feather-alt', color: '#14b8a6' },
+                { key: '重伤', label: '重伤', icon: 'fa-skull-crossbones', color: '#dc2626' },
+                { key: '死亡', label: '死亡', icon: 'fa-cross', color: '#7f1d1d' },
+                { key: '焚骨', label: '焚骨', icon: 'fa-fire', color: '#ea580c' },
+                { key: '资源', label: '资源', icon: 'fa-gem', color: '#10b981' },
+                { key: '清泉', label: '清泉', icon: 'fa-tint', color: '#0ea5e9' },
+                { key: '人伤卸甲', label: '人伤卸甲', icon: 'fa-arrow-down', color: '#8b5cf6' },
+                { key: '破塔卸甲', label: '破塔卸甲', icon: 'fa-arrow-circle-down', color: '#d946ef' }
             ];
             
             // 使用选中的维度（默认为前4个）
@@ -7418,7 +7425,7 @@
         // 切换对比维度
         function toggleCompareDimension(dimKey) {
             if (!selectedDimensions) {
-                selectedDimensions = ['对建筑伤害', '对玩家伤害', '击败', '治疗值'];
+                selectedDimensions = ['对建筑伤害', '对玩家伤害', '击败', '治疗值', '重伤', '助攻', '承受伤害'];
             }
             
             const index = selectedDimensions.indexOf(dimKey);
@@ -11562,7 +11569,7 @@
                     });
                 }
                 
-                updateProfessionPlayersTable(professionPlayers);
+                updateProfessionPlayersTable(professionPlayers, professionAvg);
                 console.log('updateProfessionComparison completed');
             }, 100);
         }
@@ -12029,9 +12036,17 @@
         }
 
         // 更新职业玩家表格
-        function updateProfessionPlayersTable(players) {
+        function updateProfessionPlayersTable(players, professionAvg) {
             const tbody = document.getElementById('professionPlayersTable');
             if (!tbody) return;
+
+            // 辅助函数：获取数值颜色类（高于平均值绿色，低于红色）
+            const getValueColorClass = (value, avg) => {
+                const numValue = parseFloat(value) || 0;
+                const numAvg = parseFloat(avg) || 0;
+                if (numAvg === 0) return '';
+                return numValue >= numAvg ? 'text-green-400 font-bold' : 'text-red-400';
+            };
 
             tbody.innerHTML = players.map((player, index) => {
                 // 判断鸿音类型：化羽次数 >= 1 为奶鸿，< 1 为惊鸿
@@ -12048,19 +12063,19 @@
                     <td>${index + 1}</td>
                     <td class="font-bold whitespace-nowrap">${player['玩家名字']}</td>
                     <td>${hongyinType}</td>
-                    <td>${player['击败'] || 0}</td>
-                    <td>${player['破泉'] || 0}</td>
-                    <td>${player['化羽'] || 0}</td>
-                    <td>${player['助攻'] || 0}</td>
-                    <td>${player['焚骨'] || 0}</td>
-                    <td>${formatNumber(player['对玩家伤害'])}</td>
-                    <td>${formatNumber(player['对建筑伤害'])}</td>
-                    <td>${player['人伤卸甲'] || 0}</td>
-                    <td>${player['破塔卸甲'] || 0}</td>
-                    <td>${formatNumber(player['治疗值'])}</td>
-                    <td>${formatNumber(player['承受伤害'])}</td>
-                    <td>${player['重伤'] || 0}</td>
-                    <td>${player['清泉'] || 0}</td>
+                    <td class="${getValueColorClass(player['击败'], professionAvg['击败'])}">${player['击败'] || 0}</td>
+                    <td class="${getValueColorClass(player['破泉'], professionAvg['破泉'])}">${player['破泉'] || 0}</td>
+                    <td class="${getValueColorClass(player['化羽'], professionAvg['化羽'])}">${player['化羽'] || 0}</td>
+                    <td class="${getValueColorClass(player['助攻'], professionAvg['助攻'])}">${player['助攻'] || 0}</td>
+                    <td class="${getValueColorClass(player['焚骨'], professionAvg['焚骨'])}">${player['焚骨'] || 0}</td>
+                    <td class="${getValueColorClass(player['对玩家伤害'], professionAvg['对玩家伤害'])}">${formatNumber(player['对玩家伤害'])}</td>
+                    <td class="${getValueColorClass(player['对建筑伤害'], professionAvg['对建筑伤害'])}">${formatNumber(player['对建筑伤害'])}</td>
+                    <td class="${getValueColorClass(player['人伤卸甲'], professionAvg['人伤卸甲'])}">${player['人伤卸甲'] || 0}</td>
+                    <td class="${getValueColorClass(player['破塔卸甲'], professionAvg['破塔卸甲'])}">${player['破塔卸甲'] || 0}</td>
+                    <td class="${getValueColorClass(player['治疗值'], professionAvg['治疗值'])}">${formatNumber(player['治疗值'])}</td>
+                    <td class="${getValueColorClass(player['承受伤害'], professionAvg['承受伤害'])}">${formatNumber(player['承受伤害'])}</td>
+                    <td class="${getValueColorClass(player['重伤'], professionAvg['重伤'])}">${player['重伤'] || 0}</td>
+                    <td class="${getValueColorClass(player['清泉'], professionAvg['清泉'])}">${player['清泉'] || 0}</td>
                 </tr>
             `}).join('');
         }
