@@ -297,14 +297,7 @@ function renderPlayerTimelineChart(canvasId, metricKey, metricName, color, multi
                     display: true,
                     labels: { color: '#888', font: { size: 10 }, boxWidth: 10 }
                 },
-                datalabels: {
-                    display: true,
-                    align: 'top',
-                    offset: 4,
-                    color: color,
-                    font: { size: 9 },
-                    formatter: (value) => formatSmallNumber(value)
-                },
+                datalabels: false,
                 tooltip: {
                     backgroundColor: 'rgba(0,0,0,0.8)',
                     titleColor: '#00d4aa',
