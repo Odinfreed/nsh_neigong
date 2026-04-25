@@ -748,6 +748,58 @@
             height: 250px;
         }
 
+        /* 数据图表视图全屏样式 */
+        .charts-view-fullscreen {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 9999 !important;
+            background: linear-gradient(145deg, rgba(13, 13, 13, 0.98) 0%, rgba(26, 26, 26, 0.99) 100%) !important;
+            padding: 24px;
+            overflow-y: auto !important;
+            display: block !important;
+        }
+        .charts-view-fullscreen .charts-toolbar {
+            margin-bottom: 24px;
+        }
+        .charts-view-fullscreen .charts-fullscreen-only {
+            display: block !important;
+        }
+        .charts-view-fullscreen .charts-fullscreen-btn {
+            display: none !important;
+        }
+        .charts-view-fullscreen .charts-exit-fullscreen-btn {
+            display: inline-flex !important;
+        }
+        .charts-view-fullscreen #chartsGrid {
+            grid-template-columns: repeat(3, 1fr) !important;
+        }
+        .charts-view-fullscreen #chartsGrid > div {
+            grid-column: span 1 / span 1 !important;
+        }
+        .charts-view-fullscreen #chartsGrid .compact-chart,
+        .charts-view-fullscreen #chartsGrid > div > div[style*="height"] {
+            height: 420px !important;
+        }
+
+        /* 打印样式：只打印数据图表 */
+        @media print {
+            body { overflow: visible !important; background: white !important; color: black !important; }
+            .left-panel, .right-panel, .card-header, .leaderboard-tab, #playerView, #professionView, #multibattleView, #multidashboardView, #lowperformView, #weightconfigView { display: none !important; }
+            .center-panel { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            #chartsView { display: block !important; position: static !important; width: 100% !important; height: auto !important; padding: 10px !important; background: white !important; }
+            .charts-view-fullscreen { position: static !important; padding: 10px !important; }
+            .charts-toolbar button, .charts-exit-fullscreen-btn { display: none !important; }
+            .charts-fullscreen-only { display: none !important; }
+            #chartsGrid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+            #chartsGrid > div { grid-column: span 1 / span 1 !important; break-inside: avoid; page-break-inside: avoid; }
+            #chartsGrid .compact-chart, #chartsGrid > div > div[style*="height"] { height: 280px !important; }
+            h3.card-title { color: #333 !important; font-size: 14px !important; }
+            canvas { max-height: 280px !important; }
+        }
+
         /* 智能分团模块样式 - 参考本地程序 */
         .team-suggestion-container-player {
             background-color: rgba(15, 23, 42, 0.6);
@@ -1232,23 +1284,44 @@
 
                             <!-- 治疗榜 -->
                             <div id="healingLeaderboardTab" class="leaderboard-tab hidden">
-                                <div class="glass-card rounded-none p-6 shadow-xl">
-                                    <h3 class="card-title mb-4"><i class="fas fa-heart mr-2 text-success"></i>治疗排行榜（TOP20）</h3>
-                                    <div class="overflow-x-auto">
-                                        <table class="result-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>排名</th>
-                                                    <th>玩家</th>
-                                                    <th>帮会</th>
-                                                    <th>职业</th>
-                                                    <th>治疗值</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="healingLeaderboard">
-                                                <!-- 动态填充 -->
-                                            </tbody>
-                                        </table>
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <div class="glass-card rounded-none p-6 shadow-xl">
+                                        <h3 class="card-title mb-4"><i class="fas fa-heart mr-2 text-success"></i>素问治疗排行榜（TOP20）</h3>
+                                        <div class="overflow-x-auto">
+                                            <table class="result-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>排名</th>
+                                                        <th>玩家</th>
+                                                        <th>帮会</th>
+                                                        <th>职业</th>
+                                                        <th>治疗值</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="suwenHealingLeaderboard">
+                                                    <!-- 动态填充 -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="glass-card rounded-none p-6 shadow-xl">
+                                        <h3 class="card-title mb-4"><i class="fas fa-heart mr-2 text-success"></i>鸿音治疗排行榜（TOP20）</h3>
+                                        <div class="overflow-x-auto">
+                                            <table class="result-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>排名</th>
+                                                        <th>玩家</th>
+                                                        <th>帮会</th>
+                                                        <th>职业</th>
+                                                        <th>治疗值</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="hongyinHealingLeaderboard">
+                                                    <!-- 动态填充 -->
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1300,29 +1373,70 @@
 
                         <!-- 图表视图 -->
                         <div id="chartsView" class="hidden">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="flex justify-between items-center mb-4 charts-toolbar">
+                                <h2 class="text-xl font-bold text-gray-100 hidden charts-fullscreen-only"><i class="fas fa-chart-area mr-2 text-jade"></i>数据图表总览</h2>
+                                <div class="ml-auto flex items-center gap-2 hidden">
+                                    <button onclick="saveChartsViewAsImage()" class="px-3 py-1.5 text-xs rounded bg-green-600/30 text-green-300 border border-green-500/50 hover:bg-green-600/50 transition-colors">
+                                        <i class="fas fa-camera mr-1"></i>保存图片
+                                    </button>
+                                    <button onclick="toggleChartsViewFullscreen()" class="px-3 py-1.5 text-xs rounded bg-purple-600/30 text-purple-300 border border-purple-500/50 hover:bg-purple-600/50 transition-colors charts-fullscreen-btn">
+                                        <i class="fas fa-expand mr-1"></i>全屏
+                                    </button>
+                                    <button onclick="toggleChartsViewFullscreen()" class="px-4 py-2 text-sm rounded bg-purple-600/40 text-purple-300 border border-purple-500/60 hover:bg-purple-600/60 transition-colors hidden charts-exit-fullscreen-btn">
+                                        <i class="fas fa-compress mr-2"></i>退出全屏
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="chartsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <h3 class="card-title">职业分布</h3>
                                     <div class="compact-chart">
                                         <canvas id="professionChart"></canvas>
                                     </div>
                                 </div>
-                                <div>
-                                    <h3 class="card-title">伤害对比</h3>
-                                    <div class="compact-chart">
-                                        <canvas id="damageChart"></canvas>
+                                <!-- v4.2.0: 伤害对比 - 全职业拆分对比 -->
+                                <div class="md:col-span-2">
+                                    <h3 class="card-title">对玩家伤害 - 全职业对比</h3>
+                                    <div class="compact-chart" style="height: 320px;">
+                                        <canvas id="damageByProfChart"></canvas>
                                     </div>
                                 </div>
-                                <div>
-                                    <h3 class="card-title">治疗对比</h3>
-                                    <div class="compact-chart">
+                                <div class="md:col-span-2">
+                                    <h3 class="card-title">对建筑伤害 - 全职业对比</h3>
+                                    <div class="compact-chart" style="height: 320px;">
+                                        <canvas id="buildingByProfChart"></canvas>
+                                    </div>
+                                </div>
+                                <!-- v4.2.0: 卸甲对比 (人伤卸甲/破塔卸甲) -->
+                                <div class="md:col-span-2">
+                                    <h3 class="card-title">卸甲对比 (人伤卸甲/破塔卸甲)</h3>
+                                    <div class="compact-chart" style="height: 280px;">
+                                        <canvas id="armorBreakChart"></canvas>
+                                    </div>
+                                </div>
+                                <!-- v4.2.0: 治疗值对比 -->
+                                <div class="md:col-span-2">
+                                    <h3 class="card-title">治疗值对比</h3>
+                                    <div class="compact-chart" style="height: 280px;">
                                         <canvas id="healingChart"></canvas>
                                     </div>
                                 </div>
-                                <div>
-                                    <h3 class="card-title">击杀辅助对比</h3>
-                                    <div class="compact-chart">
-                                        <canvas id="killsAssistsChart"></canvas>
+                                <div class="md:col-span-2">
+                                    <h3 class="card-title">击败 - 全职业对比</h3>
+                                    <div class="compact-chart" style="height: 320px;">
+                                        <canvas id="killsByProfChart"></canvas>
+                                    </div>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <h3 class="card-title">助攻 - 全职业对比</h3>
+                                    <div class="compact-chart" style="height: 320px;">
+                                        <canvas id="assistByProfChart"></canvas>
+                                    </div>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <h3 class="card-title">特殊技能对比 (羽化/清泉/破泉/焚骨/涅槃)</h3>
+                                    <div class="compact-chart" style="height: 280px;">
+                                        <canvas id="specialSkillsChart"></canvas>
                                     </div>
                                 </div>
                                 <div class="md:col-span-1">
@@ -1659,6 +1773,7 @@
                                                     <th>承受伤害</th>
                                                     <th>重伤</th>
                                                     <th>清泉</th>
+                                                    <th>涅槃</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="professionPlayersTable">
@@ -1685,12 +1800,24 @@
                                             </select>
                                             <span id="multiBattleGuildBattleCount" class="text-xs text-gray-500 whitespace-nowrap"></span>
                                         </div>
-                                        <!-- 数据模式切换 -->
-                                        <div class="flex items-center gap-2 bg-gray-800 rounded-none p-1">
-                                            <button id="battleModeAvg" onclick="setBattleMode('avg')" class="px-3 py-1 text-xs rounded-none bg-jade text-white transition-all">平均值</button>
-                                            <button id="battleModeTotal" onclick="setBattleMode('total')" class="px-3 py-1 text-xs rounded-none text-gray-400 hover:text-white transition-all">总数</button>
-                                        </div>
+                                <!-- 数据模式切换 -->
+                                <div class="flex items-center gap-2 bg-gray-800 rounded-none p-1">
+                                    <button id="battleModeAvg" onclick="setBattleMode('avg')" class="px-3 py-1 text-xs rounded-none bg-jade text-white transition-all">平均值</button>
+                                    <button id="battleModeTotal" onclick="setBattleMode('total')" class="px-3 py-1 text-xs rounded-none text-gray-400 hover:text-white transition-all">总数</button>
+                                </div>
+                            </div>
+                            <!-- 职业筛选 -->
+                            <div class="mt-4 pt-3 border-t border-gray-700">
+                                <div class="flex items-center gap-3 flex-wrap">
+                                    <label class="text-sm text-gray-400 whitespace-nowrap">
+                                        <i class="fas fa-filter mr-2 text-jade"></i>职业筛选:
+                                    </label>
+                                    <button id="multiBattleProfSelectAll" onclick="toggleMultiBattleProfSelectAll()" class="px-2 py-1 text-xs rounded-none bg-gray-700 text-gray-300 hover:bg-gray-600 transition-all">全选</button>
+                                    <div id="multiBattleProfFilter" class="flex items-center gap-2 flex-wrap">
+                                        <!-- 动态生成 -->
                                     </div>
+                                </div>
+                            </div>
                                 </div>
 
                                 <!-- 多场数据看板标题 -->
@@ -1785,10 +1912,10 @@
                                                 <canvas id="multiBattleDeathsChart"></canvas>
                                             </div>
                                         </div>
-                                        <!-- 复活/化羽趋势 -->
+                                        <!-- 化羽/涅槃趋势 -->
                                         <div class="bg-[#0d0d0d] border border-gray-700 rounded-none p-4">
                                             <h4 class="text-sm text-gray-400 mb-3 flex items-center justify-between">
-                                                <span><i class="fas fa-feather-alt mr-2 text-cyan-400"></i>复活/化羽趋势</span>
+                                                <span><i class="fas fa-feather-alt mr-2 text-cyan-400"></i>化羽/涅槃趋势</span>
                                                 <span id="resurrectTrendLabel" class="text-xs text-jade">场均</span>
                                             </h4>
                                             <div class="relative" style="height: 250px;">
@@ -1856,11 +1983,12 @@
                                                         <th class="text-right py-2 px-2" style="width: 70px;">助攻</th>
                                                         <th class="text-right py-2 px-2" style="width: 100px;">承伤</th>
                                                         <th class="text-right py-2 px-2" style="width: 70px;">重伤</th>
-                                                        <th class="text-right py-2 px-2" style="width: 90px;">复活/化羽</th>
+                                                        <th class="text-right py-2 px-2" style="width: 90px;">化羽</th>
                                                         <th class="text-right py-2 px-2" style="width: 70px;">焚骨</th>
                                                         <th class="text-right py-2 px-2" style="width: 70px;">资源</th>
                                                         <th class="text-right py-2 px-2" style="width: 90px;">人伤卸甲</th>
                                                         <th class="text-right py-2 px-2" style="width: 90px;">破塔卸甲</th>
+                                                        <th class="text-right py-2 px-2" style="width: 70px;">涅槃</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody id="multiBattleDetailTable">
@@ -1897,119 +2025,84 @@
                                     </p>
                                 </div>
 
-                                <!-- 核心数据对比 -->
-                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                                    <div class="glass-card rounded-none p-4">
-                                        <h4 class="text-sm text-gray-400 mb-3 flex items-center">
-                                            <i class="fas fa-fire mr-2 text-red-400"></i>伤害对比
-                                        </h4>
-                                        <div class="relative" style="height: 200px;">
-                                            <canvas id="multiDashboardDamageChart"></canvas>
-                                        </div>
-                                    </div>
-                                    <div class="glass-card rounded-none p-4">
-                                        <h4 class="text-sm text-gray-400 mb-3 flex items-center">
-                                            <i class="fas fa-heart mr-2 text-green-400"></i>治疗对比
-                                        </h4>
-                                        <div class="relative" style="height: 200px;">
-                                            <canvas id="multiDashboardHealChart"></canvas>
-                                        </div>
-                                    </div>
-                                    <div class="glass-card rounded-none p-4">
-                                        <h4 class="text-sm text-gray-400 mb-3 flex items-center">
-                                            <i class="fas fa-crosshairs mr-2 text-yellow-400"></i>击杀对比
-                                        </h4>
-                                        <div class="relative" style="height: 200px;">
-                                            <canvas id="multiDashboardKillsChart"></canvas>
-                                        </div>
+                                <!-- v4.2.0: 全职业拆分对比图表 -->
+                                <!-- 对玩家伤害 - 全职业对比 -->
+                                <div class="glass-card rounded-none p-4 mb-4">
+                                    <h4 class="text-sm text-gray-400 mb-3 flex items-center">
+                                        <i class="fas fa-fire mr-2 text-red-400"></i>对玩家伤害 - 全职业对比
+                                    </h4>
+                                    <div class="relative" style="height: 320px;">
+                                        <canvas id="multiDashboardDamageByProfChart"></canvas>
                                     </div>
                                 </div>
 
-                                <!-- 辅助与建筑数据 -->
-                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                    <div class="glass-card rounded-none p-4">
-                                        <h4 class="text-sm text-gray-400 mb-3 flex items-center">
-                                            <i class="fas fa-hands-helping mr-2 text-blue-400"></i>助攻对比
-                                        </h4>
-                                        <div class="relative" style="height: 220px;">
-                                            <canvas id="multiDashboardAssistChart"></canvas>
-                                        </div>
-                                    </div>
-                                    <div class="glass-card rounded-none p-4">
-                                        <h4 class="text-sm text-gray-400 mb-3 flex items-center">
-                                            <i class="fas fa-building mr-2 text-purple-400"></i>建筑伤害对比
-                                        </h4>
-                                        <div class="relative" style="height: 220px;">
-                                            <canvas id="multiDashboardBuildingChart"></canvas>
-                                        </div>
+                                <!-- 对建筑伤害 - 全职业对比 -->
+                                <div class="glass-card rounded-none p-4 mb-4">
+                                    <h4 class="text-sm text-gray-400 mb-3 flex items-center">
+                                        <i class="fas fa-building mr-2 text-purple-400"></i>对建筑伤害 - 全职业对比
+                                    </h4>
+                                    <div class="relative" style="height: 320px;">
+                                        <canvas id="multiDashboardBuildingByProfChart"></canvas>
                                     </div>
                                 </div>
 
-                                <!-- 生存与防御数据 -->
-                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                                    <div class="glass-card rounded-none p-4">
-                                        <h4 class="text-sm text-gray-400 mb-3 flex items-center">
-                                            <i class="fas fa-shield-alt mr-2 text-orange-400"></i>承伤对比
-                                        </h4>
-                                        <div class="relative" style="height: 200px;">
-                                            <canvas id="multiDashboardTakenDamageChart"></canvas>
-                                        </div>
-                                    </div>
-                                    <div class="glass-card rounded-none p-4">
-                                        <h4 class="text-sm text-gray-400 mb-3 flex items-center">
-                                            <i class="fas fa-skull-crossbones mr-2 text-red-600"></i>重伤对比
-                                        </h4>
-                                        <div class="relative" style="height: 200px;">
-                                            <canvas id="multiDashboardDeathsChart"></canvas>
-                                        </div>
-                                    </div>
-                                    <div class="glass-card rounded-none p-4">
-                                        <h4 class="text-sm text-gray-400 mb-3 flex items-center">
-                                            <i class="fas fa-dove mr-2 text-cyan-400"></i>复活/化羽对比
-                                        </h4>
-                                        <div class="relative" style="height: 200px;">
-                                            <canvas id="multiDashboardResurrectChart"></canvas>
-                                        </div>
+                                <!-- 人伤卸甲 - 全职业对比 -->
+                                <div class="glass-card rounded-none p-4 mb-4">
+                                    <h4 class="text-sm text-gray-400 mb-3 flex items-center">
+                                        <i class="fas fa-shield-virus mr-2 text-violet-400"></i>人伤卸甲 - 全职业对比
+                                    </h4>
+                                    <div class="relative" style="height: 320px;">
+                                        <canvas id="multiDashboardRenShangByProfChart"></canvas>
                                     </div>
                                 </div>
 
-                                <!-- 特殊技能与资源数据 -->
-                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                                    <div class="glass-card rounded-none p-4">
-                                        <h4 class="text-sm text-gray-400 mb-3 flex items-center">
-                                            <i class="fas fa-fire-alt mr-2 text-amber-500"></i>焚骨对比
-                                        </h4>
-                                        <div class="relative" style="height: 200px;">
-                                            <canvas id="multiDashboardFenguChart"></canvas>
-                                        </div>
-                                    </div>
-                                    <div class="glass-card rounded-none p-4">
-                                        <h4 class="text-sm text-gray-400 mb-3 flex items-center">
-                                            <i class="fas fa-gem mr-2 text-emerald-400"></i>资源对比
-                                        </h4>
-                                        <div class="relative" style="height: 200px;">
-                                            <canvas id="multiDashboardZiyuanChart"></canvas>
-                                        </div>
-                                    </div>
-                                    <div class="glass-card rounded-none p-4">
-                                        <h4 class="text-sm text-gray-400 mb-3 flex items-center">
-                                            <i class="fas fa-shield-virus mr-2 text-violet-400"></i>人伤卸甲对比
-                                        </h4>
-                                        <div class="relative" style="height: 200px;">
-                                            <canvas id="multiDashboardRenShangChart"></canvas>
-                                        </div>
+                                <!-- 破塔卸甲 - 全职业对比 -->
+                                <div class="glass-card rounded-none p-4 mb-4">
+                                    <h4 class="text-sm text-gray-400 mb-3 flex items-center">
+                                        <i class="fas fa-hammer mr-2 text-pink-400"></i>破塔卸甲 - 全职业对比
+                                    </h4>
+                                    <div class="relative" style="height: 320px;">
+                                        <canvas id="multiDashboardPoTaByProfChart"></canvas>
                                     </div>
                                 </div>
 
-                                <!-- 破塔卸甲数据 -->
-                                <div class="grid grid-cols-1 gap-4">
-                                    <div class="glass-card rounded-none p-4">
-                                        <h4 class="text-sm text-gray-400 mb-3 flex items-center">
-                                            <i class="fas fa-hammer mr-2 text-pink-400"></i>破塔卸甲对比
-                                        </h4>
-                                        <div class="relative" style="height: 220px;">
-                                            <canvas id="multiDashboardPoTaChart"></canvas>
-                                        </div>
+                                <!-- 治疗值 - 全职业对比 -->
+                                <div class="glass-card rounded-none p-4 mb-4">
+                                    <h4 class="text-sm text-gray-400 mb-3 flex items-center">
+                                        <i class="fas fa-heart mr-2 text-green-400"></i>治疗值 - 全职业对比
+                                    </h4>
+                                    <div class="relative" style="height: 320px;">
+                                        <canvas id="multiDashboardHealByProfChart"></canvas>
+                                    </div>
+                                </div>
+
+                                <!-- 击败 - 全职业对比 -->
+                                <div class="glass-card rounded-none p-4 mb-4">
+                                    <h4 class="text-sm text-gray-400 mb-3 flex items-center">
+                                        <i class="fas fa-crosshairs mr-2 text-yellow-400"></i>击败 - 全职业对比
+                                    </h4>
+                                    <div class="relative" style="height: 320px;">
+                                        <canvas id="multiDashboardKillsByProfChart"></canvas>
+                                    </div>
+                                </div>
+
+                                <!-- 助攻 - 全职业对比 -->
+                                <div class="glass-card rounded-none p-4 mb-4">
+                                    <h4 class="text-sm text-gray-400 mb-3 flex items-center">
+                                        <i class="fas fa-hands-helping mr-2 text-blue-400"></i>助攻 - 全职业对比
+                                    </h4>
+                                    <div class="relative" style="height: 320px;">
+                                        <canvas id="multiDashboardAssistByProfChart"></canvas>
+                                    </div>
+                                </div>
+
+                                <!-- v4.2.0: 特殊技能数据对比 (羽化、清泉、破泉、焚骨) -->
+                                <div class="glass-card rounded-none p-4 mb-4">
+                                    <h4 class="text-sm text-gray-400 mb-3 flex items-center">
+                                        <i class="fas fa-magic mr-2 text-cyan-400"></i>特殊技能对比 (羽化/清泉/破泉/焚骨/涅槃)
+                                    </h4>
+                                    <div class="relative" style="height: 280px;">
+                                        <canvas id="multiDashboardSpecialSkillsChart"></canvas>
                                     </div>
                                 </div>
 
@@ -2042,11 +2135,12 @@
                                                     <th class="text-left py-2 px-2 text-gray-400" style="width: 100px;">场均助攻</th>
                                                     <th class="text-left py-2 px-2 text-gray-400" style="width: 140px;">场均承伤</th>
                                                     <th class="text-left py-2 px-2 text-gray-400" style="width: 100px;">场均重伤</th>
-                                                    <th class="text-left py-2 px-2 text-gray-400" style="width: 120px;">场均复活/化羽</th>
+                                                    <th class="text-left py-2 px-2 text-gray-400" style="width: 100px;">场均化羽</th>
                                                     <th class="text-left py-2 px-2 text-gray-400" style="width: 100px;">场均焚骨</th>
                                                     <th class="text-left py-2 px-2 text-gray-400" style="width: 100px;">场均资源</th>
                                                     <th class="text-left py-2 px-2 text-gray-400" style="width: 120px;">场均人伤卸甲</th>
                                                     <th class="text-left py-2 px-2 text-gray-400" style="width: 120px;">场均破塔卸甲</th>
+                                                    <th class="text-left py-2 px-2 text-gray-400" style="width: 100px;">场均涅槃</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="multiDashboardTableBody">
@@ -3149,9 +3243,6 @@
 
         // 图表实例
         let professionChart = null;
-        let damageChart = null;
-        let healingChart = null;
-        let killsAssistsChart = null;
         let radarChart = null;
         let avgRadarChart = null;
 
@@ -3453,19 +3544,30 @@
                 .slice(0, 20);
             updateLeaderboardTable('killsLeaderboard', killsLeaderboard, '击败');
 
-            // 更新治疗榜
-            const healingLeaderboard = [...allPlayers]
+            // 更新治疗榜（按职业拆分为素问和鸿音，过滤治疗值为0的玩家）
+            const suwenHealingLeaderboard = [...allPlayers]
+                .filter(p => p['职业'] === '素问')
+                .filter(p => (parseInt(p['治疗值']) || 0) > 0)
                 .sort((a, b) => (parseInt(b['治疗值']) || 0) - (parseInt(a['治疗值']) || 0))
                 .slice(0, 20);
-            updateLeaderboardTable('healingLeaderboard', healingLeaderboard, '治疗值');
+            updateLeaderboardTable('suwenHealingLeaderboard', suwenHealingLeaderboard, '治疗值');
 
-            // 更新卸甲榜
+            const hongyinHealingLeaderboard = [...allPlayers]
+                .filter(p => p['职业'] === '鸿音')
+                .filter(p => (parseInt(p['治疗值']) || 0) > 0)
+                .sort((a, b) => (parseInt(b['治疗值']) || 0) - (parseInt(a['治疗值']) || 0))
+                .slice(0, 20);
+            updateLeaderboardTable('hongyinHealingLeaderboard', hongyinHealingLeaderboard, '治疗值');
+
+            // 更新卸甲榜（过滤值为0的玩家）
             const playerArmorBreakLeaderboard = [...allPlayers]
+                .filter(p => (parseInt(p['人伤卸甲']) || 0) > 0)
                 .sort((a, b) => (parseInt(b['人伤卸甲']) || 0) - (parseInt(a['人伤卸甲']) || 0))
                 .slice(0, 20);
             updateLeaderboardTable('playerArmorBreakLeaderboard', playerArmorBreakLeaderboard, '人伤卸甲');
 
             const buildingArmorBreakLeaderboard = [...allPlayers]
+                .filter(p => (parseInt(p['破塔卸甲']) || 0) > 0)
                 .sort((a, b) => (parseInt(b['破塔卸甲']) || 0) - (parseInt(a['破塔卸甲']) || 0))
                 .slice(0, 20);
             updateLeaderboardTable('buildingArmorBreakLeaderboard', buildingArmorBreakLeaderboard, '破塔卸甲');
@@ -3473,52 +3575,65 @@
 
         // 处理击败/清泉和复活/清泉字段,拆分为独立的字段
         function processDefeatQingquanField(player) {
-            // 初始化字段（5个独立字段：击败、破泉、化羽、清泉、复活）
-            if (player['击败'] === undefined) player['击败'] = 0;
-            if (player['破泉'] === undefined) player['破泉'] = 0;
-            if (player['化羽'] === undefined) player['化羽'] = 0;
-            if (player['清泉'] === undefined) player['清泉'] = 0;
-            if (player['复活'] === undefined) player['复活'] = 0;
+            // 初始化字段（6个独立字段：击败、破泉、化羽、清泉、复活、涅槃）
+            // 必须无条件重置，防止同一数据被多次处理时重复累加
+            player['击败'] = 0;
+            player['破泉'] = 0;
+            player['化羽'] = 0;
+            player['清泉'] = 0;
+            player['复活'] = 0;
+            player['涅槃'] = 0;
 
             // 处理'击败/清泉'字段
             // 格式：" 击败数/破泉数"，前面是击败，后面是破泉
             if (player['击败/清泉'] !== undefined && player['击败/清泉'] !== '') {
-                const value = String(player['击败/清泉']).trim();
+                const rawValue = String(player['击败/清泉']).trim();
+                // 去除逗号（处理带千分位的数字如"1,234"）
+                const value = rawValue.replace(/,/g, '');
                 if (value.includes('/')) {
                     const parts = value.split('/');
-                    player['击败'] = player['击败'] + (parseInt(parts[0]) || 0);
-                    player['破泉'] = player['破泉'] + (parseInt(parts[1]) || 0);
+                    player['击败'] = parseInt(parts[0]) || 0;
+                    player['破泉'] = parseInt(parts[1]) || 0;
                 } else {
-                    player['击败'] = player['击败'] + (parseInt(value) || 0);
+                    player['击败'] = parseInt(value) || 0;
                 }
             }
 
             // 处理'复活/清泉'字段
-            // 职业区分：素问/鸿音=化羽（复活），潮光=清泉，其他职业=0
+            // 职业区分：素问=化羽，鸿音=涅槃，潮光=清泉，其他职业=0
             if (player['复活/清泉'] !== undefined && player['复活/清泉'] !== '') {
-                const value = String(player['复活/清泉']).trim();
+                const rawValue = String(player['复活/清泉']).trim();
                 const profession = player['职业'];
-                
+
+                // 去除逗号（处理带千分位的数字如"1,234"）
+                const value = rawValue.replace(/,/g, '');
+
                 if (value.includes('/')) {
                     const parts = value.split('/');
-                    if (profession === '素问' || profession === '鸿音') {
-                        // 素问/鸿音：前半部分是复活（显示为化羽），后半部分是0
-                        player['化羽'] = player['化羽'] + (parseInt(parts[0]) || 0);
+                    if (profession === '素问') {
+                        // 素问：前半部分是复活（显示为化羽）
+                        player['化羽'] = parseInt(parts[0]) || 0;
+                    } else if (profession === '鸿音') {
+                        // 鸿音：前半部分是复活（显示为涅槃）
+                        player['涅槃'] = parseInt(parts[0]) || 0;
                     } else if (profession === '潮光') {
                         // 潮光：前半部分是0，后半部分是清泉
-                        player['清泉'] = player['清泉'] + (parseInt(parts[1]) || 0);
+                        player['清泉'] = parseInt(parts[1]) || 0;
                     }
-                    // 其他职业：化羽和清泉都保持0
+                    // 其他职业：化羽、涅槃和清泉都保持0
                 } else {
                     // 单个数值
-                    if (profession === '素问' || profession === '鸿音') {
-                        // 素问/鸿音：这个值是复活（显示为化羽）
-                        player['化羽'] = player['化羽'] + (parseInt(value) || 0);
+                    if (profession === '素问') {
+                        // 素问：这个值是复活（显示为化羽）
+                        player['化羽'] = parseInt(value) || 0;
+                    } else if (profession === '鸿音') {
+                        // 鸿音：这个值是复活（显示为涅槃）
+                        player['涅槃'] = parseInt(value) || 0;
                     } else if (profession === '潮光') {
                         // 潮光：这个值是清泉
-                        player['清泉'] = player['清泉'] + (parseInt(value) || 0);
+                        player['清泉'] = parseInt(value) || 0;
                     }
-                    // 其他职业：化羽和清泉都保持0
+                    // 其他职业：化羽、涅槃和清泉都保持0
                 }
             }
 
@@ -3591,7 +3706,8 @@
                 else if (rank === 3) rankClass = 'text-orange-400 font-bold';
 
                 const value = isScore ? player.score : parseInt(player[field]) || 0;
-                const formattedValue = isScore ? value : formatNumber(value);
+                const showDecimal = field !== '击败';
+                const formattedValue = isScore ? value : formatNumber(value, showDecimal);
                 
                 // 动态获取帮会名称
                 const guildName = getPlayerGuildName(player['玩家名字']);
@@ -3629,17 +3745,19 @@
 
         
         // 格式化数字
-        function formatNumber(num) {
+        function formatNumber(num, showDecimal = true) {
             if (num === undefined || num === null || isNaN(num)) return '0';
             const n = Number(num);
 
             // 大数值使用计量单位
-            if (n >= 100000000) return (n / 100000000).toFixed(2) + '亿';
-            if (n >= 10000) return (n / 10000).toFixed(2) + '万';
-            if (n >= 1000) return (n / 1000).toFixed(2) + '千';
+            if (n >= 100000000) return (n / 100000000).toFixed(showDecimal ? 2 : 0) + '亿';
+            if (n >= 10000) return (n / 10000).toFixed(showDecimal ? 2 : 0) + '万';
+
+            // 整数直接返回，不保留小数
+            if (Number.isInteger(n)) return n.toString();
 
             // 小数值保留两位小数
-            return n.toFixed(2);
+            return n.toFixed(showDecimal ? 2 : 0);
         }
         
         // 计算统计
@@ -3659,9 +3777,571 @@
                 takenDamage: data.reduce((sum, p) => sum + (parseInt(p['承受伤害']) || 0), 0),
                 heavyInjury: data.reduce((sum, p) => sum + (parseInt(p['重伤']) || 0), 0),
                 huayu: data.reduce((sum, p) => sum + (parseInt(p['化羽']) || 0), 0),
+                niepan: data.reduce((sum, p) => sum + (parseInt(p['涅槃']) || 0), 0),
                 revive: data.reduce((sum, p) => sum + (parseInt(p['复活']) || 0), 0),
                 fengu: data.reduce((sum, p) => sum + (parseInt(p['焚骨']) || 0), 0)
             };
+        }
+        
+        // v4.2.0: 计算按职业拆分的统计数据
+        function calculateStatsByProfession(data) {
+            const profStats = {};
+            
+            data.forEach(p => {
+                const prof = p['职业'] || '未知';
+                if (!profStats[prof]) {
+                    profStats[prof] = {
+                        playerCount: 0,
+                        damage: 0,
+                        buildingDamage: 0,
+                        playerArmorBreak: 0,
+                        buildingArmorBreak: 0,
+                        healing: 0,
+                        kills: 0,
+                        assists: 0,
+                        huayu: 0,
+                        niepan: 0,
+                        qingquan: 0,
+                        poquan: 0,
+                        fengu: 0
+                    };
+                }
+                
+                const ps = profStats[prof];
+                ps.playerCount++;
+                ps.damage += parseInt(p['对玩家伤害']) || 0;
+                ps.buildingDamage += parseInt(p['对建筑伤害']) || 0;
+                ps.playerArmorBreak += parseInt(p['人伤卸甲']) || 0;
+                ps.buildingArmorBreak += parseInt(p['破塔卸甲']) || 0;
+                ps.healing += parseInt(p['治疗值']) || 0;
+                ps.kills += parseInt(p['击败']) || 0;
+                ps.assists += parseInt(p['助攻']) || 0;
+                ps.huayu += parseInt(p['化羽']) || 0;
+                ps.niepan += parseInt(p['涅槃']) || 0;
+                ps.qingquan += parseInt(p['清泉']) || 0;
+                ps.poquan += parseInt(p['破泉']) || 0;
+                ps.fengu += parseInt(p['焚骨']) || 0;
+            });
+
+            return profStats;
+        }
+        
+        // v4.2.0: 渲染按职业拆分的伤害对比图表 - 带均值曲线
+        function renderDamageChartByProfession(canvasId, allProfessions, guild1Name, guild2Name, g1ByProf, g2ByProf, metric, label) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+
+            const chartInstance = Chart.getChart(canvas);
+            if (chartInstance) chartInstance.destroy();
+
+            const ctx = canvas.getContext('2d');
+
+            // 准备数据 - 过滤掉两个帮会数据都为0的职业
+            const filteredProfessions = allProfessions.filter(prof => {
+                const g1Val = g1ByProf[prof]?.[metric] || 0;
+                const g2Val = g2ByProf[prof]?.[metric] || 0;
+                return g1Val > 0 || g2Val > 0;
+            });
+
+            // 如果所有职业数据都为0，显示提示信息
+            if (filteredProfessions.length === 0) {
+                const parent = canvas.parentElement;
+                if (parent) {
+                    parent.innerHTML = `<div class="flex items-center justify-center h-full text-gray-500">暂无${label}数据</div>`;
+                }
+                return;
+            }
+
+            const g1Data = filteredProfessions.map(prof => g1ByProf[prof]?.[metric] || 0);
+            const g2Data = filteredProfessions.map(prof => g2ByProf[prof]?.[metric] || 0);
+
+            // 计算均值曲线数据 (两者均值)
+            const avgData = g1Data.map((val, idx) => (val + (g2Data[idx] || 0)) / 2);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: filteredProfessions,
+                    datasets: [
+                        {
+                            label: guild1Name,
+                            data: g1Data,
+                            backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                            borderColor: '#EF4444',
+                            borderWidth: 1,
+                            borderRadius: 0,
+                            borderSkipped: false,
+                            order: 2
+                        },
+                        {
+                            label: guild2Name,
+                            data: g2Data,
+                            backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                            borderColor: '#3B82F6',
+                            borderWidth: 1,
+                            borderRadius: 0,
+                            borderSkipped: false,
+                            order: 3
+                        },
+                        {
+                            label: '两者均值',
+                            data: avgData,
+                            type: 'line',
+                            borderColor: '#FFE066',
+                            backgroundColor: '#FFE066',
+                            borderWidth: 2,
+                            borderDash: [8, 4],
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            tension: 0.3,
+                            order: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: {
+                                color: '#94A3B8',
+                                callback: function(value) {
+                                    return formatNumber(value);
+                                }
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                color: '#94A3B8',
+                                font: { size: 11 }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#e0e0e0',
+                                usePointStyle: true
+                            }
+                        },
+                        datalabels: false,
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${formatNumber(context.raw)}`;
+                                }
+                            },
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleColor: '#CBD5E1',
+                            bodyColor: '#CBD5E1'
+                        }
+                    }
+                }
+            });
+        }
+
+        // v4.2.0: 渲染卸甲对比图表 (人伤卸甲/破塔卸甲) - 带均值曲线
+        function renderArmorBreakChart(guild1Name, guild2Name, g1ByProf, g2ByProf) {
+            const canvas = document.getElementById('armorBreakChart');
+            if (!canvas) return;
+
+            const chartInstance = Chart.getChart(canvas);
+            if (chartInstance) chartInstance.destroy();
+
+            const ctx = canvas.getContext('2d');
+
+            // 汇总所有职业的卸甲数据
+            const categories = [
+                { key: 'playerArmorBreak', label: '人伤卸甲' },
+                { key: 'buildingArmorBreak', label: '破塔卸甲' }
+            ];
+
+            // 计算每个类别的数据并过滤掉都为0的
+            const filteredCategories = categories.filter(cat => {
+                const g1Val = Object.values(g1ByProf).reduce((sum, prof) => sum + (prof[cat.key] || 0), 0);
+                const g2Val = Object.values(g2ByProf).reduce((sum, prof) => sum + (prof[cat.key] || 0), 0);
+                return g1Val > 0 || g2Val > 0;
+            });
+
+            // 如果所有类别数据都为0，显示提示信息
+            if (filteredCategories.length === 0) {
+                const parent = canvas.parentElement;
+                if (parent) {
+                    parent.innerHTML = '<div class="flex items-center justify-center h-full text-gray-500">暂无卸甲数据</div>';
+                }
+                return;
+            }
+
+            const g1Data = filteredCategories.map(cat => {
+                return Object.values(g1ByProf).reduce((sum, prof) => sum + (prof[cat.key] || 0), 0);
+            });
+
+            const g2Data = filteredCategories.map(cat => {
+                return Object.values(g2ByProf).reduce((sum, prof) => sum + (prof[cat.key] || 0), 0);
+            });
+
+            // 计算均值曲线数据 (两者均值)
+            const avgData = g1Data.map((val, idx) => (val + (g2Data[idx] || 0)) / 2);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: filteredCategories.map(c => c.label),
+                    datasets: [
+                        {
+                            label: guild1Name,
+                            data: g1Data,
+                            backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                            borderColor: '#EF4444',
+                            borderWidth: 1,
+                            borderRadius: 0,
+                            borderSkipped: false,
+                            order: 2
+                        },
+                        {
+                            label: guild2Name,
+                            data: g2Data,
+                            backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                            borderColor: '#3B82F6',
+                            borderWidth: 1,
+                            borderRadius: 0,
+                            borderSkipped: false,
+                            order: 3
+                        },
+                        {
+                            label: '两者均值',
+                            data: avgData,
+                            type: 'line',
+                            borderColor: '#FFE066',
+                            backgroundColor: '#FFE066',
+                            borderWidth: 2,
+                            borderDash: [8, 4],
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            tension: 0.3,
+                            order: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: {
+                                color: '#94A3B8',
+                                callback: function(value) {
+                                    return formatNumber(value);
+                                }
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                color: '#94A3B8',
+                                font: { size: 12, weight: 'bold' }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#e0e0e0',
+                                usePointStyle: true
+                            }
+                        },
+                        datalabels: false,
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${formatNumber(context.raw)}`;
+                                }
+                            },
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleColor: '#CBD5E1',
+                            bodyColor: '#CBD5E1'
+                        }
+                    }
+                }
+            });
+        }
+
+        // v4.2.0: 渲染治疗值对比图表 - 带横向均值虚线
+        function renderHealingChart(guild1Name, guild2Name, g1ByProf, g2ByProf) {
+            const canvas = document.getElementById('healingChart');
+            if (!canvas) return;
+
+            const chartInstance = Chart.getChart(canvas);
+            if (chartInstance) chartInstance.destroy();
+
+            const ctx = canvas.getContext('2d');
+
+            // 汇总所有职业的治疗值数据
+            const g1Total = Object.values(g1ByProf).reduce((sum, prof) => sum + (prof.healing || 0), 0);
+            const g2Total = Object.values(g2ByProf).reduce((sum, prof) => sum + (prof.healing || 0), 0);
+
+            // 如果两个帮会治疗值都为0，显示提示信息
+            if (g1Total === 0 && g2Total === 0) {
+                const parent = canvas.parentElement;
+                if (parent) {
+                    parent.innerHTML = '<div class="flex items-center justify-center h-full text-gray-500">暂无治疗值数据</div>';
+                }
+                return;
+            }
+
+            const avgValue = (g1Total + g2Total) / 2;
+
+            // 自定义插件：绘制水平均值虚线
+            const avgLinePlugin = {
+                id: 'avgLine',
+                afterDraw: (chart) => {
+                    const { ctx, chartArea: { top, bottom, left, right }, scales: { y } } = chart;
+                    const yPos = y.getPixelForValue(avgValue);
+
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.setLineDash([10, 5]);
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = '#FFE066';
+                    ctx.moveTo(left, yPos);
+                    ctx.lineTo(right, yPos);
+                    ctx.stroke();
+
+                    // 绘制均值标签
+                    ctx.fillStyle = '#FFE066';
+                    ctx.font = 'bold 11px Arial';
+                    ctx.fillText(`均值: ${formatNumber(avgValue)}`, right - 80, yPos - 5);
+                    ctx.restore();
+                }
+            };
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['治疗值'],
+                    datasets: [
+                        {
+                            label: guild1Name,
+                            data: [g1Total],
+                            backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                            borderColor: '#EF4444',
+                            borderWidth: 1,
+                            borderRadius: 0,
+                            borderSkipped: false,
+                            order: 2
+                        },
+                        {
+                            label: guild2Name,
+                            data: [g2Total],
+                            backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                            borderColor: '#3B82F6',
+                            borderWidth: 1,
+                            borderRadius: 0,
+                            borderSkipped: false,
+                            order: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: {
+                                color: '#94A3B8',
+                                callback: function(value) {
+                                    return formatNumber(value);
+                                }
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                color: '#94A3B8',
+                                font: { size: 12, weight: 'bold' }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#e0e0e0',
+                                usePointStyle: true
+                            }
+                        },
+                        datalabels: false,
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${formatNumber(context.raw)}`;
+                                }
+                            },
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleColor: '#CBD5E1',
+                            bodyColor: '#CBD5E1'
+                        }
+                    }
+                },
+                plugins: [avgLinePlugin]
+            });
+        }
+        
+        // v4.2.0: 渲染特殊技能对比图表 (羽化/清泉/破泉/焚骨) - 带均值曲线
+        function renderSpecialSkillsDamageChart(guild1Name, guild2Name, g1ByProf, g2ByProf) {
+            const canvas = document.getElementById('specialSkillsChart');
+            if (!canvas) return;
+
+            const chartInstance = Chart.getChart(canvas);
+            if (chartInstance) chartInstance.destroy();
+
+            const ctx = canvas.getContext('2d');
+
+            // 汇总所有职业的特殊技能数据
+            const skills = [
+                { key: 'huayu', label: '羽化' },
+                { key: 'qingquan', label: '清泉' },
+                { key: 'poquan', label: '破泉' },
+                { key: 'fengu', label: '焚骨' },
+                { key: 'niepan', label: '涅槃' }
+            ];
+
+            // 计算每个技能的数据并过滤掉都为0的
+            const filteredSkills = skills.filter(skill => {
+                const g1Val = Object.values(g1ByProf).reduce((sum, prof) => sum + (prof[skill.key] || 0), 0);
+                const g2Val = Object.values(g2ByProf).reduce((sum, prof) => sum + (prof[skill.key] || 0), 0);
+                return g1Val > 0 || g2Val > 0;
+            });
+
+            // 如果所有技能数据都为0，显示提示信息
+            if (filteredSkills.length === 0) {
+                const parent = canvas.parentElement;
+                if (parent) {
+                    parent.innerHTML = '<div class="flex items-center justify-center h-full text-gray-500">暂无特殊技能数据</div>';
+                }
+                return;
+            }
+
+            const g1Data = filteredSkills.map(skill => {
+                return Object.values(g1ByProf).reduce((sum, prof) => sum + (prof[skill.key] || 0), 0);
+            });
+
+            const g2Data = filteredSkills.map(skill => {
+                return Object.values(g2ByProf).reduce((sum, prof) => sum + (prof[skill.key] || 0), 0);
+            });
+
+            // 计算均值曲线数据 (两者均值)
+            const avgData = g1Data.map((val, idx) => (val + (g2Data[idx] || 0)) / 2);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: filteredSkills.map(s => s.label),
+                    datasets: [
+                        {
+                            label: guild1Name,
+                            data: g1Data,
+                            backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                            borderColor: '#EF4444',
+                            borderWidth: 1,
+                            borderRadius: 0,
+                            borderSkipped: false,
+                            order: 2
+                        },
+                        {
+                            label: guild2Name,
+                            data: g2Data,
+                            backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                            borderColor: '#3B82F6',
+                            borderWidth: 1,
+                            borderRadius: 0,
+                            borderSkipped: false,
+                            order: 3
+                        },
+                                              {
+                            label: '两者均值',
+                            data: avgData,
+                            type: 'line',
+                            borderColor: '#FFE066',
+                            backgroundColor: '#FFE066',
+                            borderWidth: 2,
+                            borderDash: [8, 4],
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            tension: 0.3,
+                            order: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: {
+                                color: '#94A3B8',
+                                callback: function(value) {
+                                    return formatNumber(value);
+                                }
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                color: '#94A3B8',
+                                font: { size: 12, weight: 'bold' }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#e0e0e0',
+                                usePointStyle: true
+                            }
+                        },
+                        datalabels: false,
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${formatNumber(context.raw)}`;
+                                }
+                            },
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleColor: '#CBD5E1',
+                            bodyColor: '#CBD5E1'
+                        }
+                    }
+                }
+            });
         }
 
         // 计算玩家综合得分
@@ -4287,186 +4967,35 @@
                 }
             });
             
-            // 伤害对比图表
-            if (damageChart) damageChart.destroy();
-            
+            // v4.2.0: 伤害对比图表 - 按职业全拆分对比
             const g1Stats = calculateStats(guild1Data);
             const g2Stats = calculateStats(guild2Data);
             
-            damageChart = new Chart(document.getElementById('damageChart'), {
-                type: 'bar',
-                data: {
-                    labels: ['玩家伤害', '建筑伤害', '人伤卸甲', '破塔卸甲'],
-                    datasets: [
-                        {
-                            label: guild1Name,
-                            data: [g1Stats.playerDamage, g1Stats.buildingDamage, g1Stats.playerArmorBreak, g1Stats.buildingArmorBreak],
-                            backgroundColor: '#EF4444',
-                            borderRadius: 0,
-                            borderSkipped: false
-                        },
-                        {
-                            label: guild2Name,
-                            data: [g2Stats.playerDamage, g2Stats.buildingDamage, g2Stats.playerArmorBreak, g2Stats.buildingArmorBreak],
-                            backgroundColor: '#3B82F6',
-                            borderRadius: 0,
-                            borderSkipped: false
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                            ticks: {
-                                color: '#94A3B8',
-                                callback: function(value) {
-                                    return formatNumber(value);
-                                }
-                            }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { color: '#94A3B8' }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        datalabels: false,
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.dataset.label}: ${formatNumber(context.raw)}`;
-                                }
-                            },
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#CBD5E1',
-                            bodyColor: '#CBD5E1'
-                        }
-                    }
-                }
-            });
-
-            // 治疗对比图表
-            if (healingChart) healingChart.destroy();
-
-            healingChart = new Chart(document.getElementById('healingChart'), {
-                type: 'bar',
-                data: {
-                    labels: ['治疗值'],
-                    datasets: [
-                        {
-                            label: guild1Name,
-                            data: [g1Stats.healing],
-                            backgroundColor: 'rgba(239, 68, 68, 0.7)',
-                            borderRadius: 0,
-                            borderSkipped: false
-                        },
-                        {
-                            label: guild2Name,
-                            data: [g2Stats.healing],
-                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                            borderRadius: 0,
-                            borderSkipped: false
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    indexAxis: 'y',
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                            ticks: {
-                                color: '#94A3B8',
-                                callback: function(value) {
-                                    return formatNumber(value);
-                                }
-                            }
-                        },
-                        y: {
-                            grid: { display: false },
-                            ticks: { color: '#94A3B8' }
-                        }
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        datalabels: false,
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.dataset.label}: ${formatNumber(context.raw)}`;
-                                }
-                            },
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#CBD5E1',
-                            bodyColor: '#CBD5E1'
-                        }
-                    }
-                }
-            });
-
-            // 击杀辅助对比图表
-            if (killsAssistsChart) killsAssistsChart.destroy();
-
-            killsAssistsChart = new Chart(document.getElementById('killsAssistsChart'), {
-                type: 'bar',
-                data: {
-                    labels: ['击败', '助攻', '清泉'],
-                    datasets: [
-                        {
-                            label: guild1Name,
-                            data: [g1Stats.kills, g1Stats.assists, g1Stats.qingquan],
-                            backgroundColor: 'rgba(239, 68, 68, 0.7)',
-                            borderRadius: 0,
-                            borderSkipped: false
-                        },
-                        {
-                            label: guild2Name,
-                            data: [g2Stats.kills, g2Stats.assists, g2Stats.qingquan],
-                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                            borderRadius: 0,
-                            borderSkipped: false
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                            ticks: { color: '#94A3B8' }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { color: '#94A3B8' }
-                        }
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        datalabels: false,
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.dataset.label}: ${context.raw}`;
-                                }
-                            },
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#CBD5E1',
-                            bodyColor: '#CBD5E1'
-                        }
-                    }
-                }
-            });
+            // 计算按职业拆分的数据
+            const g1ByProf = calculateStatsByProfession(guild1Data);
+            const g2ByProf = calculateStatsByProfession(guild2Data);
+            const profListForCharts = [...new Set([...Object.keys(g1ByProf), ...Object.keys(g2ByProf)])].sort();
+            
+            // 1. 对玩家伤害 - 全职业对比
+            renderDamageChartByProfession('damageByProfChart', profListForCharts, guild1Name, guild2Name, g1ByProf, g2ByProf, 'damage', '对玩家伤害');
+            
+            // 2. 对建筑伤害 - 全职业对比
+            renderDamageChartByProfession('buildingByProfChart', profListForCharts, guild1Name, guild2Name, g1ByProf, g2ByProf, 'buildingDamage', '对建筑伤害');
+            
+            // 3. 卸甲对比 (人伤卸甲/破塔卸甲)
+            renderArmorBreakChart(guild1Name, guild2Name, g1ByProf, g2ByProf);
+            
+            // 4. 治疗值对比
+            renderHealingChart(guild1Name, guild2Name, g1ByProf, g2ByProf);
+            
+            // 6. 击败 - 全职业对比
+            renderDamageChartByProfession('killsByProfChart', profListForCharts, guild1Name, guild2Name, g1ByProf, g2ByProf, 'kills', '击败');
+            
+            // 7. 助攻 - 全职业对比
+            renderDamageChartByProfession('assistByProfChart', profListForCharts, guild1Name, guild2Name, g1ByProf, g2ByProf, 'assists', '助攻');
+            
+            // 8. 特殊技能对比 (羽化/清泉/破泉/焚骨)
+            renderSpecialSkillsDamageChart(guild1Name, guild2Name, g1ByProf, g2ByProf);
 
             // 综合实力雷达图
             if (radarChart) radarChart.destroy();
@@ -4478,13 +5007,16 @@
             const g1AvgHealing = g1Stats.members > 0 ? (g1Stats.healing / g1Stats.members).toFixed(0) : 0;
             const g2AvgHealing = g2Stats.members > 0 ? (g2Stats.healing / g2Stats.members).toFixed(0) : 0;
 
-            const maxKills = Math.max(g1AvgKills, g2AvgKills, 1);
-            const maxDamage = Math.max(g1AvgDamage, g2AvgDamage, 1);
-            const maxHealing = Math.max(g1AvgHealing, g2AvgHealing, 1);
+            // 总数对比的归一化基数（使用总数最大值，而非平均值）
+            const maxTotalKills = Math.max(g1Stats.kills, g2Stats.kills, 1);
+            const maxTotalDamage = Math.max(g1Stats.playerDamage, g2Stats.playerDamage, 1);
+            const maxTotalHealing = Math.max(g1Stats.healing, g2Stats.healing, 1);
+            const maxTotalBuildingDamage = Math.max(g1Stats.buildingDamage, g2Stats.buildingDamage, 1);
             const maxMembers = Math.max(g1Stats.members, g2Stats.members, 1);
             const maxAssists = Math.max(g1Stats.assists, g2Stats.assists, 1);
             const maxQingquan = Math.max(g1Stats.qingquan, g2Stats.qingquan, 1);
             const maxHuayu = Math.max(g1Stats.huayu, g2Stats.huayu, 1);
+            const maxNiepan = Math.max(g1Stats.niepan, g2Stats.niepan, 1);
             const maxFengu = Math.max(g1Stats.fengu, g2Stats.fengu, 1);
             const maxPlayerArmorBreak = Math.max(g1Stats.playerArmorBreak, g2Stats.playerArmorBreak, 1);
             const maxBuildingArmorBreak = Math.max(g1Stats.buildingArmorBreak, g2Stats.buildingArmorBreak, 1);
@@ -4499,6 +5031,7 @@
                 g1Stats.buildingDamage,
                 g1Stats.qingquan,
                 g1Stats.huayu,
+                g1Stats.niepan,
                 g1Stats.fengu,
                 g1Stats.playerArmorBreak,
                 g1Stats.buildingArmorBreak
@@ -4512,6 +5045,7 @@
                 g2Stats.buildingDamage,
                 g2Stats.qingquan,
                 g2Stats.huayu,
+                g2Stats.niepan,
                 g2Stats.fengu,
                 g2Stats.playerArmorBreak,
                 g2Stats.buildingArmorBreak
@@ -4520,19 +5054,20 @@
             radarChart = new Chart(document.getElementById('radarChart'), {
                 type: 'radar',
                 data: {
-                    labels: ['成员数量', '击败能力', '助攻贡献', '治疗能力', '对人输出', '对塔输出', '清泉使用', '化羽', '焚骨', '人伤卸甲', '破塔卸甲'],
+                    labels: ['成员数量', '击败能力', '助攻贡献', '治疗能力', '对人输出', '对塔输出', '清泉使用', '化羽', '涅槃', '焚骨', '人伤卸甲', '破塔卸甲'],
                     datasets: [
                         {
                             label: guild1Name,
                             data: [
                                 (g1Stats.members / maxMembers) * 100,
-                                (g1Stats.kills / (g1Stats.kills + g2Stats.kills || 1)) * 100,
+                                (g1Stats.kills / maxTotalKills) * 100,
                                 (g1Stats.assists / maxAssists) * 100,
-                                (g1Stats.healing / (g1Stats.healing + g2Stats.healing || 1)) * 100,
-                                (g1Stats.playerDamage / (g1Stats.playerDamage + g2Stats.playerDamage || 1)) * 100,
-                                (g1Stats.buildingDamage / (g1Stats.buildingDamage + g2Stats.buildingDamage || 1)) * 100,
+                                (g1Stats.healing / maxTotalHealing) * 100,
+                                (g1Stats.playerDamage / maxTotalDamage) * 100,
+                                (g1Stats.buildingDamage / maxTotalBuildingDamage) * 100,
                                 (g1Stats.qingquan / maxQingquan) * 100,
                                 (g1Stats.huayu / maxHuayu) * 100,
+                                (g1Stats.niepan / maxNiepan) * 100,
                                 (g1Stats.fengu / maxFengu) * 100,
                                 (g1Stats.playerArmorBreak / maxPlayerArmorBreak) * 100,
                                 (g1Stats.buildingArmorBreak / maxBuildingArmorBreak) * 100
@@ -4549,13 +5084,14 @@
                             label: guild2Name,
                             data: [
                                 (g2Stats.members / maxMembers) * 100,
-                                (g2Stats.kills / (g1Stats.kills + g2Stats.kills || 1)) * 100,
+                                (g2Stats.kills / maxTotalKills) * 100,
                                 (g2Stats.assists / maxAssists) * 100,
-                                (g2Stats.healing / (g1Stats.healing + g2Stats.healing || 1)) * 100,
-                                (g2Stats.playerDamage / (g1Stats.playerDamage + g2Stats.playerDamage || 1)) * 100,
-                                (g2Stats.buildingDamage / (g1Stats.buildingDamage + g2Stats.buildingDamage || 1)) * 100,
+                                (g2Stats.healing / maxTotalHealing) * 100,
+                                (g2Stats.playerDamage / maxTotalDamage) * 100,
+                                (g2Stats.buildingDamage / maxTotalBuildingDamage) * 100,
                                 (g2Stats.qingquan / maxQingquan) * 100,
                                 (g2Stats.huayu / maxHuayu) * 100,
+                                (g2Stats.niepan / maxNiepan) * 100,
                                 (g2Stats.fengu / maxFengu) * 100,
                                 (g2Stats.playerArmorBreak / maxPlayerArmorBreak) * 100,
                                 (g2Stats.buildingArmorBreak / maxBuildingArmorBreak) * 100
@@ -4595,15 +5131,15 @@
                                     const label = context.dataset.label;
                                     const value = context.raw;
                                     const dataIndex = context.dataIndex;
-                                    const labels = ['成员数量', '击败能力', '助攻贡献', '治疗能力', '对人输出', '对塔输出', '清泉使用', '化羽', '焚骨', '人伤卸甲', '破塔卸甲'];
+                                    const labels = ['成员数量', '击败能力', '助攻贡献', '治疗能力', '对人输出', '对塔输出', '清泉使用', '化羽', '涅槃', '焚骨', '人伤卸甲', '破塔卸甲'];
 
                                     // 获取原始数值
                                     let originalValue;
                                     if (context.datasetIndex === 0) {
-                                        const values = [g1Stats.members, g1Stats.kills, g1Stats.assists, g1Stats.healing, g1Stats.playerDamage, g1Stats.buildingDamage, g1Stats.qingquan, g1Stats.huayu, g1Stats.fengu, g1Stats.playerArmorBreak, g1Stats.buildingArmorBreak];
+                                        const values = [g1Stats.members, g1Stats.kills, g1Stats.assists, g1Stats.healing, g1Stats.playerDamage, g1Stats.buildingDamage, g1Stats.qingquan, g1Stats.huayu, g1Stats.niepan, g1Stats.fengu, g1Stats.playerArmorBreak, g1Stats.buildingArmorBreak];
                                         originalValue = values[dataIndex];
                                     } else {
-                                        const values = [g2Stats.members, g2Stats.kills, g2Stats.assists, g2Stats.healing, g2Stats.playerDamage, g2Stats.buildingDamage, g2Stats.qingquan, g2Stats.huayu, g2Stats.fengu, g2Stats.playerArmorBreak, g2Stats.buildingArmorBreak];
+                                        const values = [g2Stats.members, g2Stats.kills, g2Stats.assists, g2Stats.healing, g2Stats.playerDamage, g2Stats.buildingDamage, g2Stats.qingquan, g2Stats.huayu, g2Stats.niepan, g2Stats.fengu, g2Stats.playerArmorBreak, g2Stats.buildingArmorBreak];
                                         originalValue = values[dataIndex];
                                     }
                                     return `${label} ${labels[dataIndex]}: ${formatNumber(originalValue)}`;
@@ -4656,9 +5192,13 @@
             const g1AvgQingquan = calculateSpecialAverage(guild1Data, '清泉', qingquanFilter);
             const g2AvgQingquan = calculateSpecialAverage(guild2Data, '清泉', qingquanFilter);
 
-            // 化羽平均（只统计非零值）
-            const g1AvgHuayu = calculateSpecialAverage(guild1Data, '化羽');
-            const g2AvgHuayu = calculateSpecialAverage(guild2Data, '化羽');
+            // 化羽平均（只统计素问的非零值）
+            const g1AvgHuayu = calculateSpecialAverage(guild1Data.filter(p => p['职业'] === '素问'), '化羽');
+            const g2AvgHuayu = calculateSpecialAverage(guild2Data.filter(p => p['职业'] === '素问'), '化羽');
+
+            // 涅槃平均（只统计鸿音的非零值）
+            const g1AvgNiepan = calculateSpecialAverage(guild1Data.filter(p => p['职业'] === '鸿音'), '涅槃');
+            const g2AvgNiepan = calculateSpecialAverage(guild2Data.filter(p => p['职业'] === '鸿音'), '涅槃');
 
             // 焚骨平均（只统计非零值）
             const g1AvgFengu = calculateSpecialAverage(guild1Data, '焚骨');
@@ -4672,6 +5212,7 @@
             const maxAvgHealing = Math.max(g1AvgHealingFiltered, g2AvgHealingFiltered, 1);
             const maxAvgQingquan = Math.max(g1AvgQingquan, g2AvgQingquan, 1);
             const maxAvgHuayu = Math.max(g1AvgHuayu, g2AvgHuayu, 1);
+            const maxAvgNiepan = Math.max(g1AvgNiepan, g2AvgNiepan, 1);
             const maxAvgFengu = Math.max(g1AvgFengu, g2AvgFengu, 1);
             const maxAvgPlayerArmorBreak = Math.max(g1AvgPlayerArmorBreak, g2AvgPlayerArmorBreak, 1);
             const maxAvgBuildingArmorBreak = Math.max(g1AvgBuildingArmorBreak, g2AvgBuildingArmorBreak, 1);
@@ -4692,6 +5233,7 @@
                 g1AvgBuildingDamage,
                 g1AvgQingquan,
                 g1AvgHuayu,
+                g1AvgNiepan,
                 g1AvgFengu,
                 g1AvgPlayerArmorBreak,
                 g1AvgBuildingArmorBreak
@@ -4705,6 +5247,7 @@
                 g2AvgBuildingDamage,
                 g2AvgQingquan,
                 g2AvgHuayu,
+                g2AvgNiepan,
                 g2AvgFengu,
                 g2AvgPlayerArmorBreak,
                 g2AvgBuildingArmorBreak
@@ -4713,7 +5256,7 @@
             avgRadarChart = new Chart(document.getElementById('avgRadarChart'), {
                 type: 'radar',
                 data: {
-                    labels: ['成员数量', '击败能力', '助攻贡献', '治疗能力', '对人输出', '对塔输出', '清泉使用', '化羽', '焚骨', '人伤卸甲', '破塔卸甲'],
+                    labels: ['成员数量', '击败能力', '助攻贡献', '治疗能力', '对人输出', '对塔输出', '清泉使用', '化羽', '涅槃', '焚骨', '人伤卸甲', '破塔卸甲'],
                     datasets: [
                         {
                             label: guild1Name,
@@ -4726,6 +5269,7 @@
                                 (g1AvgBuildingDamage / maxAvgBuildingDamage) * 100,
                                 (g1AvgQingquan / maxAvgQingquan) * 100,
                                 (g1AvgHuayu / maxAvgHuayu) * 100,
+                                (g1AvgNiepan / maxAvgNiepan) * 100,
                                 (g1AvgFengu / maxAvgFengu) * 100,
                                 (g1AvgPlayerArmorBreak / maxAvgPlayerArmorBreak) * 100,
                                 (g1AvgBuildingArmorBreak / maxAvgBuildingArmorBreak) * 100
@@ -4749,6 +5293,7 @@
                                 (g2AvgBuildingDamage / maxAvgBuildingDamage) * 100,
                                 (g2AvgQingquan / maxAvgQingquan) * 100,
                                 (g2AvgHuayu / maxAvgHuayu) * 100,
+                                (g2AvgNiepan / maxAvgNiepan) * 100,
                                 (g2AvgFengu / maxAvgFengu) * 100,
                                 (g2AvgPlayerArmorBreak / maxAvgPlayerArmorBreak) * 100,
                                 (g2AvgBuildingArmorBreak / maxAvgBuildingArmorBreak) * 100
@@ -4787,7 +5332,7 @@
                                 label: function(context) {
                                     const label = context.dataset.label;
                                     const dataIndex = context.dataIndex;
-                                    const labels = ['成员数量', '击败能力', '助攻贡献', '治疗能力', '对人输出', '对塔输出', '清泉使用', '化羽', '焚骨', '人伤卸甲', '破塔卸甲'];
+                                    const labels = ['成员数量', '击败能力', '助攻贡献', '治疗能力', '对人输出', '对塔输出', '清泉使用', '化羽', '涅槃', '焚骨', '人伤卸甲', '破塔卸甲'];
 
                                     // 获取原始数值
                                     let originalValue;
@@ -8524,14 +9069,19 @@
             document.getElementById('statKills').textContent = currentPlayer['击败'] || 0;
             document.getElementById('statPoquan').textContent = currentPlayer['破泉'] || 0;
 
-            // 根据职业显示：素问/鸿音显示复活数据但标签为化羽，其他职业显示化羽数据
+            // 根据职业显示：素问显示化羽，鸿音显示涅槃，其他职业显示化羽数据
             const playerProfession = currentPlayer['职业'];
             const statHuayuLabel = document.getElementById('statHuayuLabel');
             const statHuayuIcon = document.getElementById('statHuayuIcon');
-            if (playerProfession === '素问' || playerProfession === '鸿音') {
-                // 素问/鸿音：数据来自'复活'字段，但显示为'化羽'（映射关系）
-                document.getElementById('statHuayu').textContent = currentPlayer['复活'] || 0;
+            if (playerProfession === '素问') {
+                // 素问：数据来自'化羽'字段
+                document.getElementById('statHuayu').textContent = currentPlayer['化羽'] || 0;
                 if (statHuayuLabel) statHuayuLabel.textContent = '化羽';
+                if (statHuayuIcon) statHuayuIcon.className = 'fas fa-feather-alt text-xs';
+            } else if (playerProfession === '鸿音') {
+                // 鸿音：数据来自'涅槃'字段
+                document.getElementById('statHuayu').textContent = currentPlayer['涅槃'] || 0;
+                if (statHuayuLabel) statHuayuLabel.textContent = '涅槃';
                 if (statHuayuIcon) statHuayuIcon.className = 'fas fa-feather-alt text-xs';
             } else {
                 document.getElementById('statHuayu').textContent = currentPlayer['化羽'] || 0;
@@ -8674,12 +9224,13 @@
                 { key: '重伤', label: '重伤', icon: 'fa-procedures', higherIsBetter: false }
             ];
 
-            // 根据职业显示特殊指标：九灵=焚骨，素问/鸿音=复活(显示为化羽)，其他=化羽
+            // 根据职业显示特殊指标：九灵=焚骨，素问=化羽，鸿音=涅槃，其他=化羽
             if (playerProfession === '九灵') {
                 metrics.push({ key: '焚骨', label: '焚骨', icon: 'fa-fire', higherIsBetter: true });
-            } else if (playerProfession === '素问' || playerProfession === '鸿音') {
-                // 素问/鸿音：数据字段是'复活'，但UI显示为'化羽'
-                metrics.push({ key: '复活', label: '化羽', icon: 'fa-feather-alt', higherIsBetter: true });
+            } else if (playerProfession === '素问') {
+                metrics.push({ key: '化羽', label: '化羽', icon: 'fa-feather-alt', higherIsBetter: true });
+            } else if (playerProfession === '鸿音') {
+                metrics.push({ key: '涅槃', label: '涅槃', icon: 'fa-feather-alt', higherIsBetter: true });
             } else {
                 metrics.push({ key: '化羽', label: '化羽', icon: 'fa-feather-alt', higherIsBetter: true });
             }
@@ -9244,15 +9795,20 @@
             if (statKillsEl) statKillsEl.textContent = currentPlayer['击败'] || 0;
             if (statPoquanEl) statPoquanEl.textContent = currentPlayer['破泉'] || 0;
 
-            // 根据职业显示：素问/鸿音显示复活数据但标签为化羽
+            // 根据职业显示：素问显示化羽，鸿音显示涅槃
             const playerProfession2 = currentPlayer['职业'];
             const statHuayuLabel2 = document.getElementById('statHuayuLabel');
             const statHuayuIcon2 = document.getElementById('statHuayuIcon');
             if (statHuayuEl) {
-                if (playerProfession2 === '素问' || playerProfession2 === '鸿音') {
-                    // 素问/鸿音：数据来自'复活'字段，但显示为'化羽'
-                    statHuayuEl.textContent = currentPlayer['复活'] || 0;
+                if (playerProfession2 === '素问') {
+                    // 素问：数据来自'化羽'字段
+                    statHuayuEl.textContent = currentPlayer['化羽'] || 0;
                     if (statHuayuLabel2) statHuayuLabel2.textContent = '化羽';
+                    if (statHuayuIcon2) statHuayuIcon2.className = 'fas fa-feather-alt text-xs';
+                } else if (playerProfession2 === '鸿音') {
+                    // 鸿音：数据来自'涅槃'字段
+                    statHuayuEl.textContent = currentPlayer['涅槃'] || 0;
+                    if (statHuayuLabel2) statHuayuLabel2.textContent = '涅槃';
                     if (statHuayuIcon2) statHuayuIcon2.className = 'fas fa-feather-alt text-xs';
                 } else {
                     statHuayuEl.textContent = currentPlayer['化羽'] || 0;
@@ -9368,6 +9924,7 @@
         let fullscreenCombatChart = null;
         let fullscreenProfessionDamageChart = null;
         let fullscreenProfessionCombatChart = null;
+        let hongyinExtraChart1 = null;
 
         // 职业定位类型：bodyguard(保镖), defense(防守), attack(进攻), support(功能职业)
         let currentProfessionRole = 'auto';
@@ -9382,10 +9939,10 @@
                 borderClass: 'border-blue-500/40',
                 hoverClass: 'hover:bg-blue-500/30',
                 description: '专注对人伤害、承受伤害',
-                damageMetrics: ['对玩家伤害', '承受伤害'],
-                damageLabels: ['对人伤害', '承受伤害'],
-                combatMetrics: ['击败', '破泉', '助攻', '重伤'],
-                combatLabels: ['击败', '破泉', '助攻', '重伤']
+                damageMetrics: ['对玩家伤害', '承受伤害', '助攻'],
+                damageLabels: ['对人伤害', '承受伤害', '助攻'],
+                combatMetrics: ['击败', '破泉', '重伤'],
+                combatLabels: ['击败', '破泉', '重伤']
             },
             defense: {
                 label: '防守',
@@ -9395,10 +9952,10 @@
                 borderClass: 'border-green-500/40',
                 hoverClass: 'hover:bg-green-500/30',
                 description: '专注对人伤害、承受伤害（与保镖一致）',
-                damageMetrics: ['对玩家伤害', '承受伤害'],
-                damageLabels: ['对人伤害', '承受伤害'],
-                combatMetrics: ['击败', '破泉', '助攻', '重伤'],
-                combatLabels: ['击败', '破泉', '助攻', '重伤']
+                damageMetrics: ['对玩家伤害', '承受伤害', '助攻'],
+                damageLabels: ['对人伤害', '承受伤害', '助攻'],
+                combatMetrics: ['击败', '破泉', '重伤'],
+                combatLabels: ['击败', '破泉', '重伤']
             },
             attack: {
                 label: '进攻',
@@ -9408,10 +9965,10 @@
                 borderClass: 'border-red-500/40',
                 hoverClass: 'hover:bg-red-500/30',
                 description: '专注对塔输出、承受伤害',
-                damageMetrics: ['对建筑伤害', '承受伤害'],
-                damageLabels: ['对塔输出', '承受伤害'],
-                combatMetrics: ['助攻', '重伤'],
-                combatLabels: ['助攻', '重伤']
+                damageMetrics: ['对建筑伤害', '承受伤害', '助攻'],
+                damageLabels: ['对塔输出', '承受伤害', '助攻'],
+                combatMetrics: ['重伤'],
+                combatLabels: ['重伤']
             },
             support: {
                 label: '功能职业',
@@ -9421,15 +9978,15 @@
                 borderClass: 'border-purple-500/40',
                 hoverClass: 'hover:bg-purple-500/30',
                 description: '全维度数据分析（不含卸甲）',
-                damageMetrics: ['对玩家伤害', '对建筑伤害', '承受伤害'],
-                damageLabels: ['对人伤害', '对塔伤害', '承受伤害'],
-                combatMetrics: ['击败', '破泉', '助攻', '重伤', '治疗值'],
-                combatLabels: ['击败', '破泉', '助攻', '重伤', '治疗']
+                damageMetrics: ['对玩家伤害', '对建筑伤害', '承受伤害', '助攻', '治疗值'],
+                damageLabels: ['对人伤害', '对塔伤害', '承受伤害', '助攻', '治疗'],
+                combatMetrics: ['击败', '破泉', '重伤'],
+                combatLabels: ['击败', '破泉', '重伤']
             }
         };
 
         // 根据职业获取特定配置（动态添加职业特有字段）
-        function getProfessionConfig(role, profession) {
+        function getProfessionConfig(role, profession, player = null) {
             const baseConfig = professionRoleConfig[role] || professionRoleConfig['bodyguard'];
             const config = {
                 ...baseConfig,
@@ -9445,10 +10002,13 @@
                 config.combatLabels.push('焚骨');
             }
 
-            // 规则2：只有鸿音和素问才有化羽系数（原始数据为"复活"，前端映射为"化羽"）
-            if (profession === '鸿音' || profession === '素问') {
+            // 规则2：素问显示化羽，鸿音显示涅槃
+            if (profession === '素问') {
                 config.combatMetrics.push('化羽');
                 config.combatLabels.push('化羽');
+            } else if (profession === '鸿音') {
+                config.combatMetrics.push('涅槃');
+                config.combatLabels.push('涅槃');
             }
 
             // 规则3：只有潮光才有清泉技数
@@ -9467,6 +10027,42 @@
                 if (!config.damageMetrics.includes('破塔卸甲')) {
                     config.damageMetrics.push('破塔卸甲');
                     config.damageLabels.push('破塔卸甲');
+                }
+
+                // 规则5：鸿音子类型判定（奶鸿 / 惊鸿）
+                if (player) {
+                    const niepan = parseInt(player['涅槃']) || 0;
+                    const isNaiHong = niepan > 0;
+                    if (isNaiHong) {
+                        // 奶鸿：damage 只保留卸甲，combat 移除助攻
+                        config.damageMetrics = config.damageMetrics.filter(m => ['人伤卸甲', '破塔卸甲'].includes(m));
+                        config.damageLabels = config.damageLabels.filter((_, i) => ['人伤卸甲', '破塔卸甲'].includes(config.damageMetrics[i]));
+                        // 注意：上面的 filter 有逻辑问题，需要重新根据 damageMetrics 生成 damageLabels
+                        config.damageLabels = config.damageMetrics.map(m => {
+                            const idx = baseConfig.damageMetrics.indexOf(m);
+                            return idx >= 0 ? baseConfig.damageLabels[idx] : m;
+                        });
+                        const assistIdx = config.combatMetrics.indexOf('助攻');
+                        if (assistIdx > -1) {
+                            config.combatMetrics.splice(assistIdx, 1);
+                            config.combatLabels.splice(assistIdx, 1);
+                        }
+                    } else {
+                        // 惊鸿：damage 只保留卸甲，combat 移除助攻和治疗相关
+                        config.damageMetrics = config.damageMetrics.filter(m => ['人伤卸甲', '破塔卸甲'].includes(m));
+                        config.damageLabels = config.damageMetrics.map(m => {
+                            const idx = baseConfig.damageMetrics.indexOf(m);
+                            return idx >= 0 ? baseConfig.damageLabels[idx] : m;
+                        });
+                        // 从 combat 中移除助攻和治疗值
+                        ['助攻', '治疗值'].forEach(metric => {
+                            const idx = config.combatMetrics.indexOf(metric);
+                            if (idx > -1) {
+                                config.combatMetrics.splice(idx, 1);
+                                config.combatLabels.splice(idx, 1);
+                            }
+                        });
+                    }
                 }
             }
 
@@ -9856,12 +10452,17 @@
                 console.log('破塔卸甲卡片显示:', showBuildingArmorBreak);
             }
 
-            // 化羽只有鸿音和素问有
+            // 化羽/涅槃卡片：素问显示化羽，鸿音显示涅槃
             const huayuCard = document.getElementById('cardHuayu');
+            const fullscreenHuayuLabel = document.getElementById('fullscreenHuayuLabel');
             if (huayuCard) {
                 const showHuayu = (profession === '鸿音' || profession === '素问');
                 huayuCard.style.display = showHuayu ? 'block' : 'none';
-                console.log('化羽卡片显示:', showHuayu, '职业:', profession);
+                // 根据职业修改标签
+                if (fullscreenHuayuLabel) {
+                    fullscreenHuayuLabel.textContent = profession === '鸿音' ? '涅槃' : '化羽';
+                }
+                console.log('化羽/涅槃卡片显示:', showHuayu, '职业:', profession);
             }
 
             // 焚骨只有九灵有
@@ -9872,6 +10473,16 @@
                 console.log('焚骨卡片显示:', showFengu);
             }
 
+            // 鸿音专属扩展图表：默认隐藏，由 renderFullscreenCharts 根据子类型控制显示
+            const hongyinExtraContainer = document.getElementById('hongyinExtraCharts');
+            if (hongyinExtraContainer) {
+                if (profession === '鸿音') {
+                    hongyinExtraContainer.classList.remove('hidden');
+                } else {
+                    hongyinExtraContainer.classList.add('hidden');
+                }
+            }
+
             // 自动设置职业定位
             const detectedRole = autoDetectProfessionRole(profession);
             currentProfessionRole = detectedRole;
@@ -9880,7 +10491,9 @@
             // 填充数据概览
             document.getElementById('fullscreenKills').textContent = currentPlayer['击败'] || 0;
             document.getElementById('fullscreenPoquan').textContent = currentPlayer['破泉'] || 0;
-            document.getElementById('fullscreenHuayu').textContent = currentPlayer['化羽'] || 0;
+            // 鸿音显示涅槃，其他显示化羽
+            const huayuValue = profession === '鸿音' ? (currentPlayer['涅槃'] || 0) : (currentPlayer['化羽'] || 0);
+            document.getElementById('fullscreenHuayu').textContent = huayuValue;
             document.getElementById('fullscreenQingquan').textContent = currentPlayer['清泉'] || 0;
             document.getElementById('fullscreenAssists').textContent = currentPlayer['助攻'] || 0;
             document.getElementById('fullscreenFengu').textContent = currentPlayer['焚骨'] || 0;
@@ -9963,6 +10576,10 @@
             if (fullscreenProfessionCombatChart) {
                 fullscreenProfessionCombatChart.destroy();
                 fullscreenProfessionCombatChart = null;
+            }
+            if (hongyinExtraChart1) {
+                hongyinExtraChart1.destroy();
+                hongyinExtraChart1 = null;
             }
             
             // v4.0.0: 销毁多场数据图表
@@ -10321,7 +10938,7 @@
                 role = autoDetectProfessionRole(playerProfession);
             }
             // 根据职业获取特定配置（包含职业特有字段如焚骨、化羽、清泉等）
-            const config = getProfessionConfig(role, playerProfession);
+            const config = getProfessionConfig(role, playerProfession, currentPlayer);
 
             // 计算该职业平均值（全维度）
             const professionAvg = {};
@@ -10559,6 +11176,76 @@
                     }
                 });
             }
+
+            // 鸿音专属扩展图表渲染
+            const hongyinExtraContainer = document.getElementById('hongyinExtraCharts');
+            if (hongyinExtraContainer) {
+                const isHongyin = playerProfession === '鸿音';
+                if (isHongyin) {
+                    hongyinExtraContainer.classList.remove('hidden');
+                    const isNaiHong = (currentPlayer['涅槃'] || 0) > 0;
+
+                    // 设置 Chart1 标题和指标
+                    const chart1Title = document.getElementById('hongyinExtraChart1Title');
+                    const chart1Metrics = isNaiHong
+                        ? ['治疗值', '承受伤害', '助攻']
+                        : ['对玩家伤害', '对建筑伤害'];
+                    const chart1Labels = isNaiHong
+                        ? ['治疗量', '承受伤害', '助攻']
+                        : ['对人伤害', '对塔伤害'];
+                    if (chart1Title) {
+                        chart1Title.innerHTML = `<i class="fas fa-chart-bar mr-2 text-warning"></i>${isNaiHong ? '辅助数据对比' : '伤害数据对比'}`;
+                    }
+
+                    // Chart1 渲染
+                    if (hongyinExtraChart1) hongyinExtraChart1.destroy();
+                    const extraCtx1 = document.getElementById('hongyinExtraChart1');
+                    if (extraCtx1) {
+                        const ds1 = chart1Metrics.map((metric, idx) => {
+                            const color = getMetricColor(metric);
+                            return {
+                                label: chart1Labels[idx],
+                                data: [guild2ProfessionAvg[metric] || 0, ...topPlayers.map(p => p[metric] || 0)],
+                                type: 'bar',
+                                backgroundColor: color.bg,
+                                borderColor: color.border,
+                                borderWidth: 1,
+                                yAxisID: 'y'
+                            };
+                        });
+                        hongyinExtraChart1 = new Chart(extraCtx1, {
+                            data: {
+                                labels: playerNames,
+                                datasets: ds1
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                interaction: { mode: 'index', intersect: false },
+                                scales: {
+                                    x: { ticks: { color: '#9CA3AF', font: { size: 9 } }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+                                    y: { ticks: { color: '#9CA3AF', font: { size: 9 }, callback: v => formatCompactNumber(v) }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }
+                                },
+                                plugins: {
+                                    legend: { labels: { color: '#E5E7EB', font: { size: 10 } }, position: 'top' },
+                                    datalabels: false,
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                const value = Math.round(context.raw);
+                                                return `${context.dataset.label}: ${formatCompactNumber(value)}`;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                } else {
+                    hongyinExtraContainer.classList.add('hidden');
+                }
+            }
         }
 
         // 渲染全屏详细数据分析
@@ -10596,9 +11283,11 @@
                 metrics.push({ key: '破塔卸甲', label: '破塔卸甲', icon: 'fa-hammer', higherIsBetter: true });
             }
 
-            // 复活只有鸿音和素问有（显示为化羽）
-            if (playerProfession === '鸿音' || playerProfession === '素问') {
-                metrics.push({ key: '复活', label: '化羽', icon: 'fa-feather-alt', higherIsBetter: true });
+            // 化羽/涅槃：素问显示为化羽，鸿音显示为涅槃
+            if (playerProfession === '素问') {
+                metrics.push({ key: '化羽', label: '化羽', icon: 'fa-feather-alt', higherIsBetter: true });
+            } else if (playerProfession === '鸿音') {
+                metrics.push({ key: '涅槃', label: '涅槃', icon: 'fa-feather-alt', higherIsBetter: true });
             }
 
             // 焚骨只有九灵有
@@ -11456,7 +12145,8 @@
                 资源: 0,
                 助攻: 0,
                 焚骨: 0,
-                重伤: 0
+                重伤: 0,
+                涅槃: 0
             };
 
                 professionPlayers.forEach(p => {
@@ -11474,6 +12164,7 @@
                 professionAvg.助攻 += p['助攻'] || 0;
                 professionAvg.焚骨 += p['焚骨'] || 0;
                 professionAvg.重伤 += p['重伤'] || 0;
+                professionAvg.涅槃 += p['涅槃'] || 0;
             });
 
                 Object.keys(professionAvg).forEach(key => {
@@ -11499,7 +12190,8 @@
                     资源: 0,
                     助攻: 0,
                     焚骨: 0,
-                    重伤: 0
+                    重伤: 0,
+                    涅槃: 0
                 };
 
                 guild2ProfessionPlayers.forEach(p => {
@@ -11517,6 +12209,7 @@
                     g2Avg.助攻 += p['助攻'] || 0;
                     g2Avg.焚骨 += p['焚骨'] || 0;
                     g2Avg.重伤 += p['重伤'] || 0;
+                    g2Avg.涅槃 += p['涅槃'] || 0;
                 });
 
                 Object.keys(g2Avg).forEach(key => {
@@ -11541,7 +12234,8 @@
                 resource: Math.max(...allPlayers.map(p => p['资源'] || 0), 1),
                 assists: Math.max(...allPlayers.map(p => p['助攻'] || 0), 1),
                 fenGu: Math.max(...allPlayers.map(p => p['焚骨'] || 0), 1),
-                heavyInjury: Math.max(...allPlayers.map(p => p['重伤'] || 0), 1)
+                heavyInjury: Math.max(...allPlayers.map(p => p['重伤'] || 0), 1),
+                nieshen: Math.max(...allPlayers.map(p => p['涅槃'] || 0), 1)
             };
 
                 // 伤害与治疗雷达图
@@ -11560,12 +12254,12 @@
                     professionPlayers.sort((a, b) => (b['清泉'] || 0) - (a['清泉'] || 0));
                 }
                 
-                // 针对鸿音职业，按化羽次数从高到低排序（奶鸿在前，惊鸿在后）
+                // 针对鸿音职业，按涅槃次数从高到低排序（奶鸿在前，惊鸿在后）
                 if (profession === '鸿音') {
                     professionPlayers.sort((a, b) => {
-                        const huayuA = (a['化羽'] || a['复活'] || 0);
-                        const huayuB = (b['化羽'] || b['复活'] || 0);
-                        return huayuB - huayuA;
+                        const niepanA = (a['涅槃'] || 0);
+                        const niepanB = (b['涅槃'] || 0);
+                        return niepanB - niepanA;
                     });
                 }
                 
@@ -11613,34 +12307,16 @@
                     yAxisID: 'y_damage',
                     order: 2
                 },
-                // === 折线图：卸甲数据 ===
+                // === 柱状图：助攻数据 ===
                 {
-                    label: '人伤卸甲',
-                    data: [guild2Avg.人伤卸甲 || 0, ...topPlayers.map(p => p['人伤卸甲'] || 0)],
-                    type: 'line',
+                    label: '助攻',
+                    data: [guild2Avg.助攻 || 0, ...topPlayers.map(p => p['助攻'] || 0)],
+                    type: 'bar',
+                    backgroundColor: 'rgba(59, 130, 246, 0.7)',
                     borderColor: 'rgba(59, 130, 246, 1)',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    pointBackgroundColor: 'rgba(59, 130, 246, 1)',
-                    borderWidth: 2,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    tension: 0,
-                    yAxisID: 'y_xiejia',
-                    order: 1
-                },
-                {
-                    label: '破塔卸甲',
-                    data: [guild2Avg.破塔卸甲 || 0, ...topPlayers.map(p => p['破塔卸甲'] || 0)],
-                    type: 'line',
-                    borderColor: 'rgba(168, 85, 247, 1)',
-                    backgroundColor: 'rgba(168, 85, 247, 0.1)',
-                    pointBackgroundColor: 'rgba(168, 85, 247, 1)',
-                    borderWidth: 2,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    tension: 0,
-                    yAxisID: 'y_xiejia',
-                    order: 1
+                    borderWidth: 1,
+                    yAxisID: 'y_damage',
+                    order: 2
                 },
                 // === 曲线图：治疗/承受 ===
                 {
@@ -11673,10 +12349,28 @@
                 }
             ];
 
+            // 根据职业过滤数据集
+            const profession = players[0]?.['职业'];
+            const healerProfessions = ['素问', '鸿音', '潮光'];
+            const hiddenLabelsMap = {
+                '鸿音': ['对塔输出', '对人伤害'],
+                '素问': ['对塔输出', '对人伤害'],
+                '潮光': ['对塔输出', '对人伤害']
+            };
+            const hiddenLabels = hiddenLabelsMap[profession] || [];
+            // 非治疗职业隐藏治疗量
+            if (!healerProfessions.includes(profession)) {
+                hiddenLabels.push('治疗量');
+            }
+            const filteredDatasets = datasets.filter(ds => !hiddenLabels.includes(ds.label));
+            const yAxisIds = [...new Set(filteredDatasets.map(ds => ds.yAxisID))];
+            const hasYDamage = yAxisIds.includes('y_damage');
+            const hasYHeal = yAxisIds.includes('y_heal');
+
             professionDamageHealChart = new Chart(ctx, {
                 data: {
                     labels: playerNames,
-                    datasets: datasets
+                    datasets: filteredDatasets
                 },
                 options: {
                     responsive: true,
@@ -11697,7 +12391,7 @@
                         },
                         y_damage: {
                             type: 'linear',
-                            display: true,
+                            display: hasYDamage,
                             position: 'left',
                             ticks: { 
                                 color: '#EF4444',
@@ -11709,31 +12403,13 @@
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: '伤害',
+                                text: '输出/助攻',
                                 color: '#EF4444'
-                            }
-                        },
-                        y_xiejia: {
-                            type: 'linear',
-                            display: true,
-                            position: 'right',
-                            ticks: { 
-                                color: '#3B82F6',
-                                callback: function(value) {
-                                    return formatNumber(value);
-                                }
-                            },
-                            grid: { display: false },
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: '卸甲',
-                                color: '#3B82F6'
                             }
                         },
                         y_heal: {
                             type: 'linear',
-                            display: true,
+                            display: hasYHeal,
                             position: 'right',
                             ticks: { 
                                 color: '#EC4899',
@@ -11803,20 +12479,10 @@
                     yAxisID: 'y_battle',
                     order: 2
                 },
+                // === 折线图：卸甲数据 ===
                 {
-                    label: '助攻',
-                    data: [guild2Avg.助攻 || 0, ...topPlayers.map(p => p['助攻'] || 0)],
-                    type: 'bar',
-                    backgroundColor: 'rgba(34, 197, 94, 0.7)',
-                    borderColor: 'rgba(34, 197, 94, 1)',
-                    borderWidth: 1,
-                    yAxisID: 'y_battle',
-                    order: 2
-                },
-                // === 折线图：资源类数据 ===
-                {
-                    label: '资源',
-                    data: [guild2Avg.资源 || 0, ...topPlayers.map(p => p['资源'] || 0)],
+                    label: '人伤卸甲',
+                    data: [guild2Avg.人伤卸甲 || 0, ...topPlayers.map(p => p['人伤卸甲'] || 0)],
                     type: 'line',
                     borderColor: 'rgba(59, 130, 246, 1)',
                     backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -11825,9 +12491,24 @@
                     pointRadius: 4,
                     pointHoverRadius: 6,
                     tension: 0,
-                    yAxisID: 'y_resource',
+                    yAxisID: 'y_xiejia',
                     order: 1
                 },
+                {
+                    label: '破塔卸甲',
+                    data: [guild2Avg.破塔卸甲 || 0, ...topPlayers.map(p => p['破塔卸甲'] || 0)],
+                    type: 'line',
+                    borderColor: 'rgba(168, 85, 247, 1)',
+                    backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                    pointBackgroundColor: 'rgba(168, 85, 247, 1)',
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    tension: 0,
+                    yAxisID: 'y_xiejia',
+                    order: 1
+                },
+                // === 折线图：特殊技能数据 ===
                 {
                     label: '清泉',
                     data: [guild2Avg.清泉 || 0, ...topPlayers.map(p => p['清泉'] || 0)],
@@ -11839,7 +12520,7 @@
                     pointRadius: 4,
                     pointHoverRadius: 6,
                     tension: 0,
-                    yAxisID: 'y_resource',
+                    yAxisID: 'y_special',
                     order: 1
                 },
                 {
@@ -11853,10 +12534,10 @@
                     pointRadius: 4,
                     pointHoverRadius: 6,
                     tension: 0,
-                    yAxisID: 'y_resource',
+                    yAxisID: 'y_special',
                     order: 1
                 },
-                // === 曲线图：辅助/特殊数据 ===
+                // === 曲线图：战斗辅助数据 ===
                 {
                     label: '破泉',
                     data: [guild2Avg.破泉 || 0, ...topPlayers.map(p => p['破泉'] || 0)],
@@ -11868,7 +12549,7 @@
                     pointRadius: 4,
                     pointHoverRadius: 6,
                     tension: 0.4,
-                    yAxisID: 'y_special',
+                    yAxisID: 'y_battle',
                     order: 0
                 },
                 {
@@ -11878,6 +12559,20 @@
                     borderColor: 'rgba(236, 72, 153, 1)',
                     backgroundColor: 'rgba(236, 72, 153, 0.1)',
                     pointBackgroundColor: 'rgba(236, 72, 153, 1)',
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    tension: 0.4,
+                    yAxisID: 'y_special',
+                    order: 0
+                },
+                {
+                    label: '涅槃',
+                    data: [guild2Avg.涅槃 || 0, ...topPlayers.map(p => p['涅槃'] || 0)],
+                    type: 'line',
+                    borderColor: 'rgba(244, 114, 182, 1)',
+                    backgroundColor: 'rgba(244, 114, 182, 0.1)',
+                    pointBackgroundColor: 'rgba(244, 114, 182, 1)',
                     borderWidth: 2,
                     pointRadius: 4,
                     pointHoverRadius: 6,
@@ -11901,10 +12596,30 @@
                 }
             ];
 
+            // 根据职业过滤数据集：只保留该职业对应的专属特殊技能
+            const combatProfession = players[0]?.['职业'];
+            const professionSpecialSkill = {
+                '鸿音': '涅槃',
+                '素问': '化羽',
+                '潮光': '清泉',
+                '九灵': '焚骨'
+            };
+            const specialSkill = professionSpecialSkill[combatProfession];
+            const hiddenCombatLabels = ['涅槃', '化羽', '清泉', '焚骨'].filter(l => l !== specialSkill);
+            // 卸甲为鸿音专属，其他职业隐藏
+            if (combatProfession !== '鸿音') {
+                hiddenCombatLabels.push('人伤卸甲', '破塔卸甲');
+            }
+            const filteredCombatDatasets = datasets.filter(ds => !hiddenCombatLabels.includes(ds.label));
+            const combatYAxisIds = [...new Set(filteredCombatDatasets.map(ds => ds.yAxisID))];
+            const hasYBattle = combatYAxisIds.includes('y_battle');
+            const hasYXiejia = combatYAxisIds.includes('y_xiejia');
+            const hasYSpecial = combatYAxisIds.includes('y_special');
+
             professionCombatChart = new Chart(ctx, {
                 data: {
                     labels: playerNames,
-                    datasets: datasets
+                    datasets: filteredCombatDatasets
                 },
                 options: {
                     responsive: true,
@@ -11926,7 +12641,7 @@
                         // 战斗数据Y轴（左）
                         y_battle: {
                             type: 'linear',
-                            display: true,
+                            display: hasYBattle,
                             position: 'left',
                             ticks: { 
                                 color: '#EF4444',
@@ -11938,14 +12653,14 @@
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: '击败/助攻',
+                                text: '击败/破泉',
                                 color: '#EF4444'
                             }
                         },
-                        // 资源Y轴（右1）
-                        y_resource: {
+                        // 卸甲Y轴（右1）
+                        y_xiejia: {
                             type: 'linear',
-                            display: true,
+                            display: hasYXiejia,
                             position: 'right',
                             ticks: { 
                                 color: '#3B82F6',
@@ -11957,14 +12672,14 @@
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: '资源',
+                                text: '卸甲',
                                 color: '#3B82F6'
                             }
                         },
-                        // 特殊数据Y轴（右2）
+                        // 特殊数据Y轴（右）
                         y_special: {
                             type: 'linear',
-                            display: true,
+                            display: hasYSpecial,
                             position: 'right',
                             ticks: { 
                                 color: '#EC4899',
@@ -11976,7 +12691,7 @@
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: '破泉/化羽/重伤',
+                                text: '特殊/重伤',
                                 color: '#EC4899'
                             }
                         }
@@ -12035,6 +12750,184 @@
             }
         }
 
+        // 保存数据图表视图为图片
+        async function saveChartsViewAsImage() {
+            const chartsView = document.getElementById('chartsView');
+            if (chartsView.classList.contains('hidden')) {
+                switchTab('charts', null);
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+
+            const btn = document.querySelector('button[onclick="saveChartsViewAsImage()"]');
+            const originalText = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>生成中...';
+                btn.disabled = true;
+            }
+
+            try {
+                const clone = chartsView.cloneNode(true);
+                clone.classList.remove('hidden');
+                // 保留 charts-view-fullscreen 类以确保全屏布局（3列、图表高度等）一致
+                // 仅解除 100vh 高度限制和滚动裁剪，让内容完整展开
+                clone.style.setProperty('height', 'auto', 'important');
+                clone.style.setProperty('max-height', 'none', 'important');
+                clone.style.setProperty('overflow-y', 'visible', 'important');
+                clone.style.setProperty('position', 'absolute', 'important');
+                clone.style.setProperty('width', '100%', 'important');
+                clone.style.left = '-9999px';
+                clone.style.top = '0';
+
+                // 隐藏工具栏按钮，保留标题
+                const toolbarBtns = clone.querySelectorAll('.charts-toolbar button');
+                toolbarBtns.forEach(b => b.style.display = 'none');
+
+                // 将 canvas 转换为 img（使用 ID 匹配避免索引错位）
+                const originalCanvases = Array.from(chartsView.querySelectorAll('canvas'));
+                const cloneCanvases = Array.from(clone.querySelectorAll('canvas'));
+                cloneCanvases.forEach((cloneCanvas) => {
+                    const originalCanvas = originalCanvases.find(c => c.id && c.id === cloneCanvas.id) || originalCanvases[cloneCanvases.indexOf(cloneCanvas)];
+                    if (originalCanvas) {
+                        try {
+                            const img = document.createElement('img');
+                            img.src = originalCanvas.toDataURL('image/png');
+                            img.style.width = '100%';
+                            img.style.height = 'auto';
+                            img.style.maxHeight = cloneCanvas.style.maxHeight || '450px';
+                            img.style.display = 'block';
+                            cloneCanvas.parentNode.replaceChild(img, cloneCanvas);
+                        } catch (e) {
+                            console.error('Canvas转图片失败:', e);
+                        }
+                    }
+                });
+
+                // 修复可能导致 html2canvas 报错的样式
+                const allElements = clone.querySelectorAll('*');
+                allElements.forEach(el => {
+                    if (el.style.backgroundImage) el.style.backgroundImage = 'none';
+                });
+
+                document.body.appendChild(clone);
+
+                // 确保克隆节点完全展开后再计算尺寸
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                const canvas = await html2canvas(clone, {
+                    backgroundColor: '#111827',
+                    scale: 1,
+                    useCORS: false,
+                    allowTaint: false,
+                    logging: false,
+                    width: clone.scrollWidth,
+                    height: clone.scrollHeight,
+                    imageTimeout: 0,
+                    removeContainer: true,
+                    foreignObjectRendering: false,
+                    onclone: function(clonedDoc) {
+                        const elements = clonedDoc.querySelectorAll('*');
+                        elements.forEach(el => {
+                            el.style.backgroundImage = 'none';
+                            if (el.style.background && el.style.background.includes('gradient')) {
+                                el.style.background = '#1a1a1a';
+                            }
+                            el.style.removeProperty('--tw-gradient-from');
+                            el.style.removeProperty('--tw-gradient-to');
+                            el.style.removeProperty('--tw-gradient-stops');
+                        });
+                    }
+                });
+
+                document.body.removeChild(clone);
+
+                const link = document.createElement('a');
+                const fileName = `数据图表总览_${new Date().toLocaleDateString().replace(/\//g, '-')}.png`;
+                link.download = fileName;
+
+                let dataUrl;
+                try {
+                    dataUrl = canvas.toDataURL('image/png');
+                } catch (e) {
+                    canvas.toBlob((blob) => {
+                        if (blob) {
+                            const url = URL.createObjectURL(blob);
+                            link.href = url;
+                            link.click();
+                            URL.revokeObjectURL(url);
+                        } else {
+                            alert('生成图片失败');
+                        }
+                    }, 'image/png');
+                    return;
+                }
+
+                link.href = dataUrl;
+                link.click();
+
+            } catch (error) {
+                console.error('保存图片失败:', error);
+                alert('保存图片失败: ' + (error.message || '未知错误'));
+            } finally {
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        // 数据图表视图全屏切换
+        function toggleChartsViewFullscreen() {
+            const chartsView = document.getElementById('chartsView');
+            const isFullscreen = chartsView.classList.contains('charts-view-fullscreen');
+            
+            if (isFullscreen) {
+                chartsView.classList.remove('charts-view-fullscreen');
+                document.body.style.overflow = '';
+            } else {
+                chartsView.classList.add('charts-view-fullscreen');
+                document.body.style.overflow = 'hidden';
+            }
+            
+            // 延迟 resize 所有图表以适应新容器尺寸
+            setTimeout(() => {
+                if (typeof Chart !== 'undefined' && Chart.instances) {
+                    Object.values(Chart.instances).forEach(chart => {
+                        if (chart && typeof chart.resize === 'function') {
+                            chart.resize();
+                        }
+                    });
+                }
+                
+                // 检查综合实力雷达图 canvas 是否正常渲染，若尺寸为 0 则重新初始化
+                setTimeout(() => {
+                    const radarCanvas = document.getElementById('radarChart');
+                    const avgRadarCanvas = document.getElementById('avgRadarChart');
+                    let needUpdate = false;
+                    if (radarCanvas && (radarCanvas.width === 0 || radarCanvas.height === 0)) {
+                        console.warn('radarChart canvas 尺寸异常，触发重新初始化');
+                        needUpdate = true;
+                    }
+                    if (avgRadarCanvas && (avgRadarCanvas.width === 0 || avgRadarCanvas.height === 0)) {
+                        console.warn('avgRadarChart canvas 尺寸异常，触发重新初始化');
+                        needUpdate = true;
+                    }
+                    if (needUpdate && typeof updateCharts === 'function') {
+                        updateCharts();
+                    }
+                }, 300);
+            }, 150);
+        }
+        
+        // ESC 键退出图表全屏
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const chartsView = document.getElementById('chartsView');
+                if (chartsView && chartsView.classList.contains('charts-view-fullscreen')) {
+                    toggleChartsViewFullscreen();
+                }
+            }
+        });
+
         // 更新职业玩家表格
         function updateProfessionPlayersTable(players, professionAvg) {
             const tbody = document.getElementById('professionPlayersTable');
@@ -12049,11 +12942,11 @@
             };
 
             tbody.innerHTML = players.map((player, index) => {
-                // 判断鸿音类型：化羽次数 >= 1 为奶鸿，< 1 为惊鸿
+                // 判断鸿音类型：涅槃次数 >= 1 为奶鸿，< 1 为惊鸿
                 let hongyinType = '';
                 if (player['职业'] === '鸿音') {
-                    const huayuCount = player['化羽'] || player['复活'] || 0;
-                    hongyinType = huayuCount >= 1 ? 
+                    const niepanCount = player['涅槃'] || 0;
+                    hongyinType = niepanCount >= 1 ? 
                         '<span class="text-pink-400 text-xs">奶鸿</span>' : 
                         '<span class="text-red-400 text-xs">惊鸿</span>';
                 }
@@ -12076,6 +12969,7 @@
                     <td class="${getValueColorClass(player['承受伤害'], professionAvg['承受伤害'])}">${formatNumber(player['承受伤害'])}</td>
                     <td class="${getValueColorClass(player['重伤'], professionAvg['重伤'])}">${player['重伤'] || 0}</td>
                     <td class="${getValueColorClass(player['清泉'], professionAvg['清泉'])}">${player['清泉'] || 0}</td>
+                    <td class="${getValueColorClass(player['涅槃'], professionAvg['涅槃'])}">${player['涅槃'] || 0}</td>
                 </tr>
             `}).join('');
         }
@@ -13005,7 +13899,7 @@
 
             const fieldMapping = {
                 '击败': '击败/清泉',
-                '清泉': '击败/清泉',
+                '清泉': '复活/清泉',
             };
 
             for (let i = 0; i < lines.length; i++) {
@@ -13252,6 +14146,17 @@
         // 多场数据图表实例
         let multiBattleCharts = {};
         
+        // 职业颜色映射
+        const PROFESSION_COLOR_MAP = {
+            '铁衣': '#8B4513', '血河': '#DC143C', '碎梦': '#4B0082',
+            '龙吟': '#1E90FF', '神相': '#FF6347', '玄机': '#32CD32',
+            '素问': '#FFB6C1', '鸿音': '#FFD700', '九灵': '#9370DB',
+            '潮光': '#00CED1'
+        };
+        
+        // 多场看板职业筛选状态
+        let selectedMultiBattleProfessions = [];
+        
         // 从localStorage加载多场数据缓存
         function loadMultiBattleCache() {
             try {
@@ -13332,12 +14237,27 @@
                         if (index === 1 && guild2Input) finalGuildName = guild2Input;
                         
                         const players = parsedData[guildName];
-                        battleSession.guilds[finalGuildName] = players.map(p => ({
-                            ...p,
-                            '帮会': finalGuildName,
-                            '_sessionId': sessionId,
-                            '_battleTime': dateTimeInput
-                        }));
+                        battleSession.guilds[finalGuildName] = players.map(p => {
+                            // 先处理数值字段（去除逗号）
+                            const numericFields = ['对玩家伤害', '对建筑伤害', '治疗值', '承受伤害', '击败', '破泉', '化羽', '清泉', '复活', '涅槃', '助攻', '焚骨', '重伤', '资源', '人伤卸甲', '破塔卸甲'];
+                            const cleanedPlayer = {...p};
+                            numericFields.forEach(field => {
+                                if (cleanedPlayer[field] !== undefined && cleanedPlayer[field] !== '') {
+                                    const value = String(cleanedPlayer[field]).replace(/,/g, '').trim();
+                                    cleanedPlayer[field] = isNaN(value) ? 0 : parseFloat(value);
+                                } else {
+                                    cleanedPlayer[field] = 0;
+                                }
+                            });
+                            // 处理击败/清泉和复活/清泉字段拆分
+                            const processed = processDefeatQingquanField(cleanedPlayer);
+                            return {
+                                ...processed,
+                                '帮会': finalGuildName,
+                                '_sessionId': sessionId,
+                                '_battleTime': dateTimeInput
+                            };
+                        });
                         importedCount += players.length;
                         
                         // 同时添加到数据源管理器
@@ -13746,6 +14666,10 @@
             // 更新帮会选择器
             updateMultiBattleGuildSelect();
             
+            // 初始化职业筛选
+            selectedMultiBattleProfessions = [];
+            renderMultiBattleProfFilter();
+            
             // 更新数据源信息
             updateMultiBattleDataSourceInfo();
             
@@ -13824,6 +14748,7 @@
             const select = document.getElementById('multiBattleGuildSelect');
             if (select) {
                 selectedMultiBattleGuild = select.value;
+                renderMultiBattleProfFilter();
                 renderMultiBattleDashboardCharts();
                 renderMultiBattleDetailTable();
                 updateMultiBattleBattleCount();
@@ -13924,22 +14849,25 @@
                         return battle;
                     });
                     
-                    // 确保所有玩家数据都有复活/化羽字段（兼容旧数据）
+                    // 确保所有玩家数据都有化羽和涅槃字段（兼容旧数据）
                     multiBattleCache.forEach(battle => {
                         const guildsData = battle.guilds || battle.data || {};
                         Object.values(guildsData).forEach(players => {
                             players.forEach(p => {
-                                // 如果没有复活字段但有化羽字段，根据职业判断
-                                if (p['复活'] === undefined && p['化羽'] !== undefined) {
+                                // 兼容旧数据：如果没有化羽/涅槃字段但有复活字段，根据职业映射
+                                if (p['复活'] !== undefined && p['复活'] !== 0) {
                                     const profession = p['职业'];
-                                    if (profession === '素问' || profession === '鸿音') {
-                                        p['复活'] = parseFloat(p['化羽']) || 0;
-                                        p['化羽'] = 0;
+                                    if (profession === '素问' && (p['化羽'] === undefined || p['化羽'] === 0)) {
+                                        p['化羽'] = parseFloat(p['复活']) || 0;
+                                    }
+                                    if (profession === '鸿音' && (p['涅槃'] === undefined || p['涅槃'] === 0)) {
+                                        p['涅槃'] = parseFloat(p['复活']) || 0;
                                     }
                                 }
                                 // 确保字段存在
                                 if (p['复活'] === undefined) p['复活'] = 0;
                                 if (p['化羽'] === undefined) p['化羽'] = 0;
+                                if (p['涅槃'] === undefined) p['涅槃'] = 0;
                             });
                         });
                     });
@@ -13971,6 +14899,72 @@
                 infoEl.textContent = `共 ${multiBattleCache.length} 场数据，${guildCount} 个帮会`;
                 infoEl.className = 'text-jade ml-2';
             }
+        }
+        
+        // 从缓存中获取所有职业
+        function getAllProfessionsFromCache() {
+            const professions = new Set();
+            multiBattleCache.forEach(battle => {
+                const guildsData = battle.guilds || battle.data || {};
+                Object.values(guildsData).forEach(players => {
+                    players.forEach(p => {
+                        if (p['职业']) professions.add(p['职业']);
+                    });
+                });
+            });
+            return [...professions].sort();
+        }
+        
+        // 渲染职业筛选按钮
+        function renderMultiBattleProfFilter() {
+            const container = document.getElementById('multiBattleProfFilter');
+            const selectAllBtn = document.getElementById('multiBattleProfSelectAll');
+            if (!container) return;
+            
+            const allProfs = getAllProfessionsFromCache();
+            if (allProfs.length === 0) {
+                container.innerHTML = '<span class="text-xs text-gray-500">暂无职业数据</span>';
+                if (selectAllBtn) selectAllBtn.style.display = 'none';
+                return;
+            }
+            if (selectAllBtn) selectAllBtn.style.display = 'inline-block';
+            
+            container.innerHTML = allProfs.map(prof => {
+                const isSelected = selectedMultiBattleProfessions.includes(prof);
+                const color = PROFESSION_COLOR_MAP[prof] || '#888';
+                return `
+                    <button onclick="toggleMultiBattleProf('${prof}')" 
+                        class="px-2 py-1 text-xs rounded-none border transition-all ${isSelected ? '' : 'border-gray-700 bg-gray-800 text-gray-500'}"
+                        style="${isSelected ? `background-color: ${color}30; border-color: ${color}; color: ${color};` : ''}">
+                        ${prof}
+                    </button>
+                `;
+            }).join('');
+        }
+        
+        // 切换职业选中状态
+        function toggleMultiBattleProf(prof) {
+            if (selectedMultiBattleProfessions.includes(prof)) {
+                selectedMultiBattleProfessions = selectedMultiBattleProfessions.filter(p => p !== prof);
+            } else {
+                selectedMultiBattleProfessions.push(prof);
+            }
+            renderMultiBattleProfFilter();
+            renderMultiBattleDashboardCharts();
+            renderMultiBattleDetailTable();
+        }
+        
+        // 全选/取消全选职业
+        function toggleMultiBattleProfSelectAll() {
+            const allProfs = getAllProfessionsFromCache();
+            if (selectedMultiBattleProfessions.length === allProfs.length) {
+                selectedMultiBattleProfessions = [];
+            } else {
+                selectedMultiBattleProfessions = [...allProfs];
+            }
+            renderMultiBattleProfFilter();
+            renderMultiBattleDashboardCharts();
+            renderMultiBattleDetailTable();
         }
         
         // 多场看板数据模式
@@ -14023,59 +15017,102 @@
             
             const labels = guildBattles.map(b => new Date(b.dateTime).toLocaleDateString('zh-CN', {month: 'short', day: 'numeric'}));
             const isAvg = battleDisplayMode === 'avg';
+            const hasProfFilter = selectedMultiBattleProfessions.length > 0;
             
-            // 计算该帮会在每场的数据
-            const calculateMetric = (battle, metric) => {
-                const players = getGuildDataByDisplayName(battle, selectedMultiBattleGuild) || [];
+            // 计算该帮会在每场的数据（支持按职业过滤）
+            const calculateMetric = (battle, metric, profession) => {
+                let players = getGuildDataByDisplayName(battle, selectedMultiBattleGuild) || [];
                 if (players.length === 0) return 0;
-                // 特殊处理复活/化羽：需要同时计算'复活'和'化羽'两个字段
-                if (metric === '复活化羽') {
-                    const sum = players.reduce((acc, p) => acc + (parseFloat(p['复活']) || 0) + (parseFloat(p['化羽']) || 0), 0);
-                    return isAvg ? Math.round(sum / players.length) : Math.round(sum);
+                
+                if (profession) {
+                    players = players.filter(p => p['职业'] === profession);
+                    if (players.length === 0) return 0;
+                }
+                
+                // 特殊处理化羽/涅槃：素问=化羽，鸿音=涅槃
+                if (metric === '化羽') {
+                    if (profession === '鸿音') {
+                        const hongyinPlayers = players.filter(p => p['职业'] === '鸿音');
+                        const values = hongyinPlayers.map(p => parseFloat(p['涅槃']) || 0).filter(v => v > 0);
+                        if (values.length === 0) return 0;
+                        const avg = values.reduce((sum, v) => sum + v, 0) / values.length;
+                        return isAvg ? Math.round(avg) : Math.round(avg * values.length);
+                    } else if (profession === '素问') {
+                        const suwenPlayers = players.filter(p => p['职业'] === '素问');
+                        const values = suwenPlayers.map(p => parseFloat(p['化羽']) || 0).filter(v => v > 0);
+                        if (values.length === 0) return 0;
+                        const avg = values.reduce((sum, v) => sum + v, 0) / values.length;
+                        return isAvg ? Math.round(avg) : Math.round(avg * values.length);
+                    } else {
+                        // 不过滤职业：同时统计素问化羽和鸿音涅槃
+                        const suwenPlayers = players.filter(p => p['职业'] === '素问');
+                        const hongyinPlayers = players.filter(p => p['职业'] === '鸿音');
+                        const huayuValues = suwenPlayers.map(p => parseFloat(p['化羽']) || 0).filter(v => v > 0);
+                        const niepanValues = hongyinPlayers.map(p => parseFloat(p['涅槃']) || 0).filter(v => v > 0);
+                        const allValues = [...huayuValues, ...niepanValues];
+                        if (allValues.length === 0) return 0;
+                        const avg = allValues.reduce((sum, v) => sum + v, 0) / allValues.length;
+                        return isAvg ? Math.round(avg) : Math.round(avg * allValues.length);
+                    }
                 }
                 const sum = players.reduce((acc, p) => acc + (parseFloat(p[metric]) || 0), 0);
                 return isAvg ? Math.round(sum / players.length) : Math.round(sum);
             };
             
-            // 创建单数据集（只显示选中的帮会）
-            const createDataset = (metric, label, color) => ({
-                label: label,
-                data: guildBattles.map(b => calculateMetric(b, metric)),
-                borderColor: color,
-                backgroundColor: color + '20',
-                fill: false,
-                tension: 0.3,
-                pointRadius: 4,
-                pointHoverRadius: 6
-            });
+            // 创建数据集（支持按职业拆分多条线）
+            const createDatasets = (metric, overallLabel, overallColor) => {
+                if (!hasProfFilter) {
+                    return [{
+                        label: overallLabel,
+                        data: guildBattles.map(b => calculateMetric(b, metric, null)),
+                        borderColor: overallColor,
+                        backgroundColor: overallColor + '20',
+                        fill: false,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }];
+                }
+                
+                return selectedMultiBattleProfessions.map(prof => ({
+                    label: prof,
+                    data: guildBattles.map(b => calculateMetric(b, metric, prof)),
+                    borderColor: PROFESSION_COLOR_MAP[prof] || '#888',
+                    backgroundColor: (PROFESSION_COLOR_MAP[prof] || '#888') + '20',
+                    fill: false,
+                    tension: 0.3,
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                }));
+            };
             
             // 渲染趋势图 - 12维度全维度
             renderDashboardChart('multiBattleDamageChart', 'line', labels,
-                [createDataset('对玩家伤害', isAvg ? '场均对玩家伤害' : '总对玩家伤害', '#ef4444')], isAvg ? '场均对玩家伤害' : '总对玩家伤害');
+                createDatasets('对玩家伤害', isAvg ? '场均对玩家伤害' : '总对玩家伤害', '#ef4444'), isAvg ? '场均对玩家伤害' : '总对玩家伤害');
             renderDashboardChart('multiBattleKillsChart', 'line', labels,
-                [createDataset('击败', isAvg ? '场均击败数' : '总击败数', '#eab308')], isAvg ? '场均击败数' : '总击败数');
+                createDatasets('击败', isAvg ? '场均击败数' : '总击败数', '#eab308'), isAvg ? '场均击败数' : '总击败数');
             renderDashboardChart('multiBattleHealChart', 'line', labels,
-                [createDataset('治疗值', isAvg ? '场均治疗量' : '总治疗量', '#22c55e')], isAvg ? '场均治疗量' : '总治疗量');
+                createDatasets('治疗值', isAvg ? '场均治疗量' : '总治疗量', '#22c55e'), isAvg ? '场均治疗量' : '总治疗量');
             renderDashboardChart('multiBattleBuildingChart', 'line', labels,
-                [createDataset('对建筑伤害', isAvg ? '场均建筑伤害' : '总建筑伤害', '#a855f7')], isAvg ? '场均建筑伤害' : '总建筑伤害');
+                createDatasets('对建筑伤害', isAvg ? '场均建筑伤害' : '总建筑伤害', '#a855f7'), isAvg ? '场均建筑伤害' : '总建筑伤害');
             renderDashboardChart('multiBattleAssistChart', 'line', labels,
-                [createDataset('助攻', isAvg ? '场均助攻' : '总助攻', '#3b82f6')], isAvg ? '场均助攻' : '总助攻');
+                createDatasets('助攻', isAvg ? '场均助攻' : '总助攻', '#3b82f6'), isAvg ? '场均助攻' : '总助攻');
             renderDashboardChart('multiBattleTakenDamageChart', 'line', labels,
-                [createDataset('承受伤害', isAvg ? '场均承受伤害' : '总承受伤害', '#f97316')], isAvg ? '场均承受伤害' : '总承受伤害');
+                createDatasets('承受伤害', isAvg ? '场均承受伤害' : '总承受伤害', '#f97316'), isAvg ? '场均承受伤害' : '总承受伤害');
 
             // 渲染扩展维度趋势图 - 6个新增维度
             renderDashboardChart('multiBattleDeathsChart', 'line', labels,
-                [createDataset('重伤', isAvg ? '场均重伤' : '总重伤', '#dc2626')], isAvg ? '场均重伤' : '总重伤');
+                createDatasets('重伤', isAvg ? '场均重伤' : '总重伤', '#dc2626'), isAvg ? '场均重伤' : '总重伤');
             renderDashboardChart('multiBattleResurrectChart', 'line', labels,
-                [createDataset('复活化羽', isAvg ? '场均复活/化羽' : '总复活/化羽', '#06b6d4')], isAvg ? '场均复活/化羽' : '总复活/化羽');
+                createDatasets('化羽', isAvg ? '场均化羽/涅槃' : '总化羽/涅槃', '#06b6d4'), isAvg ? '场均化羽/涅槃' : '总化羽/涅槃');
             renderDashboardChart('multiBattleFenguChart', 'line', labels,
-                [createDataset('焚骨', isAvg ? '场均焚骨' : '总焚骨', '#f59e0b')], isAvg ? '场均焚骨' : '总焚骨');
+                createDatasets('焚骨', isAvg ? '场均焚骨' : '总焚骨', '#f59e0b'), isAvg ? '场均焚骨' : '总焚骨');
             renderDashboardChart('multiBattleZiyuanChart', 'line', labels,
-                [createDataset('资源', isAvg ? '场均资源' : '总资源', '#10b981')], isAvg ? '场均资源' : '总资源');
+                createDatasets('资源', isAvg ? '场均资源' : '总资源', '#10b981'), isAvg ? '场均资源' : '总资源');
             renderDashboardChart('multiBattleRenShangChart', 'line', labels,
-                [createDataset('人伤卸甲', isAvg ? '场均人伤卸甲' : '总人伤卸甲', '#8b5cf6')], isAvg ? '场均人伤卸甲' : '总人伤卸甲');
+                createDatasets('人伤卸甲', isAvg ? '场均人伤卸甲' : '总人伤卸甲', '#8b5cf6'), isAvg ? '场均人伤卸甲' : '总人伤卸甲');
             renderDashboardChart('multiBattlePoTaChart', 'line', labels,
-                [createDataset('破塔卸甲', isAvg ? '场均破塔卸甲' : '总破塔卸甲', '#ec4899')], isAvg ? '场均破塔卸甲' : '总破塔卸甲');
+                createDatasets('破塔卸甲', isAvg ? '场均破塔卸甲' : '总破塔卸甲', '#ec4899'), isAvg ? '场均破塔卸甲' : '总破塔卸甲');
 
             updateMultiBattleBattleCount();
         }
@@ -14091,26 +15128,47 @@
             }).sort((a, b) => a.timestamp - b.timestamp);
             
             if (guildBattles.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="15" class="text-center py-4 text-gray-500">暂无数据</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="16" class="text-center py-4 text-gray-500">暂无数据</td></tr>';
                 return;
             }
             
             const isAvg = battleDisplayMode === 'avg';
             
             const calculateValue = (battle, metric) => {
-                const players = getGuildDataByDisplayName(battle, selectedMultiBattleGuild) || [];
+                let players = getGuildDataByDisplayName(battle, selectedMultiBattleGuild) || [];
                 if (players.length === 0) return 0;
-                // 特殊处理复活/化羽：需要同时计算'复活'和'化羽'两个字段
-                if (metric === '复活' || metric === '化羽') {
-                    const sum = players.reduce((acc, p) => acc + (parseFloat(p['复活']) || 0) + (parseFloat(p['化羽']) || 0), 0);
-                    return isAvg ? Math.round(sum / players.length) : Math.round(sum);
+                
+                // 当只选择一个职业时，表格也按该职业过滤
+                if (selectedMultiBattleProfessions.length === 1) {
+                    players = players.filter(p => p['职业'] === selectedMultiBattleProfessions[0]);
+                    if (players.length === 0) return 0;
+                }
+                
+                // 特殊处理化羽：只统计素问职业的非零平均值（与雷达图逻辑一致）
+                if (metric === '化羽') {
+                    const suwenPlayers = players.filter(p => p['职业'] === '素问');
+                    const huayuValues = suwenPlayers.map(p => parseFloat(p['化羽']) || 0).filter(v => v > 0);
+                    if (huayuValues.length === 0) return 0;
+                    const avg = huayuValues.reduce((sum, v) => sum + v, 0) / huayuValues.length;
+                    return isAvg ? Math.round(avg) : Math.round(avg * players.length);
+                }
+                // 特殊处理涅槃：只统计鸿音职业的非零平均值（与雷达图逻辑一致）
+                if (metric === '涅槃') {
+                    const hongyinPlayers = players.filter(p => p['职业'] === '鸿音');
+                    const niepanValues = hongyinPlayers.map(p => parseFloat(p['涅槃']) || 0).filter(v => v > 0);
+                    if (niepanValues.length === 0) return 0;
+                    const avg = niepanValues.reduce((sum, v) => sum + v, 0) / niepanValues.length;
+                    return isAvg ? Math.round(avg) : Math.round(avg * players.length);
                 }
                 const sum = players.reduce((acc, p) => acc + (parseFloat(p[metric]) || 0), 0);
                 return isAvg ? Math.round(sum / players.length) : Math.round(sum);
             };
             
             tbody.innerHTML = guildBattles.map(battle => {
-                const players = getGuildDataByDisplayName(battle, selectedMultiBattleGuild) || [];
+                let players = getGuildDataByDisplayName(battle, selectedMultiBattleGuild) || [];
+                if (selectedMultiBattleProfessions.length === 1) {
+                    players = players.filter(p => p['职业'] === selectedMultiBattleProfessions[0]);
+                }
                 const dateStr = new Date(battle.dateTime).toLocaleDateString('zh-CN', {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'});
                 
                 // 获取该场次中该帮会的真实名称（从battle.guild1Name或guild2Name）
@@ -14132,8 +15190,8 @@
                     }
                 });
                 
-                // 复活+化羽合并计算（calculateValue已处理合并逻辑）
-                const resurrectValue = calculateValue(battle, '复活'); // 传入任意一个字段都会计算总和
+                // 化羽统计（只统计素问）
+                const huayuValue = calculateValue(battle, '化羽');
                 
                 return `
                     <tr class="border-b border-gray-800 hover:bg-gray-800/50">
@@ -14147,11 +15205,12 @@
                         <td class="py-2 px-2 text-right text-gray-300">${calculateValue(battle, '助攻')}</td>
                         <td class="py-2 px-2 text-right text-gray-300">${calculateValue(battle, '承受伤害').toLocaleString()}</td>
                         <td class="py-2 px-2 text-right text-gray-300">${calculateValue(battle, '重伤')}</td>
-                        <td class="py-2 px-2 text-right text-gray-300">${resurrectValue}</td>
+                        <td class="py-2 px-2 text-right text-gray-300">${huayuValue}</td>
                         <td class="py-2 px-2 text-right text-gray-300">${calculateValue(battle, '焚骨')}</td>
                         <td class="py-2 px-2 text-right text-gray-300">${calculateValue(battle, '资源')}</td>
                         <td class="py-2 px-2 text-right text-gray-300">${calculateValue(battle, '人伤卸甲')}</td>
                         <td class="py-2 px-2 text-right text-gray-300">${calculateValue(battle, '破塔卸甲')}</td>
+                        <td class="py-2 px-2 text-right text-gray-300">${calculateValue(battle, '涅槃')}</td>
                     </tr>
                 `;
             }).join('');
@@ -14176,9 +15235,10 @@
                     interaction: { mode: 'index', intersect: false },
                     plugins: {
                         legend: { 
-                            display: false,
-                            labels: { color: '#e0e0e0', font: { size: 11 } } 
+                            display: datasets.length > 1,
+                            labels: { color: '#e0e0e0', font: { size: 11 }, usePointStyle: true, boxWidth: 8 } 
                         },
+                        datalabels: false,
                         tooltip: {
                             backgroundColor: 'rgba(0,0,0,0.8)',
                             titleColor: '#00d4aa',
@@ -14219,7 +15279,8 @@
                         legend: { 
                             display: true,
                             labels: { color: '#e0e0e0', font: { size: 12 } } 
-                        }
+                        },
+                        datalabels: false
                     },
                     scales: {
                         r: {
@@ -14250,7 +15311,7 @@
             });
             
             const tbody = document.getElementById('multiBattleDetailTable');
-            if (tbody) tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">暂无数据</td></tr>';
+            if (tbody) tbody.innerHTML = '<tr><td colspan="16" class="text-center py-4 text-gray-500">暂无数据</td></tr>';
         }
         
         // 渲染参战率统计（侧边栏卡片版本）
@@ -15593,10 +16654,10 @@
         // ==================== 职业末位成员检测模块 ====================
 
         // 职业特定指标配置（重伤为负面指标，数值越高越差）
-        // 注意：素问/鸿音使用'复活'字段，但UI显示为'化羽'
+        // 注意：素问使用'化羽'字段，鸿音使用'涅槃'字段
         const PROFESSION_METRICS = {
-            '素问': ['治疗值', '复活', '助攻', '重伤'],
-            '鸿音': ['治疗值', '复活', '人伤卸甲', '破塔卸甲', '助攻', '重伤'],
+            '素问': ['治疗值', '化羽', '助攻', '重伤'],
+            '鸿音': ['治疗值', '涅槃', '人伤卸甲', '破塔卸甲', '助攻', '重伤'],
             '九灵': ['焚骨', '击败', '对玩家伤害', '助攻', '重伤'],
             '潮光': ['清泉', '击败', '对玩家伤害', '助攻', '重伤'],
             '铁衣': ['承受伤害', '击败', '对玩家伤害', '助攻', '重伤'],
@@ -16029,6 +17090,17 @@
             return Object.fromEntries(sortedEntries);
         }
         
+        // 辅助函数：计算职业统计数据的特殊平均值（非零平均值）
+        function calculateSpecialAverageForGuildStats(profStats, field) {
+            if (!profStats || !profStats[field]) return 0;
+            const total = profStats[field];
+            const count = profStats.playerCount || 1;
+            // 如果总和为0，返回0
+            if (total === 0) return 0;
+            // 返回平均值（与雷达图逻辑保持一致）
+            return total / count;
+        }
+        
         // 计算所有帮会的统计数据
         // @param useSingleBattleForFirstGuild - 如果为true，帮会1只计算最近一场，其他帮会累计所有场次；如果为false，所有帮会都累计所有场次
         function calculateAllGuildStats(useSingleBattleForFirstGuild = false) {
@@ -16079,8 +17151,11 @@
                             totalZiyuan: 0,
                             totalRenShang: 0,
                             totalPoTa: 0,
+                            totalNieshen: 0,
                             playerSet: new Set(),
-                            professionCount: {}
+                            professionCount: {},
+                            // 按职业拆分的数据统计 (v4.2.0)
+                            professionStats: {}
                         };
                     }
                     
@@ -16118,10 +17193,44 @@
                         guildStats[displayName].totalZiyuan += parseFloat(p['资源']) || 0;
                         guildStats[displayName].totalRenShang += parseFloat(p['人伤卸甲']) || 0;
                         guildStats[displayName].totalPoTa += parseFloat(p['破塔卸甲']) || 0;
+                        guildStats[displayName].totalNieshen += parseFloat(p['涅槃']) || 0;
                         
                         // 统计职业
                         const prof = p['职业'] || '未知';
                         guildStats[displayName].professionCount[prof] = (guildStats[displayName].professionCount[prof] || 0) + 1;
+                        
+                        // v4.2.0: 按职业拆分的数据统计
+                        if (!guildStats[displayName].professionStats[prof]) {
+                            guildStats[displayName].professionStats[prof] = {
+                                playerCount: 0,
+                                totalDamage: 0,
+                                totalBuilding: 0,
+                                totalRenShang: 0,
+                                totalPoTa: 0,
+                                totalHeal: 0,
+                                totalKills: 0,
+                                totalAssist: 0,
+                                totalHuayu: 0,
+                                totalQingquan: 0,
+                                totalPoquan: 0,
+                                totalFengu: 0,
+                                totalNieshen: 0
+                            };
+                        }
+                        const profStats = guildStats[displayName].professionStats[prof];
+                        profStats.playerCount++;
+                        profStats.totalDamage += parseFloat(p['对玩家伤害']) || 0;
+                        profStats.totalBuilding += parseFloat(p['对建筑伤害']) || 0;
+                        profStats.totalRenShang += parseFloat(p['人伤卸甲']) || 0;
+                        profStats.totalPoTa += parseFloat(p['破塔卸甲']) || 0;
+                        profStats.totalHeal += parseFloat(p['治疗值']) || 0;
+                        profStats.totalKills += parseFloat(p['击败']) || 0;
+                        profStats.totalAssist += parseFloat(p['助攻']) || 0;
+                        profStats.totalHuayu += parseFloat(p['化羽']) || 0;
+                        profStats.totalQingquan += parseFloat(p['清泉']) || 0;
+                        profStats.totalPoquan += parseFloat(p['破泉']) || 0;
+                        profStats.totalFengu += parseFloat(p['焚骨']) || 0;
+                        profStats.totalNieshen += parseFloat(p['涅槃']) || 0;
                     });
                 });
             });
@@ -16140,11 +17249,31 @@
                 // 扩展维度数据场均
                 stats.avgDeaths = bc > 0 ? Math.round(stats.totalDeaths / bc * 10) / 10 : 0;
                 stats.avgResurrect = bc > 0 ? Math.round(stats.totalResurrect / bc * 10) / 10 : 0;
-                stats.avgHuayu = bc > 0 ? Math.round(stats.totalHuayu / bc * 10) / 10 : 0;
+                // 化羽场均：只统计素问职业的非零平均值（与雷达图逻辑一致）
+                stats.avgHuayu = bc > 0 ? Math.round(calculateSpecialAverageForGuildStats(stats.professionStats['素问'] || {}, 'totalHuayu') * 10) / 10 : 0;
                 stats.avgFengu = bc > 0 ? Math.round(stats.totalFengu / bc * 10) / 10 : 0;
                 stats.avgZiyuan = bc > 0 ? Math.round(stats.totalZiyuan / bc * 10) / 10 : 0;
                 stats.avgRenShang = bc > 0 ? Math.round(stats.totalRenShang / bc * 10) / 10 : 0;
                 stats.avgPoTa = bc > 0 ? Math.round(stats.totalPoTa / bc * 10) / 10 : 0;
+                // 涅槃场均：只统计鸿音职业的非零平均值（与雷达图逻辑一致）
+                stats.avgNieshen = bc > 0 ? Math.round(calculateSpecialAverageForGuildStats(stats.professionStats['鸿音'] || {}, 'totalNieshen') * 10) / 10 : 0;
+                
+                // v4.2.0: 计算按职业拆分的场均数据
+                Object.keys(stats.professionStats).forEach(prof => {
+                    const profStats = stats.professionStats[prof];
+                    profStats.avgDamage = bc > 0 ? Math.round(profStats.totalDamage / bc) : 0;
+                    profStats.avgBuilding = bc > 0 ? Math.round(profStats.totalBuilding / bc) : 0;
+                    profStats.avgRenShang = bc > 0 ? Math.round(profStats.totalRenShang / bc * 10) / 10 : 0;
+                    profStats.avgPoTa = bc > 0 ? Math.round(profStats.totalPoTa / bc * 10) / 10 : 0;
+                    profStats.avgHeal = bc > 0 ? Math.round(profStats.totalHeal / bc) : 0;
+                    profStats.avgKills = bc > 0 ? Math.round(profStats.totalKills / bc * 10) / 10 : 0;
+                    profStats.avgAssist = bc > 0 ? Math.round(profStats.totalAssist / bc * 10) / 10 : 0;
+                    profStats.avgHuayu = bc > 0 ? Math.round(profStats.totalHuayu / bc * 10) / 10 : 0;
+                    profStats.avgQingquan = bc > 0 ? Math.round(profStats.totalQingquan / bc * 10) / 10 : 0;
+                    profStats.avgPoquan = bc > 0 ? Math.round(profStats.totalPoquan / bc * 10) / 10 : 0;
+                    profStats.avgFengu = bc > 0 ? Math.round(profStats.totalFengu / bc * 10) / 10 : 0;
+                    profStats.avgNieshen = bc > 0 ? Math.round(profStats.totalNieshen / bc * 10) / 10 : 0;
+                });
             });
             
             return guildStats;
@@ -16335,7 +17464,7 @@
             multiDashboardCharts['radarAvg'] = new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: ['对玩家伤害', '击败', '治疗', '建筑伤害', '助攻', '承伤', '重伤', '复活/化羽', '焚骨', '资源', '人伤卸甲', '破塔卸甲'],
+                    labels: ['对玩家伤害', '击败', '治疗', '建筑伤害', '助攻', '承伤', '重伤', '化羽', '焚骨', '资源', '人伤卸甲', '破塔卸甲'],
                     datasets: datasets
                 },
                 options: {
@@ -16447,7 +17576,7 @@
             multiDashboardCharts['radarTotal'] = new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: ['对玩家伤害', '击败', '治疗', '建筑伤害', '助攻', '承伤', '重伤', '复活/化羽', '焚骨', '资源', '人伤卸甲', '破塔卸甲'],
+                    labels: ['对玩家伤害', '击败', '治疗', '建筑伤害', '助攻', '承伤', '重伤', '化羽', '焚骨', '资源', '人伤卸甲', '破塔卸甲'],
                     datasets: datasets
                 },
                 options: {
@@ -16759,6 +17888,33 @@
                     const totalRenShang = sourcePlayers.reduce((sum, p) => sum + (parseFloat(p['人伤卸甲']) || 0), 0);
                     const totalPoTa = sourcePlayers.reduce((sum, p) => sum + (parseFloat(p['破塔卸甲']) || 0), 0);
                     
+                    // v4.2.0: 计算按职业拆分的总数数据
+                    const professionStats = {};
+                    sourcePlayers.forEach(p => {
+                        const prof = p['职业'] || '未知';
+                        if (!professionStats[prof]) {
+                            professionStats[prof] = {
+                                playerCount: 0,
+                                totalDamage: 0, totalBuilding: 0, totalRenShang: 0, totalPoTa: 0,
+                                totalHeal: 0, totalKills: 0, totalAssist: 0,
+                                totalHuayu: 0, totalQingquan: 0, totalPoquan: 0, totalFengu: 0
+                            };
+                        }
+                        const ps = professionStats[prof];
+                        ps.playerCount++;
+                        ps.totalDamage += parseFloat(p['对玩家伤害']) || 0;
+                        ps.totalBuilding += parseFloat(p['对建筑伤害']) || 0;
+                        ps.totalRenShang += parseFloat(p['人伤卸甲']) || 0;
+                        ps.totalPoTa += parseFloat(p['破塔卸甲']) || 0;
+                        ps.totalHeal += parseFloat(p['治疗值']) || 0;
+                        ps.totalKills += parseFloat(p['击败']) || 0;
+                        ps.totalAssist += parseFloat(p['助攻']) || 0;
+                        ps.totalHuayu += parseFloat(p['化羽']) || 0;
+                        ps.totalQingquan += parseFloat(p['清泉']) || 0;
+                        ps.totalPoquan += parseFloat(p['破泉']) || 0;
+                        ps.totalFengu += parseFloat(p['焚骨']) || 0;
+                    });
+                    
                     stats[displayName] = {
                         name: displayName,
                         totalDamage,
@@ -16776,7 +17932,9 @@
                         totalPoTa,
                         // 标记数据来源
                         dataSource: sourceBattle === currentBattle ? 'current' : 'historical',
-                        sourceBattleTime: sourceBattle.timestamp
+                        sourceBattleTime: sourceBattle.timestamp,
+                        // v4.2.0: 按职业拆分的数据
+                        professionStats
                     };
                 }
             });
@@ -16890,6 +18048,51 @@
                     const totalZiyuan = sourcePlayers.reduce((sum, p) => sum + (parseFloat(p['资源']) || 0), 0);
                     const totalRenShang = sourcePlayers.reduce((sum, p) => sum + (parseFloat(p['人伤卸甲']) || 0), 0);
                     const totalPoTa = sourcePlayers.reduce((sum, p) => sum + (parseFloat(p['破塔卸甲']) || 0), 0);
+                    const totalQingquan = sourcePlayers.reduce((sum, p) => sum + (parseFloat(p['清泉']) || 0), 0);
+                    const totalPoquan = sourcePlayers.reduce((sum, p) => sum + (parseFloat(p['破泉']) || 0), 0);
+                    
+                    // v4.2.0: 计算按职业拆分的数据
+                    const professionStats = {};
+                    sourcePlayers.forEach(p => {
+                        const prof = p['职业'] || '未知';
+                        if (!professionStats[prof]) {
+                            professionStats[prof] = {
+                                playerCount: 0,
+                                totalDamage: 0, totalBuilding: 0, totalRenShang: 0, totalPoTa: 0,
+                                totalHeal: 0, totalKills: 0, totalAssist: 0,
+                                totalHuayu: 0, totalQingquan: 0, totalPoquan: 0, totalFengu: 0
+                            };
+                        }
+                        const ps = professionStats[prof];
+                        ps.playerCount++;
+                        ps.totalDamage += parseFloat(p['对玩家伤害']) || 0;
+                        ps.totalBuilding += parseFloat(p['对建筑伤害']) || 0;
+                        ps.totalRenShang += parseFloat(p['人伤卸甲']) || 0;
+                        ps.totalPoTa += parseFloat(p['破塔卸甲']) || 0;
+                        ps.totalHeal += parseFloat(p['治疗值']) || 0;
+                        ps.totalKills += parseFloat(p['击败']) || 0;
+                        ps.totalAssist += parseFloat(p['助攻']) || 0;
+                        ps.totalHuayu += parseFloat(p['化羽']) || 0;
+                        ps.totalQingquan += parseFloat(p['清泉']) || 0;
+                        ps.totalPoquan += parseFloat(p['破泉']) || 0;
+                        ps.totalFengu += parseFloat(p['焚骨']) || 0;
+                    });
+                    
+                    // 计算各职业的场均数据
+                    Object.keys(professionStats).forEach(prof => {
+                        const ps = professionStats[prof];
+                        ps.avgDamage = battleCount > 0 ? Math.round(ps.totalDamage / battleCount) : 0;
+                        ps.avgBuilding = battleCount > 0 ? Math.round(ps.totalBuilding / battleCount) : 0;
+                        ps.avgRenShang = battleCount > 0 ? Math.round(ps.totalRenShang / battleCount * 10) / 10 : 0;
+                        ps.avgPoTa = battleCount > 0 ? Math.round(ps.totalPoTa / battleCount * 10) / 10 : 0;
+                        ps.avgHeal = battleCount > 0 ? Math.round(ps.totalHeal / battleCount) : 0;
+                        ps.avgKills = battleCount > 0 ? Math.round(ps.totalKills / battleCount * 10) / 10 : 0;
+                        ps.avgAssist = battleCount > 0 ? Math.round(ps.totalAssist / battleCount * 10) / 10 : 0;
+                        ps.avgHuayu = battleCount > 0 ? Math.round(ps.totalHuayu / battleCount * 10) / 10 : 0;
+                        ps.avgQingquan = battleCount > 0 ? Math.round(ps.totalQingquan / battleCount * 10) / 10 : 0;
+                        ps.avgPoquan = battleCount > 0 ? Math.round(ps.totalPoquan / battleCount * 10) / 10 : 0;
+                        ps.avgFengu = battleCount > 0 ? Math.round(ps.totalFengu / battleCount * 10) / 10 : 0;
+                    });
                     
                     stats[displayName] = {
                         name: displayName,
@@ -16911,7 +18114,9 @@
                         totalDamage, totalKills, totalHeal, totalBuilding, totalAssist, totalTakenDamage: totalTaken,
                         totalDeaths, totalResurrect, totalHuayu, totalFengu, totalZiyuan, totalRenShang, totalPoTa,
                         battleCount,
-                        playerCount
+                        playerCount,
+                        // v4.2.0: 按职业拆分的数据
+                        professionStats
                     };
                 }
             });
@@ -17009,7 +18214,7 @@
             sidebarRadarAvgChart = new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: ['对玩家伤害', '击败', '治疗', '建筑伤害', '助攻', '承伤', '重伤', '复活/化羽', '焚骨', '资源', '人伤卸甲', '破塔卸甲'],
+                    labels: ['对玩家伤害', '击败', '治疗', '建筑伤害', '助攻', '承伤', '重伤', '化羽', '焚骨', '资源', '人伤卸甲', '破塔卸甲'],
                     datasets: datasets
                 },
                 options: {
@@ -17148,7 +18353,7 @@
             sidebarRadarTotalChart = new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: ['对玩家伤害', '击败', '治疗', '建筑伤害', '助攻', '承伤', '重伤', '复活/化羽', '焚骨', '资源', '人伤卸甲', '破塔卸甲'],
+                    labels: ['对玩家伤害', '击败', '治疗', '建筑伤害', '助攻', '承伤', '重伤', '化羽', '焚骨', '资源', '人伤卸甲', '破塔卸甲'],
                     datasets: datasets
                 },
                 options: {
@@ -17191,143 +18396,256 @@
             });
         }
         
-        // 渲染多维度核心数据对比图表
+        // v4.2.0: 渲染多维度核心数据对比图表 - 按职业全拆分对比
         function renderMultiDashboardCharts(guildStats) {
             const stats = Object.values(guildStats);
             const guildNames = stats.map(s => s.name);
-            const colors = ['#00d4aa', '#c9a227', '#2E86DE', '#FF4757'];
+            const guildColors = ['#EF4444', '#3B82F6', '#00d4aa', '#c9a227', '#9b59b6', '#e67e22'];
             const isAvg = dashboardDisplayMode === 'avg';
             
-            const chartConfigs = [
-                {
-                    id: 'multiDashboardDamageChart',
-                    avgData: stats.map(s => s.avgDamage),
-                    totalData: stats.map(s => s.totalDamage),
-                    label: isAvg ? '场均对玩家伤害' : '总对玩家伤害',
-                    color: '#ef4444'
-                },
-                {
-                    id: 'multiDashboardHealChart',
-                    avgData: stats.map(s => s.avgHeal),
-                    totalData: stats.map(s => s.totalHeal),
-                    label: isAvg ? '场均治疗' : '总治疗',
-                    color: '#22c55e'
-                },
-                {
-                    id: 'multiDashboardKillsChart',
-                    avgData: stats.map(s => s.avgKills),
-                    totalData: stats.map(s => s.totalKills),
-                    label: isAvg ? '场均击败' : '总击败',
-                    color: '#eab308'
-                },
-                {
-                    id: 'multiDashboardAssistChart',
-                    avgData: stats.map(s => s.avgAssist),
-                    totalData: stats.map(s => s.totalAssist),
-                    label: isAvg ? '场均助攻' : '总助攻',
-                    color: '#3b82f6'
-                },
-                {
-                    id: 'multiDashboardBuildingChart',
-                    avgData: stats.map(s => s.avgBuilding),
-                    totalData: stats.map(s => s.totalBuilding),
-                    label: isAvg ? '场均建筑伤害' : '总建筑伤害',
-                    color: '#a855f7'
-                },
-                {
-                    id: 'multiDashboardTakenDamageChart',
-                    avgData: stats.map(s => s.avgTakenDamage),
-                    totalData: stats.map(s => s.totalTakenDamage),
-                    label: isAvg ? '场均承伤' : '总承伤',
-                    color: '#f97316'
-                },
-                {
-                    id: 'multiDashboardDeathsChart',
-                    avgData: stats.map(s => s.avgDeaths),
-                    totalData: stats.map(s => s.totalDeaths),
-                    label: isAvg ? '场均重伤' : '总重伤',
-                    color: '#dc2626'
-                },
-                {
-                    id: 'multiDashboardResurrectChart',
-                    avgData: stats.map(s => s.avgResurrect + s.avgHuayu),
-                    totalData: stats.map(s => s.totalResurrect + s.totalHuayu),
-                    label: isAvg ? '场均复活/化羽' : '总复活/化羽',
-                    color: '#06b6d4'
-                },
-                {
-                    id: 'multiDashboardFenguChart',
-                    avgData: stats.map(s => s.avgFengu),
-                    totalData: stats.map(s => s.totalFengu),
-                    label: isAvg ? '场均焚骨' : '总焚骨',
-                    color: '#f59e0b'
-                },
-                {
-                    id: 'multiDashboardZiyuanChart',
-                    avgData: stats.map(s => s.avgZiyuan),
-                    totalData: stats.map(s => s.totalZiyuan),
-                    label: isAvg ? '场均资源' : '总资源',
-                    color: '#10b981'
-                },
-                {
-                    id: 'multiDashboardRenShangChart',
-                    avgData: stats.map(s => s.avgRenShang),
-                    totalData: stats.map(s => s.totalRenShang),
-                    label: isAvg ? '场均人伤卸甲' : '总人伤卸甲',
-                    color: '#8b5cf6'
-                },
-                {
-                    id: 'multiDashboardPoTaChart',
-                    avgData: stats.map(s => s.avgPoTa),
-                    totalData: stats.map(s => s.totalPoTa),
-                    label: isAvg ? '场均破塔卸甲' : '总破塔卸甲',
-                    color: '#ec4899'
+            // 获取所有职业列表（从所有帮会的职业数据中提取）
+            const allProfessions = new Set();
+            stats.forEach(s => {
+                if (s.professionStats) {
+                    Object.keys(s.professionStats).forEach(prof => allProfessions.add(prof));
                 }
-            ];
+            });
+            const profList = [...allProfessions].sort();
             
-            chartConfigs.forEach(config => {
-                const canvas = document.getElementById(config.id);
-                if (!canvas) return;
-                
-                if (multiDashboardCharts[config.id]) {
-                    multiDashboardCharts[config.id].destroy();
-                }
-                
-                const data = isAvg ? config.avgData : config.totalData;
-                
-                const ctx = canvas.getContext('2d');
-                multiDashboardCharts[config.id] = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: guildNames,
-                        datasets: [{
-                            label: config.label,
-                            data: data,
-                            backgroundColor: colors.slice(0, guildNames.length),
-                            borderColor: '#1a1a1a',
-                            borderWidth: 1
-                        }]
+            if (profList.length === 0) {
+                console.warn('没有可用的职业数据');
+                return;
+            }
+            
+            // 职业颜色映射
+            const profColorMap = {
+                '铁衣': '#8B4513', '血河': '#DC143C', '碎梦': '#4B0082',
+                '龙吟': '#1E90FF', '神相': '#FF6347', '玄机': '#32CD32',
+                '素问': '#FFB6C1', '鸿音': '#FFD700', '九灵': '#9370DB',
+                '潮光': '#00CED1'
+            };
+            
+            // 辅助函数：生成按职业拆分的图表数据
+            function getProfData(statsList, metric, isAvgMode) {
+                const data = {};
+                profList.forEach(prof => {
+                    data[prof] = statsList.map(s => {
+                        const profStats = s.professionStats?.[prof];
+                        if (!profStats) return 0;
+                        return isAvgMode ? (profStats[metric] || 0) : (profStats[metric] || 0) * (s.battleCount || 1);
+                    });
+                });
+                return data;
+            }
+            
+            // 1. 对玩家伤害 - 全职业对比
+            renderProfComparisonChart('multiDashboardDamageByProfChart', profList, guildNames, guildColors,
+                getProfData(stats, 'avgDamage', isAvg),
+                isAvg ? '场均对玩家伤害' : '总对玩家伤害');
+            
+            // 2. 对建筑伤害 - 全职业对比
+            renderProfComparisonChart('multiDashboardBuildingByProfChart', profList, guildNames, guildColors,
+                getProfData(stats, 'avgBuilding', isAvg),
+                isAvg ? '场均对建筑伤害' : '总对建筑伤害');
+            
+            // 3. 人伤卸甲 - 全职业对比
+            renderProfComparisonChart('multiDashboardRenShangByProfChart', profList, guildNames, guildColors,
+                getProfData(stats, 'avgRenShang', isAvg),
+                isAvg ? '场均人伤卸甲' : '总人伤卸甲');
+            
+            // 4. 破塔卸甲 - 全职业对比
+            renderProfComparisonChart('multiDashboardPoTaByProfChart', profList, guildNames, guildColors,
+                getProfData(stats, 'avgPoTa', isAvg),
+                isAvg ? '场均破塔卸甲' : '总破塔卸甲');
+            
+            // 5. 治疗值 - 全职业对比
+            renderProfComparisonChart('multiDashboardHealByProfChart', profList, guildNames, guildColors,
+                getProfData(stats, 'avgHeal', isAvg),
+                isAvg ? '场均治疗值' : '总治疗值');
+            
+            // 6. 击败 - 全职业对比
+            renderProfComparisonChart('multiDashboardKillsByProfChart', profList, guildNames, guildColors,
+                getProfData(stats, 'avgKills', isAvg),
+                isAvg ? '场均击败' : '总击败');
+            
+            // 7. 助攻 - 全职业对比
+            renderProfComparisonChart('multiDashboardAssistByProfChart', profList, guildNames, guildColors,
+                getProfData(stats, 'avgAssist', isAvg),
+                isAvg ? '场均助攻' : '总助攻');
+            
+            // 8. 特殊技能对比 (羽化/清泉/破泉/焚骨) - 单独一个图表
+            renderSpecialSkillsChart(stats, guildNames, guildColors, isAvg);
+        }
+        
+        // v4.2.0: 渲染按职业拆分的对比图表
+        function renderProfComparisonChart(canvasId, profList, guildNames, guildColors, profData, label) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            
+            if (multiDashboardCharts[canvasId]) {
+                multiDashboardCharts[canvasId].destroy();
+            }
+            
+            const ctx = canvas.getContext('2d');
+            
+            // 为每个帮会创建一个数据集，包含所有职业的数据
+            const datasets = guildNames.map((guildName, guildIndex) => ({
+                label: guildName,
+                data: profList.map(prof => profData[prof][guildIndex] || 0),
+                backgroundColor: guildColors[guildIndex % guildColors.length] + '80', // 添加透明度
+                borderColor: guildColors[guildIndex % guildColors.length],
+                borderWidth: 1
+            }));
+            
+            multiDashboardCharts[canvasId] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: profList,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            datalabels: { display: false },
-                            tooltip: {
-                                backgroundColor: 'rgba(0,0,0,0.8)',
-                                titleColor: '#00d4aa',
-                                bodyColor: '#e0e0e0',
-                                borderColor: '#00d4aa',
-                                borderWidth: 1
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#e0e0e0',
+                                font: { size: 11 },
+                                usePointStyle: true
                             }
                         },
-                        scales: {
-                            x: { ticks: { color: '#888', font: { size: 10 } }, grid: { color: '#333' } },
-                            y: { ticks: { color: '#888', font: { size: 10 } }, grid: { color: '#333' } }
+                        datalabels: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.9)',
+                            titleColor: '#00d4aa',
+                            bodyColor: '#e0e0e0',
+                            borderColor: '#00d4aa',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.parsed.y;
+                                    const formatted = value >= 10000 
+                                        ? (value / 10000).toFixed(1) + '万' 
+                                        : value.toLocaleString();
+                                    return context.dataset.label + ': ' + formatted;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#888', font: { size: 11 } },
+                            grid: { color: '#333' }
+                        },
+                        y: {
+                            ticks: {
+                                color: '#888',
+                                font: { size: 10 },
+                                callback: function(value) {
+                                    return value >= 10000 ? (value / 10000).toFixed(0) + '万' : value;
+                                }
+                            },
+                            grid: { color: '#333' }
                         }
                     }
+                }
+            });
+        }
+        
+        // v4.2.0: 渲染特殊技能对比图表 (羽化/清泉/破泉/焚骨)
+        function renderSpecialSkillsChart(stats, guildNames, guildColors, isAvg) {
+            const canvas = document.getElementById('multiDashboardSpecialSkillsChart');
+            if (!canvas) return;
+            
+            if (multiDashboardCharts['multiDashboardSpecialSkillsChart']) {
+                multiDashboardCharts['multiDashboardSpecialSkillsChart'].destroy();
+            }
+            
+            const ctx = canvas.getContext('2d');
+            
+            // 特殊技能维度
+            const skillMetrics = [
+                { key: isAvg ? 'avgHuayu' : 'totalHuayu', label: '羽化', color: '#06b6d4' },
+                { key: isAvg ? 'avgNieshen' : 'totalNieshen', label: '涅槃', color: '#f472b6' },
+                { key: isAvg ? 'avgQingquan' : 'totalQingquan', label: '清泉', color: '#10b981' },
+                { key: isAvg ? 'avgPoquan' : 'totalPoquan', label: '破泉', color: '#f59e0b' },
+                { key: isAvg ? 'avgFengu' : 'totalFengu', label: '焚骨', color: '#ef4444' }
+            ];
+            
+            // 计算每个帮会各特殊技能的总值（所有职业合计）
+            const skillLabels = skillMetrics.map(m => m.label);
+            const datasets = guildNames.map((guildName, guildIndex) => {
+                const stat = stats[guildIndex];
+                const data = skillMetrics.map(metric => {
+                    // 从 professionStats 汇总所有职业的该技能数据
+                    let total = 0;
+                    if (stat.professionStats) {
+                        Object.values(stat.professionStats).forEach(profStat => {
+                            total += profStat[metric.key] || 0;
+                        });
+                    }
+                    return total;
                 });
+                
+                return {
+                    label: guildName,
+                    data: data,
+                    backgroundColor: guildColors[guildIndex % guildColors.length] + '80',
+                    borderColor: guildColors[guildIndex % guildColors.length],
+                    borderWidth: 1
+                };
+            });
+            
+            multiDashboardCharts['multiDashboardSpecialSkillsChart'] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: skillLabels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#e0e0e0',
+                                font: { size: 11 },
+                                usePointStyle: true
+                            }
+                        },
+                        datalabels: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.9)',
+                            titleColor: '#00d4aa',
+                            bodyColor: '#e0e0e0',
+                            borderColor: '#00d4aa',
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#888', font: { size: 12 } },
+                            grid: { color: '#333' }
+                        },
+                        y: {
+                            ticks: {
+                                color: '#888',
+                                font: { size: 10 }
+                            },
+                            grid: { color: '#333' }
+                        }
+                    }
+                }
             });
         }
         
@@ -17573,11 +18891,11 @@
             
             const stats = Object.values(guildStats);
             if (stats.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="15" class="text-center py-8 text-gray-500" style="height: 200px;">暂无数据</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="16" class="text-center py-8 text-gray-500" style="height: 200px;">暂无数据</td></tr>';
                 return;
             }
             
-            // 计算每列的最大值（用于数据条比例）- 所有13个维度
+            // 计算每列的最大值（用于数据条比例）- 所有14个维度
             const maxValues = {
                 avgDamage: Math.max(...stats.map(s => s.avgDamage)) || 1,
                 avgKills: Math.max(...stats.map(s => s.avgKills)) || 1,
@@ -17586,11 +18904,12 @@
                 avgAssist: Math.max(...stats.map(s => s.avgAssist)) || 1,
                 avgTakenDamage: Math.max(...stats.map(s => s.avgTakenDamage)) || 1,
                 avgDeaths: Math.max(...stats.map(s => s.avgDeaths)) || 1,
-                avgResurrectHuayu: Math.max(...stats.map(s => s.avgResurrect + s.avgHuayu)) || 1,
+                avgHuayu: Math.max(...stats.map(s => s.avgHuayu)) || 1,
                 avgFengu: Math.max(...stats.map(s => s.avgFengu)) || 1,
                 avgZiyuan: Math.max(...stats.map(s => s.avgZiyuan)) || 1,
                 avgRenShang: Math.max(...stats.map(s => s.avgRenShang)) || 1,
-                avgPoTa: Math.max(...stats.map(s => s.avgPoTa)) || 1
+                avgPoTa: Math.max(...stats.map(s => s.avgPoTa)) || 1,
+                avgNieshen: Math.max(...stats.map(s => s.avgNieshen)) || 1
             };
 
             // 颜色配置
@@ -17606,7 +18925,8 @@
                 fengu: '#f59e0b',
                 ziyuan: '#10b981',
                 renShang: '#8b5cf6',
-                poTa: '#ec4899'
+                poTa: '#ec4899',
+                nieshen: '#f472b6'
             };
 
             tbody.innerHTML = stats.map((g, index) => `
@@ -17621,11 +18941,12 @@
                     <td class="py-1 px-2" style="height: 40px;">${renderDataBar(g.avgAssist, maxValues.avgAssist, colors.assist, true)}</td>
                     <td class="py-1 px-2" style="height: 40px;">${renderDataBar(g.avgTakenDamage, maxValues.avgTakenDamage, colors.taken)}</td>
                     <td class="py-1 px-2" style="height: 40px;">${renderDataBar(g.avgDeaths, maxValues.avgDeaths, colors.deaths, true)}</td>
-                    <td class="py-1 px-2" style="height: 40px;">${renderDataBar(g.avgResurrect + g.avgHuayu, maxValues.avgResurrectHuayu, colors.resurrect, true)}</td>
+                    <td class="py-1 px-2" style="height: 40px;">${renderDataBar(g.avgHuayu, maxValues.avgHuayu, colors.resurrect, true)}</td>
                     <td class="py-1 px-2" style="height: 40px;">${renderDataBar(g.avgFengu, maxValues.avgFengu, colors.fengu, true)}</td>
                     <td class="py-1 px-2" style="height: 40px;">${renderDataBar(g.avgZiyuan, maxValues.avgZiyuan, colors.ziyuan, true)}</td>
                     <td class="py-1 px-2" style="height: 40px;">${renderDataBar(g.avgRenShang, maxValues.avgRenShang, colors.renShang)}</td>
                     <td class="py-1 px-2" style="height: 40px;">${renderDataBar(g.avgPoTa, maxValues.avgPoTa, colors.poTa)}</td>
+                    <td class="py-1 px-2" style="height: 40px;">${renderDataBar(g.avgNieshen, maxValues.avgNieshen, colors.nieshen, true)}</td>
                 </tr>
             `).join('');
         }
@@ -17635,9 +18956,12 @@
             const container = document.getElementById('multiDashboardGuildCards');
             if (container) container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-4">请先导入多场数据</div>';
             
-            ['multiDashboardRadarAvgChart', 'multiDashboardRadarTotalChart', 'multiDashboardDamageChart', 
-             'multiDashboardHealChart', 'multiDashboardKillsChart', 'multiDashboardAssistChart', 
-             'multiDashboardBuildingChart'].forEach(id => {
+            // v4.2.0: 更新为空状态的图表ID列表
+            ['multiDashboardRadarAvgChart', 'multiDashboardRadarTotalChart', 
+             'multiDashboardDamageByProfChart', 'multiDashboardBuildingByProfChart', 
+             'multiDashboardRenShangByProfChart', 'multiDashboardPoTaByProfChart',
+             'multiDashboardHealByProfChart', 'multiDashboardKillsByProfChart', 
+             'multiDashboardAssistByProfChart', 'multiDashboardSpecialSkillsChart'].forEach(id => {
                 const canvas = document.getElementById(id);
                 if (canvas) {
                     const ctx = canvas.getContext('2d');
@@ -17653,7 +18977,7 @@
             if (profContainer) profContainer.innerHTML = '<div class="col-span-full text-center text-gray-500 py-4">暂无数据</div>';
             
             const tbody = document.getElementById('multiDashboardTableBody');
-            if (tbody) tbody.innerHTML = '<tr><td colspan="15" class="text-center py-8 text-gray-500" style="height: 200px;">暂无数据</td></tr>';
+            if (tbody) tbody.innerHTML = '<tr><td colspan="16" class="text-center py-8 text-gray-500" style="height: 200px;">暂无数据</td></tr>';
         }
     </script>
 
@@ -17749,7 +19073,7 @@
                     <div class="text-2xl font-bold text-warning" id="fullscreenPoquan">-</div>
                 </div>
                 <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" id="cardHuayu" style="display: none;">
-                    <div class="text-gray-500 text-sm mb-1"><i class="fas fa-feather-alt mr-1"></i>化羽</div>
+                    <div class="text-gray-500 text-sm mb-1"><i class="fas fa-feather-alt mr-1"></i><span id="fullscreenHuayuLabel">化羽</span></div>
                     <div class="text-2xl font-bold text-success" id="fullscreenHuayu">-</div>
                 </div>
                 <div class="stat-card bg-[#1a1a1a] border border-gray-700 rounded-lg p-4 text-center" id="cardQingquan" style="display: none;">
@@ -17818,6 +19142,18 @@
                     </h3>
                     <div class="relative" style="height: 280px;">
                         <canvas id="fullscreenProfessionCombatChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 鸿音专属扩展图表区域（奶鸿/惊鸿） -->
+            <div id="hongyinExtraCharts" class="hidden grid grid-cols-1 gap-4 mb-6">
+                <div class="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4">
+                    <h3 class="text-sm font-bold mb-2 flex items-center" id="hongyinExtraChart1Title">
+                        <i class="fas fa-chart-bar mr-2 text-warning"></i>鸿音扩展数据
+                    </h3>
+                    <div class="relative" style="height: 280px;">
+                        <canvas id="hongyinExtraChart1"></canvas>
                     </div>
                 </div>
             </div>
@@ -17918,7 +19254,7 @@
             
             <!-- 系统版本号 -->
             <div class="mt-8 pt-4 border-t border-gray-800 text-center">
-                <span class="text-xs text-gray-600">逆水寒帮战分析系统 v4.1.1</span>
+                <span class="text-xs text-gray-600">逆水寒帮战分析系统 v4.2.0</span>
             </div>
         </div>
     </div>
