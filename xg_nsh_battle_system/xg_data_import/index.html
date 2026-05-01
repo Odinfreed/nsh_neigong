@@ -164,6 +164,7 @@
             opacity: 0;
             transition: opacity 0.3s ease;
         }
+        
         .primary-btn:hover {
             border-color: var(--jade);
             box-shadow: 0 0 20px rgba(0, 212, 170, 0.2);
@@ -335,7 +336,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6 items-stretch">
             <!-- 左侧：多场数据列表 -->
             <div class="lg:col-span-1 flex">
-                <div class="main-card rounded-sm p-4 h-full flex flex-col" style="min-height: 420px;">
+                <div class="main-card rounded-sm p-4 h-full flex flex-col min-h-[420px]">
                     <div class="corner-decoration top-left"></div>
                     <div class="corner-decoration top-right"></div>
                     <div class="corner-decoration bottom-left"></div>
@@ -391,7 +392,7 @@
             
             <!-- 右侧：导入区域 -->
             <div class="lg:col-span-3 flex">
-                <div class="main-card rounded-sm p-6 h-full flex flex-col w-full" style="min-height: 420px;">
+                <div class="main-card rounded-sm p-6 h-full flex flex-col w-full min-h-[420px]">
                     <div class="corner-decoration top-left"></div>
                     <div class="corner-decoration top-right"></div>
                     <div class="corner-decoration bottom-left"></div>
@@ -451,7 +452,7 @@
                             </h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                                 <div>
-                                    <label class="block text-xs text-gray-500 mb-1">帮战时间</label>
+                                    <label for="battleDateTime" class="block text-xs text-gray-500 mb-1">帮战时间</label>
                                     <input type="datetime-local" id="battleDateTime" class="custom-input w-full px-2 py-1.5 text-sm rounded-sm">
                                     <div class="flex gap-2 mt-2">
                                         <button onclick="setQuickTime('20:00')" class="action-btn px-2 py-1 text-xs rounded-sm flex-1">
@@ -463,7 +464,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-xs text-gray-500 mb-1">数据类型</label>
+                                    <label for="battleType" class="block text-xs text-gray-500 mb-1">数据类型</label>
                                     <select id="battleType" class="custom-input w-full px-2 py-1.5 text-sm rounded-sm">
                                         <option value="guild" selected>帮战数据</option>
                                         <option value="practice">约战数据</option>
@@ -489,7 +490,7 @@
                             </h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                                 <div>
-                                    <label class="block text-xs text-gray-500 mb-1">帮战时间</label>
+                                    <label for="editBattleDateTime" class="block text-xs text-gray-500 mb-1">帮战时间</label>
                                     <input type="datetime-local" id="editBattleDateTime" class="custom-input w-full px-2 py-1.5 text-sm rounded-sm">
                                     <div class="flex gap-2 mt-2">
                                         <button onclick="setEditQuickTime('20:00')" class="action-btn px-2 py-1 text-xs rounded-sm flex-1">
@@ -501,7 +502,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-xs text-gray-500 mb-1">数据类型</label>
+                                    <label for="editBattleType" class="block text-xs text-gray-500 mb-1">数据类型</label>
                                     <select id="editBattleType" class="custom-input w-full px-2 py-1.5 text-sm rounded-sm">
                                         <option value="guild">帮战数据</option>
                                         <option value="practice">约战数据</option>
@@ -543,7 +544,7 @@
                             <button onclick="document.getElementById('importAllFileInput').click()" class="action-btn px-2 py-2 text-xs rounded-sm whitespace-nowrap">
                                 <i class="fas fa-upload mr-1"></i>导入备份
                             </button>
-                            <input type="file" id="importAllFileInput" accept=".json" class="hidden" onchange="importAllBattleData(event)">
+                            <input type="file" id="importAllFileInput" accept=".json" class="hidden" aria-label="导入备份文件" onchange="importAllBattleData(event)">
                         </div>
                     </div>
                 </div>
@@ -1535,6 +1536,7 @@
                                     player['化羽'] = 0;
                                     player['清泉'] = 0;
                                     player['复活'] = 0;
+                                    player['涅槃'] = 0;
 
                                     numericFields.forEach(field => {
                                         if (player[field] !== undefined && player[field] !== '') {
@@ -1556,21 +1558,26 @@
                                                     if (profession === '潮光') {
                                                         player['复活'] = part0;
                                                         player['清泉'] = part1;
-                                                    } else if (profession === '素问' || profession === '鸿音') {
-                                                        player['复活'] = part0;
+                                                    } else if (profession === '素问') {
+                                                        player['化羽'] = part0;
+                                                        player['清泉'] = part1;
+                                                    } else if (profession === '鸿音') {
+                                                        player['涅槃'] = part0;
                                                         player['清泉'] = part1;
                                                     } else {
-                                                        player['化羽'] = part0;
+                                                        player['复活'] = part0;
                                                         player['清泉'] = part1;
                                                     }
                                                 } else {
                                                     const singleValue = parseInt(value.trim()) || 0;
                                                     if (profession === '潮光') {
                                                         player['清泉'] = singleValue;
-                                                    } else if (profession === '素问' || profession === '鸿音') {
-                                                        player['复活'] = singleValue;
-                                                    } else {
+                                                    } else if (profession === '素问') {
                                                         player['化羽'] = singleValue;
+                                                    } else if (profession === '鸿音') {
+                                                        player['涅槃'] = singleValue;
+                                                    } else {
+                                                        player['复活'] = singleValue;
                                                     }
                                                 }
                                             } else {
