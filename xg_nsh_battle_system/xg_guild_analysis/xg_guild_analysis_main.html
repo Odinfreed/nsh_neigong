@@ -928,6 +928,7 @@
         /* 拖拽相关样式 */
         .member-pool-item {
             cursor: grab;
+            -webkit-user-select: none;
             user-select: none;
             -webkit-user-drag: element;
             touch-action: none;
@@ -942,6 +943,7 @@
         }
         [draggable="true"] {
             -webkit-user-drag: element;
+            -webkit-user-select: none;
             user-select: none;
         }
         /* 组容器拖拽样式 */
@@ -1732,11 +1734,11 @@
                             </div>
 
                             <div id="professionComparisonContent" class="hidden">
-                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div class="grid grid-cols-1 gap-6">
                                     <!-- 伤害与治疗雷达图 -->
                                     <div class="card" ondblclick="toggleProfessionChartFullscreen('damageHealing')" title="双击全屏查看">
                                         <h3 class="card-title"><i class="fas fa-chart-radar mr-2"></i>伤害与治疗 <span class="text-xs text-gray-500 font-normal ml-2">(双击全屏)</span></h3>
-                                        <div class="radar-chart-container-player profession-chart-container" id="professionDamageHealingContainer" style="height: 350px;">
+                                        <div class="radar-chart-container-player profession-chart-container" id="professionDamageHealingContainer" style="height: 520px;">
                                             <canvas id="professionDamageHealingChart"></canvas>
                                         </div>
                                     </div>
@@ -1744,7 +1746,7 @@
                                     <!-- 战斗数据雷达图 -->
                                     <div class="card" ondblclick="toggleProfessionChartFullscreen('combat')" title="双击全屏查看">
                                         <h3 class="card-title"><i class="fas fa-chart-radar mr-2"></i>战斗数据 <span class="text-xs text-gray-500 font-normal ml-2">(双击全屏)</span></h3>
-                                        <div class="radar-chart-container-player profession-chart-container" id="professionCombatContainer" style="height: 350px;">
+                                        <div class="radar-chart-container-player profession-chart-container" id="professionCombatContainer" style="height: 520px;">
                                             <canvas id="professionCombatChart"></canvas>
                                         </div>
                                     </div>
